@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QUIRKLE VIRTUAL</title>
+<style>
+/* ══════════════════════════════════════
+   DESIGN SYSTEM
+══════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
+:root {
+  --bg:      #050709;
+  --card:    #0a0d12;
+  --accent:  #00f0ff;
+  --green:   #00ff88;
+  --red:     #ff4757;
+  --gold:    #FFD700;
+  --purple:  #bd00ff;
+  --orange:  #ff9f00;
+  --border:  rgba(255,255,255,0.07);
+  --trans:   all 0.4s cubic-bezier(0.19,1,0.22,1);
+}
+* { box-sizing:border-box; margin:0; padding:0; font-family:'Inter',-apple-system,sans-serif;
+    -webkit-tap-highlight-color:transparent; outline:none; touch-action:manipulation; }
+body { background:var(--bg); color:#fff; min-height:100vh; overflow:hidden; }
+
+/* ── Sélecteur couleur plateau ── */
+.board-color-row { display:flex; gap:8px; flex-wrap:wrap; max-width:460px; align-items:center; }
+.board-color-section {
+  font-size:8px; font-weight:800; letter-spacing:2px;
+  color:rgba(255,255,255,0.25); text-transform:uppercase;
+  width:100%; margin-top:8px; margin-bottom:2px;
+  flex-basis:100%; /* force retour à la ligne dans le flex */
+}
+.board-color-swatch {
+  width:34px; height:34px; border-radius:50%; cursor:pointer;
+  border:3px solid transparent; transition:all 0.2s;
+  box-shadow:0 2px 8px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(0,0,0,0.1);
+  flex-shrink:0;
+}
+.board-color-swatch.selected { transform:scale(1.18); }
+.board-color-swatch:hover:not(.selected) { transform:scale(1.1); }
+
+/* ── SCREENS ── */
+.screen { position:fixed; inset:0; display:flex; flex-direction:column;
+          align-items:center; justify-content:center; padding:20px;
+          transition:opacity 0.4s, transform 0.4s; }
+.screen.hidden { opacity:0; pointer-events:none; transform:scale(0.97); }
+
+/* ══════════════════════════════════════
+   SCREEN 1 — ACCUEIL
+══════════════════════════════════════ */
+#screen-home { background:var(--bg); gap:28px; }
+
+.logo { text-align:center; }
+.logo-title { font-size:clamp(28px,7vw,48px); font-weight:900; letter-spacing:-1px;
+  background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.5) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.logo-sub { font-size:10px; font-weight:800; letter-spacing:4px; color:var(--accent);
+  text-transform:uppercase; margin-top:6px; }
+
+.mode-cards { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%; max-width:460px; }
+.mode-card {
+  background:var(--card); border:1px solid var(--border); border-radius:20px;
+  padding:22px 16px; text-align:center; cursor:pointer;
+  transition:var(--trans); position:relative; overflow:hidden;
+}
+.mode-card::before { content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 80% 60% at 50% 0%, var(--glow,rgba(0,240,255,0.06)), transparent);
+  pointer-events:none; }
+.mode-card:hover { transform:translateY(-4px); border-color:rgba(255,255,255,0.14); }
+.mode-card.selected { border-color:var(--col); box-shadow:0 0 0 1px var(--col), 0 8px 30px color-mix(in srgb, var(--col) 20%, transparent); }
+.mode-icon { font-size:2.2rem; display:block; margin-bottom:10px; }
+.mode-title { font-size:13px; font-weight:900; letter-spacing:0.5px; margin-bottom:4px; }
+.mode-desc { font-size:10px; color:rgba(255,255,255,0.35); letter-spacing:0.5px; line-height:1.5; }
+
+.diff-row { display:flex; gap:8px; width:100%; max-width:460px; }
+.diff-btn {
+  flex:1; padding:12px 8px; border-radius:14px; border:1px solid var(--border);
+  background:var(--card); color:rgba(255,255,255,0.5); font-size:10px; font-weight:800;
+  letter-spacing:1.5px; text-transform:uppercase; cursor:pointer; transition:var(--trans);
+}
+.diff-btn.selected { border-color:var(--accent); color:var(--accent);
+  background:rgba(0,240,255,0.06); }
+
+.btn-play {
+  width:100%; max-width:460px; padding:18px; border-radius:50px; border:none;
+  background:linear-gradient(135deg,var(--accent),#00b8cc);
+  color:#050709; font-size:13px; font-weight:900; letter-spacing:2px;
+  text-transform:uppercase; cursor:pointer; transition:var(--trans);
+  box-shadow:0 6px 24px rgba(0,240,255,0.3);
+}
+.btn-play:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,240,255,0.45); }
+.btn-play:disabled { opacity:0.3; cursor:not-allowed; transform:none; }
+
+/* ══════════════════════════════════════
+   SCREEN 2 — JEU
+══════════════════════════════════════ */
+#screen-game { padding:0; justify-content:flex-start; background:var(--bg); }
+
+/* Header */
+.game-header {
+  width:100%; background:rgba(10,13,20,0.97); backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border); padding:10px 16px;
+  display:flex; align-items:center; gap:10px; z-index:100; flex-shrink:0;
+}
+.gh-scores { display:flex; gap:8px; flex:1; overflow-x:auto; scrollbar-width:none; }
+.gh-scores::-webkit-scrollbar { display:none; }
+.player-score-chip {
+  display:flex; align-items:center; gap:7px; padding:6px 12px;
+  border-radius:50px; border:1px solid var(--border);
+  background:rgba(255,255,255,0.03); flex-shrink:0; transition:var(--trans);
+}
+.player-score-chip.active {
+  border-color:var(--col); background:rgba(255,255,255,0.06);
+  box-shadow:0 0 12px color-mix(in srgb, var(--col) 25%, transparent);
+}
+.psc-dot { width:8px; height:8px; border-radius:50%; background:var(--col); flex-shrink:0; }
+.psc-name { font-size:10px; font-weight:800; letter-spacing:0.5px; }
+.psc-score { font-size:14px; font-weight:900; font-variant-numeric:tabular-nums; }
+
+.gh-bag { display:flex; align-items:center; gap:5px; flex-shrink:0;
+  font-size:10px; font-weight:700; color:rgba(255,255,255,0.4); }
+.gh-bag-num { font-size:14px; font-weight:900; color:#fff; }
+
+.gh-timer {
+  display:flex; align-items:center; gap:5px; flex-shrink:0;
+  font-size:10px; font-weight:700; color:rgba(255,255,255,0.4);
+  margin-left:10px; padding-left:10px;
+  border-left:1px solid rgba(255,255,255,0.08);
+}
+.gh-timer-val {
+  font-size:14px; font-weight:900; font-variant-numeric:tabular-nums;
+  color:#fff; letter-spacing:0.5px; transition:color 0.3s;
+}
+.gh-timer-val.warning { color:var(--orange); }
+.gh-timer-val.danger  { color:var(--red); animation:timer-pulse 0.5s ease-in-out infinite alternate; }
+@keyframes timer-pulse { from{opacity:1} to{opacity:0.5} }
+
+/* Plateau */
+.board-wrap {
+  flex:1; overflow:hidden; position:relative; width:100%; touch-action:none;
+}
+.board-canvas { position:absolute; top:0; left:0; }
+
+/* Zone du bas */
+.game-bottom {
+  width:100%; background:rgba(10,13,20,0.97); backdrop-filter:blur(20px);
+  border-top:1px solid var(--border); padding:12px 16px; flex-shrink:0;
+}
+
+/* Main du joueur */
+.hand-label { font-size:9px; font-weight:800; letter-spacing:2.5px;
+  color:rgba(255,255,255,0.25); text-transform:uppercase; margin-bottom:8px; }
+.hand-tiles { display:flex; gap:8px; justify-content:center; margin-bottom:12px;
+  min-height:60px; align-items:center; }
+
+/* Tuile */
+.tile {
+  width:58px; height:58px; border-radius:10px;
+  /* Fond noir 3D avec dégradé + volume bas-droite */
+  background:
+    linear-gradient(135deg, #2a2d3a 0%, #181b26 35%, #0e1018 100%);
+  border:none;
+  display:flex; align-items:center; justify-content:center;
+  cursor:grab;
+  transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1),
+             box-shadow 0.15s, filter 0.15s;
+  position:relative; user-select:none; flex-shrink:0;
+  /* Ombre portée + volume 3D simulé */
+  box-shadow:
+    3px 5px 0 #03040a,          /* côté 3D */
+    0 8px 20px rgba(0,0,0,0.7), /* ombre portée */
+    inset 0 1px 0 rgba(255,255,255,0.08); /* reflet haut */
+}
+.tile::before {
+  /* Ligne de lumière en haut */
+  content:''; position:absolute;
+  top:5px; left:7%; width:86%; height:11%;
+  border-radius:4px;
+  background:linear-gradient(180deg,rgba(255,255,255,0.07),transparent);
+  pointer-events:none;
+}
+.tile:active { cursor:grabbing; transform:translateY(2px) translateX(1px) scale(0.97); box-shadow:1px 2px 0 #03040a, 0 4px 12px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.06); }
+.tile.selected {
+  transform:translateY(-8px) scale(1.10);
+  box-shadow:
+    3px 12px 0 #03040a,
+    0 18px 36px rgba(0,240,255,0.4),
+    0 0 0 2px #00f0ff,
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  filter:brightness(1.08);
+}
+.tile.ghost { opacity:0.28; pointer-events:none; filter:grayscale(0.5); }
+.tile.to-discard {
+  border:2px solid var(--orange) !important;
+  box-shadow: 2px 4px 0 #03040a, 0 0 16px rgba(255,159,0,0.4), 0 0 0 2px var(--orange) !important;
+  transform:translateY(-4px) scale(1.06) !important;
+  filter:brightness(0.7) sepia(0.3);
+}
+.tile svg { width:36px; height:36px; pointer-events:none; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+
+/* Boutons action */
+.action-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.act-btn {
+  padding:11px 8px; border-radius:12px; border:1px solid var(--border);
+  background:rgba(255,255,255,0.03); color:rgba(255,255,255,0.6);
+  font-size:9px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+  cursor:pointer; transition:var(--trans); display:flex; align-items:center;
+  justify-content:center; gap:5px;
+}
+.act-btn:hover { background:rgba(255,255,255,0.07); color:#fff; }
+.act-btn:disabled { opacity:0.2; cursor:not-allowed; }
+.act-btn.confirm {
+  background:linear-gradient(135deg,var(--accent),#00b8cc); color:#050709;
+  border-color:transparent; box-shadow:0 4px 14px rgba(0,240,255,0.25);
+}
+.act-btn.confirm:hover { box-shadow:0 6px 20px rgba(0,240,255,0.4); }
+.act-btn.discard-btn { color:var(--orange); border-color:rgba(255,159,0,0.2); }
+
+/* Contrôles navigation plateau */
+.nav-controls {
+  position:absolute; right:12px; bottom:16px;
+  display:flex; flex-direction:column; gap:6px; z-index:10;
+}
+.nav-btn {
+  width:38px; height:38px; border-radius:50%;
+  background:rgba(10,13,20,0.88); backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.12); color:rgba(255,255,255,0.7);
+  font-size:18px; font-weight:400; line-height:1;
+  cursor:pointer; transition:all 0.2s;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 12px rgba(0,0,0,0.4);
+}
+.nav-btn:hover { background:rgba(0,240,255,0.12); border-color:rgba(0,240,255,0.3); color:#00f0ff; transform:scale(1.08); }
+.nav-btn:active { transform:scale(0.94); }
+
+/* Panel couleur plateau en jeu */
+.theme-panel {
+  position:absolute; right:56px; bottom:16px;
+  background:rgba(10,13,20,0.96); backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.12); border-radius:16px;
+  padding:12px 14px; z-index:20;
+  display:flex; flex-direction:column; gap:10px;
+  transition:opacity 0.2s, transform 0.2s;
+  box-shadow:0 8px 30px rgba(0,0,0,0.6);
+}
+.theme-panel.hidden { opacity:0; pointer-events:none; transform:translateX(8px); }
+.theme-panel-label { font-size:8px; font-weight:800; letter-spacing:2px;
+  color:rgba(255,255,255,0.3); text-transform:uppercase; }
+.theme-swatches { display:flex; flex-direction:column; gap:6px; }
+.theme-swatch-row { display:flex; align-items:center; gap:8px; cursor:pointer; }
+.theme-swatch-dot {
+  width:22px; height:22px; border-radius:50%; flex-shrink:0;
+  border:2px solid rgba(255,255,255,0.12); transition:all 0.2s;
+}
+.theme-swatch-row.active .theme-swatch-dot { border-color:#fff; transform:scale(1.15); }
+.theme-swatch-name { font-size:9px; font-weight:700; color:rgba(255,255,255,0.45);
+  letter-spacing:1px; text-transform:uppercase; }
+.theme-swatch-row.active .theme-swatch-name { color:#fff; }
+
+/* Indicateur de zoom */
+.zoom-indicator {
+  position:absolute; left:12px; bottom:16px;
+  font-size:9px; font-weight:800; letter-spacing:1.5px;
+  color:rgba(255,255,255,0.25); text-transform:uppercase;
+  background:rgba(10,13,20,0.7); padding:4px 10px;
+  border-radius:20px; border:1px solid rgba(255,255,255,0.07);
+  backdrop-filter:blur(8px); z-index:10;
+  pointer-events:none;
+}
+
+/* IA pense */
+.ai-thinking {
+  position:fixed; bottom:180px; left:50%; transform:translateX(-50%);
+  background:rgba(10,13,20,0.95); border:1px solid rgba(255,255,255,0.1);
+  border-radius:50px; padding:10px 20px; font-size:11px; font-weight:700;
+  color:var(--accent); letter-spacing:1px; display:flex; align-items:center;
+  gap:8px; backdrop-filter:blur(10px); z-index:200; transition:opacity 0.3s;
+}
+.ai-thinking.hidden { opacity:0; pointer-events:none; }
+.ai-dot { width:6px; height:6px; border-radius:50%; background:var(--accent);
+  animation:ai-pulse 0.6s ease-in-out infinite alternate; }
+.ai-dot:nth-child(2) { animation-delay:0.2s; }
+.ai-dot:nth-child(3) { animation-delay:0.4s; }
+@keyframes ai-pulse { from{opacity:0.2;transform:scale(0.8)} to{opacity:1;transform:scale(1.2)} }
+
+/* Toast */
+.toast {
+  position:fixed; top:70px; left:50%; transform:translateX(-50%) translateY(-10px);
+  background:rgba(10,13,20,0.95); border:1px solid var(--border);
+  border-radius:50px; padding:10px 22px; font-size:11px; font-weight:800;
+  letter-spacing:1px; text-transform:uppercase; z-index:300;
+  transition:opacity 0.3s, transform 0.3s; backdrop-filter:blur(10px);
+  white-space:nowrap;
+}
+.toast.hidden { opacity:0; transform:translateX(-50%) translateY(-20px); pointer-events:none; }
+.toast.ok  { color:var(--green); border-color:rgba(0,255,136,0.3); }
+.toast.err { color:var(--red);   border-color:rgba(255,71,87,0.3); }
+.toast.pts { color:var(--gold);  border-color:rgba(255,215,0,0.3); }
+
+/* Overlay fin de partie */
+.end-overlay {
+  position:fixed; inset:0; background:rgba(5,7,9,0.92); z-index:400;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:20px; padding:24px; backdrop-filter:blur(10px);
+  transition:opacity 0.4s;
+}
+.end-overlay.hidden { opacity:0; pointer-events:none; }
+.end-title { font-size:clamp(24px,6vw,40px); font-weight:900; text-align:center;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.end-scores { display:flex; flex-direction:column; gap:10px; width:100%; max-width:340px; }
+.end-score-row {
+  display:flex; align-items:center; gap:12px; padding:14px 18px;
+  border-radius:16px; background:var(--card); border:1px solid var(--border);
+}
+.end-rank { font-size:1.4rem; width:32px; text-align:center; }
+.end-name { flex:1; font-size:14px; font-weight:800; }
+.end-pts  { font-size:20px; font-weight:900; font-variant-numeric:tabular-nums; }
+.btn-again {
+  padding:16px 40px; border-radius:50px; border:none;
+  background:linear-gradient(135deg,var(--accent),#00b8cc);
+  color:#050709; font-size:12px; font-weight:900; letter-spacing:2px;
+  text-transform:uppercase; cursor:pointer; transition:var(--trans);
+  box-shadow:0 6px 24px rgba(0,240,255,0.3);
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN 1 : ACCUEIL ══ -->
+<div id="screen-home" class="screen">
+  <div class="logo">
+    <div class="logo-title">QUIRKLE</div>
+    <div class="logo-sub">Virtual Edition</div>
+  </div>
+
+  <div class="mode-cards">
+    <div class="mode-card" id="card-solo" style="--col:#00f0ff;--glow:rgba(0,240,255,0.06)"
+         onclick="selectMode('solo')">
+      <span class="mode-icon">🤖</span>
+      <div class="mode-title">Solo vs IA</div>
+      <div class="mode-desc">Affronte un adversaire artificiel</div>
+    </div>
+    <div class="mode-card" id="card-multi" style="--col:#00ff88;--glow:rgba(0,255,136,0.06)"
+         onclick="selectMode('multi')">
+      <span class="mode-icon">🌐</span>
+      <div class="mode-title">En ligne</div>
+      <div class="mode-desc">Défi à distance via Supabase</div>
+    </div>
+  </div>
+
+  <div class="diff-row" id="diff-row">
+    <button class="diff-btn" onclick="selectDiff('easy')"   data-d="easy">😌 Facile</button>
+    <button class="diff-btn selected" onclick="selectDiff('medium')" data-d="medium">🧠 Moyen</button>
+    <button class="diff-btn" onclick="selectDiff('hard')"   data-d="hard">💀 Difficile</button>
+  </div>
+
+  <!-- Couleur du plateau -->
+  <div style="width:100%;max-width:460px;">
+    <div style="font-size:9px;font-weight:800;letter-spacing:2.5px;color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:10px;">Couleur du plateau</div>
+    <div class="board-color-row" id="board-color-row"></div>
+  </div>
+
+  <button class="btn-play" id="btn-play" onclick="startGame()">JOUER</button>
+</div>
+
+<!-- ══ SCREEN 2 : JEU ══ -->
+<div id="screen-game" class="screen hidden">
+
+  <!-- Header scores -->
+  <div class="game-header">
+    <div class="gh-scores" id="gh-scores"></div>
+    <div class="gh-bag">
+      <span>🎲</span>
+      <span class="gh-bag-num" id="bag-count">108</span>
+    </div>
+    <div class="gh-timer">
+      <span>⏱</span>
+      <span class="gh-timer-val" id="turn-timer">0:00</span>
+    </div>
+  </div>
+
+  <!-- Plateau canvas -->
+  <div class="board-wrap" id="board-wrap">
+    <canvas id="board-canvas"></canvas>
+    <div class="zoom-indicator" id="zoom-indicator">100%</div>
+    <!-- Contrôles navigation -->
+    <div class="nav-controls">
+      <button class="nav-btn" onclick="zoomIn()"          title="Zoom +">＋</button>
+      <button class="nav-btn" onclick="zoomReset()"       title="Centrer">⊙</button>
+      <button class="nav-btn" onclick="resetRotation()"   title="Remettre droit">↺</button>
+      <button class="nav-btn" onclick="toggleThemePanel()" title="Couleur du plateau" id="btn-theme">🎨</button>
+      <button class="nav-btn" onclick="zoomOut()"         title="Zoom −">－</button>
+    </div>
+    <!-- Panel couleur plateau -->
+    <div class="theme-panel hidden" id="theme-panel">
+      <div class="theme-panel-label">Couleur du plateau</div>
+      <div class="theme-swatches" id="theme-swatches-game"></div>
+    </div>
+  </div>
+
+  <!-- Zone bas -->
+  <div class="game-bottom">
+    <div class="hand-label" id="hand-label-text">Votre main</div>
+    <div class="hand-tiles" id="hand-tiles"></div>
+    <div class="action-row">
+      <button class="act-btn discard-btn" id="btn-discard" onclick="toggleDiscardMode()">🗑 Jeter</button>
+      <button class="act-btn" id="btn-undo" onclick="doUndo()">↩ Annuler</button>
+      <button class="act-btn confirm" id="btn-confirm" onclick="doConfirm()" disabled>✓ Valider</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- IA thinking -->
+<div class="ai-thinking hidden" id="ai-thinking">
+  <div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div>
+  <span>L'IA réfléchit…</span>
+</div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+<!-- Fin de partie -->
+<div class="end-overlay hidden" id="end-overlay">
+  <div class="end-title" id="end-title">🏆 Victoire !</div>
+  <div class="end-scores" id="end-scores"></div>
+  <button class="btn-again" onclick="goHome()">↺ Rejouer</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONSTANTES QUIRKLE
+// ══════════════════════════════════════════════════════════════
+const SHAPES = ['circle','cross','diamond','square','star','clover'];
+
+// Palettes de couleur de plateau
+const BOARD_THEMES = [
+  // ── Sombres ──
+  { name:'Noir',     bg:'#050709', grid:'rgba(255,255,255,0.05)', light:false },
+  { name:'Marine',   bg:'#061220', grid:'rgba(0,180,255,0.09)',   light:false },
+  { name:'Forêt',    bg:'#071510', grid:'rgba(0,180,80,0.09)',    light:false },
+  { name:'Violet',   bg:'#0d0715', grid:'rgba(160,0,255,0.09)',   light:false },
+  { name:'Ardoise',  bg:'#0f1015', grid:'rgba(200,200,220,0.07)', light:false },
+  { name:'Bois',     bg:'#1a1008', grid:'rgba(200,140,60,0.09)',  light:false },
+  // ── Clairs ──
+  { name:'Blanc',    bg:'#f0f0f0', grid:'rgba(0,0,0,0.07)',       light:true  },
+  { name:'Crème',    bg:'#f5ede0', grid:'rgba(120,80,30,0.09)',   light:true  },
+  { name:'Ciel',     bg:'#deeeff', grid:'rgba(0,80,200,0.09)',    light:true  },
+  { name:'Menthe',   bg:'#d8f5e8', grid:'rgba(0,120,60,0.09)',    light:true  },
+  { name:'Lavande',  bg:'#ece0f8', grid:'rgba(100,0,200,0.09)',   light:true  },
+  { name:'Sable',    bg:'#e8dcc8', grid:'rgba(100,70,20,0.10)',   light:true  },
+];
+const COLORS = ['#ff2e2e','#ff9f00','#FFD700','#00ff88','#00f0ff','#bd00ff'];
+const COLOR_NAMES = ['rouge','orange','jaune','vert','cyan','violet'];
+const TILE_SIZE = 60; // px sur le canvas
+const GAP = 4;
+const CELL = TILE_SIZE + GAP;
+
+// ── Génère le deck complet (108 tuiles × 3 exemplaires) ──
+function makeDeck() {
+  const deck = [];
+  for (let s = 0; s < 6; s++)
+    for (let c = 0; c < 6; c++)
+      for (let k = 0; k < 3; k++)
+        deck.push({ shape: s, color: c, id: `${s}-${c}-${k}` });
+  return shuffle(deck);
+}
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function draw(deck, n) {
+  return deck.splice(0, Math.min(n, deck.length));
+}
+
+// ══════════════════════════════════════════════════════════════
+// ÉTAT DU JEU
+// ══════════════════════════════════════════════════════════════
+let G = {}; // état global
+
+function initState(mode, diff) {
+  const deck = makeDeck();
+  G = {
+    mode,        // 'solo' | 'multi'
+    diff,        // 'easy' | 'medium' | 'hard'
+    deck,
+    board: {},   // clé "x,y" → { shape, color, id }
+    players: [
+      { name: 'Toi',  score: 0, hand: draw(deck, 6), isHuman: true,  color: '#00f0ff' },
+      { name: mode==='solo' ? 'IA' : 'Joueur 2', score: 0, hand: draw(deck, 6), isHuman: mode!=='solo', color: '#00ff88' },
+    ],
+    current: 0,        // index joueur actif
+    pendingTiles: [],  // tuiles posées ce tour (avant validation)
+    undoStack: [],
+    gameOver: false,
+    selectedTile: null, // index dans la main pour poser
+    discardMode: false,
+    toDiscard: new Set(),
+    lastPlayedTiles: [],
+    highlightUntil: 0,
+    turnStartTime: Date.now(), // début du tour actif
+  };
+  // Centrage du canvas
+  G.camX = 0; G.camY = 0;
+  G.zoom = 1.0;
+  G.rotation = 0;      // radians — rotation du plateau
+  G.boardTheme = _boardTheme || 0;
+  G.gameOver = false;
+  G.isGameActive = true;
+  G.dragging = false;
+  G.dragStart = null;
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDU CANVAS
+// ══════════════════════════════════════════════════════════════
+let canvas, ctx2d;
+let _W = 0, _H = 0;
+
+function initCanvas() {
+  canvas = document.getElementById('board-canvas');
+  ctx2d  = canvas.getContext('2d');
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  bindBoardEvents();
+}
+
+function resizeCanvas() {
+  const wrap = document.getElementById('board-wrap');
+  _W = wrap.clientWidth;
+  _H = wrap.clientHeight;
+  canvas.width  = _W;
+  canvas.height = _H;
+  canvas.style.width  = _W + 'px';
+  canvas.style.height = _H + 'px';
+  drawBoard();
+}
+
+function worldToScreen(wx, wy) {
+  const z = G.zoom, r = G.rotation;
+  // Position monde en pixels (avant rotation)
+  const px = wx * CELL * z;
+  const py = wy * CELL * z;
+  // Appliquer rotation autour du centre + décalage caméra
+  return {
+    x: px * Math.cos(r) - py * Math.sin(r) + _W/2 + G.camX,
+    y: px * Math.sin(r) + py * Math.cos(r) + _H/2 + G.camY,
+  };
+}
+
+function screenToWorld(sx, sy) {
+  const z = G.zoom, r = -G.rotation; // rotation inverse
+  // Ramener au repère centré
+  const cx = sx - _W/2 - G.camX;
+  const cy = sy - _H/2 - G.camY;
+  // Rotation inverse
+  const px = cx * Math.cos(r) - cy * Math.sin(r);
+  const py = cx * Math.sin(r) + cy * Math.cos(r);
+  return {
+    x: Math.round(px / (CELL * z)),
+    y: Math.round(py / (CELL * z)),
+  };
+}
+
+function drawBoard() {
+  if (!ctx2d) return;
+  const theme = BOARD_THEMES[G.boardTheme || 0];
+  ctx2d.clearRect(0, 0, _W, _H);
+  ctx2d.fillStyle = theme.bg;
+  ctx2d.fillRect(0, 0, _W, _H);
+
+  // Adapter les éléments UI selon clair/sombre
+  const header = document.querySelector('.game-header');
+  const bottom = document.querySelector('.game-bottom');
+  if (header) {
+    header.style.background = theme.light ? 'rgba(240,240,240,0.97)' : 'rgba(10,13,20,0.97)';
+    header.style.borderBottomColor = theme.light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+    header.style.color = theme.light ? '#111' : '#fff';
+  }
+  if (bottom) {
+    bottom.style.background = theme.light ? 'rgba(240,240,240,0.97)' : 'rgba(10,13,20,0.97)';
+    bottom.style.borderTopColor = theme.light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+  }
+
+  // ── Transformation globale : zoom + rotation autour du centre + caméra ──
+  ctx2d.save();
+  ctx2d.translate(_W/2 + G.camX, _H/2 + G.camY);
+  ctx2d.rotate(G.rotation);
+  ctx2d.scale(G.zoom, G.zoom);
+
+  // Grille de fond (dans le repère monde)
+  const gridR = Math.ceil(Math.max(_W, _H) / (CELL * G.zoom) / 2) + 2;
+  ctx2d.strokeStyle = theme.grid;
+  ctx2d.lineWidth = 1 / G.zoom;
+  if (CELL > 8) {
+    for (let i = -gridR; i <= gridR; i++) {
+      ctx2d.beginPath(); ctx2d.moveTo(i*CELL, -gridR*CELL); ctx2d.lineTo(i*CELL, gridR*CELL); ctx2d.stroke();
+      ctx2d.beginPath(); ctx2d.moveTo(-gridR*CELL, i*CELL); ctx2d.lineTo(gridR*CELL, i*CELL); ctx2d.stroke();
+    }
+  }
+
+  // Tuiles posées (dans le repère monde)
+  for (const [key, tile] of Object.entries(G.board)) {
+    const [wx, wy] = key.split(',').map(Number);
+    drawTileWorld(wx, wy, tile, false);
+  }
+
+  // Tuiles en cours (pending)
+  for (const pt of G.pendingTiles) {
+    drawTileWorld(pt.wx, pt.wy, pt, true);
+  }
+
+  // Surbrillance des tuiles du dernier coup (IA ou autre joueur)
+  if (G.lastPlayedTiles.length > 0 && Date.now() < G.highlightUntil) {
+    const elapsed = 1 - (G.highlightUntil - Date.now()) / 3000;
+    const pulse = 0.5 + 0.5 * Math.sin(Date.now() / 150);
+    const alpha = Math.max(0, 1 - elapsed * 1.2);
+    ctx2d.strokeStyle = `rgba(255,215,0,${0.9 * alpha * (0.7 + 0.3 * pulse)})`;
+    ctx2d.lineWidth = (3 + pulse * 2) / G.zoom;
+    for (const t of G.lastPlayedTiles) {
+      const tz = TILE_SIZE * 1.12;
+      ctx2d.beginPath();
+      ctx2d.roundRect(t.wx*CELL - tz/2, t.wy*CELL - tz/2, tz, tz, 8);
+      ctx2d.stroke();
+      // Point central pulsant
+      ctx2d.fillStyle = `rgba(255,215,0,${0.6 * alpha * pulse})`;
+      ctx2d.beginPath();
+      ctx2d.arc(t.wx*CELL, t.wy*CELL, (4 + pulse*3) / G.zoom, 0, Math.PI*2);
+      ctx2d.fill();
+    }
+    requestAnimationFrame(drawBoard); // continuer l'animation
+  } else if (G.lastPlayedTiles.length > 0 && Date.now() >= G.highlightUntil) {
+    G.lastPlayedTiles = []; // fin d'animation
+  }
+
+  // Cellules valides (surlignage)
+  if (G.selectedTile !== null) {
+    const tile = G.players[G.current].hand[G.selectedTile];
+    if (tile) {
+      const cells = getValidCells(tile);
+      const tz = TILE_SIZE;
+      const rz = Math.max(2/G.zoom, 8);
+      ctx2d.fillStyle   = 'rgba(0,240,255,0.08)';
+      ctx2d.strokeStyle = 'rgba(0,240,255,0.4)';
+      ctx2d.lineWidth   = 1.5 / G.zoom;
+      for (const [wx, wy] of cells) {
+        ctx2d.beginPath();
+        ctx2d.roundRect(wx*CELL - tz/2, wy*CELL - tz/2, tz, tz, rz);
+        ctx2d.fill();
+        ctx2d.stroke();
+      }
+    }
+  }
+
+  ctx2d.restore(); // fin de la transformation globale
+}
+
+// Dessine une tuile dans le repère monde (contexte déjà transformé)
+function drawTileWorld(wx, wy, tile, pending) {
+  const x = wx * CELL;   // coords monde
+  const y = wy * CELL;
+  const s   = TILE_SIZE;             // pas de zoom car ctx est scalé
+  const r   = Math.max(2/G.zoom, s * 0.10);
+  const dep = Math.max(1/G.zoom, s * 0.06);
+
+  if (pending) {
+    // Tuile en cours : lueur cyan
+    ctx2d.shadowColor = 'rgba(0,240,255,0.5)';
+    ctx2d.shadowBlur  = s * 0.2;
+    ctx2d.beginPath();
+    ctx2d.roundRect(x - s/2, y - s/2, s, s, r);
+    ctx2d.fillStyle = '#1a2535';
+    ctx2d.fill();
+    ctx2d.strokeStyle = '#00f0ff';
+    ctx2d.lineWidth = Math.max(0.8/G.zoom, s * 0.03);
+    ctx2d.stroke();
+    ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
+    drawShape(ctx2d, SHAPES[tile.shape], COLORS[tile.color], x, y, s * 0.58);
+    return;
+  }
+
+  // ── Ombre portée au sol ──
+  ctx2d.shadowColor   = 'rgba(0,0,0,0.7)';
+  ctx2d.shadowBlur    = s * 0.15;
+  ctx2d.shadowOffsetX = dep * 0.5;
+  ctx2d.shadowOffsetY = dep * 1.2;
+
+  // ── Côté gauche et bas (effet volume) ──
+  ctx2d.beginPath();
+  ctx2d.roundRect(x - s/2 + dep*0.8, y - s/2 + dep*1.5, s, s, r);
+  ctx2d.fillStyle = '#05060a';
+  ctx2d.fill();
+
+  ctx2d.shadowColor = 'transparent';
+  ctx2d.shadowBlur  = 0;
+  ctx2d.shadowOffsetX = 0;
+  ctx2d.shadowOffsetY = 0;
+
+  // ── Face principale noire ──
+  ctx2d.beginPath();
+  ctx2d.roundRect(x - s/2, y - s/2, s, s, r);
+
+  const grad = ctx2d.createLinearGradient(x - s/2, y - s/2, x - s/2, y + s/2);
+  grad.addColorStop(0,    '#2a2d38');
+  grad.addColorStop(0.15, '#1a1d28');
+  grad.addColorStop(0.85, '#111318');
+  grad.addColorStop(1,    '#0c0e14');
+  ctx2d.fillStyle = grad;
+  ctx2d.fill();
+
+  // ── Bordure légère ──
+  ctx2d.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx2d.lineWidth = Math.max(0.3/G.zoom, s * 0.012);
+  ctx2d.stroke();
+
+  // ── Reflet subtil en haut ──
+  ctx2d.beginPath();
+  ctx2d.roundRect(x - s/2 + s*0.06, y - s/2 + s*0.05, s*0.88, s*0.15, r*0.4);
+  const ref = ctx2d.createLinearGradient(0, y - s/2, 0, y - s/2 + s*0.15);
+  ref.addColorStop(0, 'rgba(255,255,255,0.06)');
+  ref.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx2d.fillStyle = ref;
+  ctx2d.fill();
+
+  // ── Forme colorée ──
+  drawShape(ctx2d, SHAPES[tile.shape], COLORS[tile.color], x, y, s * 0.60);
+}
+
+// ── Formes fidèles aux photos ──
+function drawShape(ctx, shape, color, cx, cy, size) {
+  const h = size / 2;
+  ctx.fillStyle = color;
+  ctx.shadowColor   = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur    = size * 0.10;
+  ctx.shadowOffsetY = size * 0.04;
+  ctx.shadowOffsetX = 0;
+
+  switch (shape) {
+
+    // ── Cercle plein ──
+    case 'circle':
+      ctx.beginPath();
+      ctx.arc(cx, cy, h * 0.82, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+
+    // ── Trèfle (as de trèfle) : 3 lobes + tige ──
+    case 'clover': {
+      const lr = h * 0.38;   // rayon des lobes
+      // lobe haut
+      ctx.beginPath();
+      ctx.arc(cx, cy - h*0.28, lr, 0, Math.PI*2);
+      ctx.fill();
+      // lobe gauche
+      ctx.beginPath();
+      ctx.arc(cx - h*0.42, cy + h*0.10, lr, 0, Math.PI*2);
+      ctx.fill();
+      // lobe droit
+      ctx.beginPath();
+      ctx.arc(cx + h*0.42, cy + h*0.10, lr, 0, Math.PI*2);
+      ctx.fill();
+      // tige
+      ctx.beginPath();
+      const sw = h * 0.22;
+      ctx.moveTo(cx - sw*0.5, cy + h*0.40);
+      ctx.lineTo(cx + sw*0.5, cy + h*0.40);
+      ctx.lineTo(cx + sw*0.8, cy + h*0.85);
+      ctx.lineTo(cx - sw*0.8, cy + h*0.85);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+
+    // ── Losange bien incliné ──
+    case 'diamond':
+      ctx.beginPath();
+      ctx.moveTo(cx,           cy - h*0.92);
+      ctx.lineTo(cx + h*0.62,  cy);
+      ctx.lineTo(cx,           cy + h*0.92);
+      ctx.lineTo(cx - h*0.62,  cy);
+      ctx.closePath();
+      ctx.fill();
+      break;
+
+    // ── Carré légèrement arrondi ──
+    case 'square': {
+      const sq = h * 0.76;
+      ctx.beginPath();
+      ctx.roundRect(cx - sq, cy - sq, sq*2, sq*2, Math.max(2, sq*0.10));
+      ctx.fill();
+      break;
+    }
+
+    // ── Croix à 4 branches larges ──
+    case 'cross': {
+      const arm = h * 0.31;
+      const tip = h * 0.84;
+      ctx.beginPath();
+      ctx.moveTo(cx - arm, cy - tip);
+      ctx.lineTo(cx + arm, cy - tip);
+      ctx.lineTo(cx + arm, cy - arm);
+      ctx.lineTo(cx + tip, cy - arm);
+      ctx.lineTo(cx + tip, cy + arm);
+      ctx.lineTo(cx + arm, cy + arm);
+      ctx.lineTo(cx + arm, cy + tip);
+      ctx.lineTo(cx - arm, cy + tip);
+      ctx.lineTo(cx - arm, cy + arm);
+      ctx.lineTo(cx - tip, cy + arm);
+      ctx.lineTo(cx - tip, cy - arm);
+      ctx.lineTo(cx - arm, cy - arm);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+
+    // ── Étoile à 8 pointes fines et allongées ──
+    case 'star': {
+      // 8 pointes : alternance grande/petite avec ratio très contrasté
+      const r1 = h * 0.90;   // pointes longues
+      const r2 = h * 0.28;   // creux très profonds → pointes très fines
+      ctx.beginPath();
+      for (let i = 0; i < 16; i++) {
+        const a = (i * Math.PI / 8) - Math.PI / 2;
+        const r = i % 2 === 0 ? r1 : r2;
+        i === 0
+          ? ctx.moveTo(cx + r * Math.cos(a), cy + r * Math.sin(a))
+          : ctx.lineTo(cx + r * Math.cos(a), cy + r * Math.sin(a));
+      }
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+
+  }
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur  = 0;
+  ctx.shadowOffsetY = 0;
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// RÈGLES DE QUIRKLE
+// ══════════════════════════════════════════════════════════════
+
+// Retourne les tuiles adjacentes sur l'axe x ou y
+// Retourne toutes les tuiles d'une ligne contiguë passant par (wx,wy)
+// Le board passé doit déjà contenir la tuile en (wx,wy)
+// Retourne la ligne contiguë passant par (wx,wy) dans la direction (dx,dy)
+// Le board doit déjà contenir la tuile en (wx,wy)
+function getLine(board, wx, wy, dx, dy) {
+  // Reculer jusqu'au début de la ligne
+  let startD = 0;
+  while (board[`${wx + dx*(startD-1)},${wy + dy*(startD-1)}`]) startD--;
+  // Avancer depuis le début jusqu'au premier trou
+  const tiles = [];
+  for (let d = startD; d <= startD + 11; d++) {
+    const k = `${wx + dx*d},${wy + dy*d}`;
+    if (board[k]) tiles.push({ wx: wx+dx*d, wy: wy+dy*d, ...board[k] });
+    else break;
+  }
+  return tiles;
+}
+
+function isBoardEmpty(board) {
+  return Object.keys(board).length === 0;
+}
+
+// Vérifie si une ligne est valide (même couleur OU même forme, sans doublons)
+function isLineValid(line) {
+  if (line.length < 2) return true;
+  if (line.length > 6) return false;
+  const colors = line.map(t => t.color);
+  const shapes = line.map(t => t.shape);
+  const sameColor = colors.every(c => c === colors[0]);
+  const sameShape = shapes.every(s => s === shapes[0]);
+  if (!sameColor && !sameShape) return false;
+  if (sameColor && new Set(shapes).size !== shapes.length) return false;
+  if (sameShape && new Set(colors).size !== colors.length) return false;
+  return true;
+}
+
+// Vérifie si placer `tile` en (wx,wy) est valide
+function isValidPlacement(board, pendingTiles, wx, wy, tile) {
+  const key = `${wx},${wy}`;
+
+  // Cellule déjà occupée ?
+  if (board[key]) return false;
+  if (pendingTiles.find(p => p.wx === wx && p.wy === wy)) return false;
+
+  // Premier coup (plateau vide, aucune pending)
+  if (isBoardEmpty(board) && pendingTiles.length === 0) return true;
+
+  // Board temporaire incluant les pending ET la nouvelle tuile
+  const tmpBoard = { ...board };
+  for (const pt of pendingTiles) tmpBoard[`${pt.wx},${pt.wy}`] = pt;
+  tmpBoard[key] = tile;
+
+  // 1. Doit être adjacente à au moins une tuile existante
+  const adj = [[1,0],[-1,0],[0,1],[0,-1]];
+  const hasNeighbor = adj.some(([dx,dy]) => !!tmpBoard[`${wx+dx},${wy+dy}`] && `${wx+dx},${wy+dy}` !== key);
+  if (!hasNeighbor) return false;
+
+  // 2. Toutes les pending + nouvelle doivent être sur la même ligne ou colonne
+  if (pendingTiles.length > 0) {
+    const allPts = [...pendingTiles, { wx, wy }];
+    const sameRow = allPts.every(p => p.wy === allPts[0].wy);
+    const sameCol = allPts.every(p => p.wx === allPts[0].wx);
+    if (!sameRow && !sameCol) return false;
+
+    // Vérifier l'absence de trou entre le min et le max
+    if (sameRow) {
+      const minX = Math.min(...allPts.map(p => p.wx));
+      const maxX = Math.max(...allPts.map(p => p.wx));
+      const y0   = allPts[0].wy;
+      for (let x = minX; x <= maxX; x++)
+        if (!tmpBoard[`${x},${y0}`]) return false;
+    }
+    if (sameCol) {
+      const minY = Math.min(...allPts.map(p => p.wy));
+      const maxY = Math.max(...allPts.map(p => p.wy));
+      const x0   = allPts[0].wx;
+      for (let y = minY; y <= maxY; y++)
+        if (!tmpBoard[`${x0},${y}`]) return false;
+    }
+  }
+
+  // 3. Vérifier les deux lignes passant par la nouvelle tuile
+  for (const [dx, dy] of [[1,0],[0,1]]) {
+    const line = getLine(tmpBoard, wx, wy, dx, dy);
+    if (!isLineValid(line)) return false;
+  }
+
+  return true;
+}
+
+// Cellules valides pour une tuile donnée
+function getValidCells(tile) {
+  const board = G.board;
+  const pending = G.pendingTiles;
+  const cells = [];
+
+  if (isBoardEmpty(board) && pending.length === 0) {
+    cells.push([0, 0]);
+    return cells;
+  }
+
+  const tmpBoard = { ...board };
+  for (const pt of pending) tmpBoard[`${pt.wx},${pt.wy}`] = pt;
+
+  const candidates = new Set();
+  for (const key of Object.keys(tmpBoard)) {
+    const [x, y] = key.split(',').map(Number);
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const nk = `${x+dx},${y+dy}`;
+      if (!tmpBoard[nk]) candidates.add(nk);
+    }
+  }
+
+  for (const ck of candidates) {
+    const [wx, wy] = ck.split(',').map(Number);
+    if (isValidPlacement(board, pending, wx, wy, tile)) {
+      cells.push([wx, wy]);
+    }
+  }
+  return cells;
+}
+
+// Calcule les points d'un coup (liste de tuiles posées)
+function calcPoints(board, tiles) {
+  if (tiles.length === 0) return 0;
+  const tmpBoard = { ...board };
+  for (const t of tiles) tmpBoard[`${t.wx},${t.wy}`] = t;
+
+  let pts = 0;
+  const counted = new Set();
+
+  for (const tile of tiles) {
+    for (const [dx, dy] of [[1,0],[0,1]]) {
+      const line = getLine(tmpBoard, tile.wx, tile.wy, dx, dy);
+      if (line.length < 2) continue;
+      const lineKey = line.map(t=>`${t.wx},${t.wy}`).sort().join('|');
+      if (counted.has(lineKey)) continue;
+      counted.add(lineKey);
+      pts += line.length === 6 ? 12 : line.length; // Qwirkle = double
+    }
+  }
+  return pts || tiles.length; // min 1pt/tuile
+}
+
+// ══════════════════════════════════════════════════════════════
+// INTERACTIONS BOARD (drag & tap)
+// ══════════════════════════════════════════════════════════════
+let _pointers = {};
+let _lastPinchDist  = null;
+let _pinchMidpoint  = null;
+let _lastPinchAngle = null;
+let _tapStart = null;
+
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 2.0;
+
+function bindBoardEvents() {
+  const el = document.getElementById('board-wrap');
+  el.addEventListener('pointerdown',  onBoardPointerDown,  { passive: false });
+  el.addEventListener('pointermove',  onBoardPointerMove,  { passive: false });
+  el.addEventListener('pointerup',    onBoardPointerUp,    { passive: false });
+  el.addEventListener('pointercancel',onBoardPointerUp,    { passive: false });
+  // Molette souris / trackpad
+  el.addEventListener('wheel', onBoardWheel, { passive: false });
+  // Fermer le panel thème si on clique ailleurs
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('theme-panel');
+    const btn   = document.getElementById('btn-theme');
+    if (panel && !panel.contains(e.target) && e.target !== btn)
+      panel.classList.add('hidden');
+  });
+}
+
+function applyZoom(newZoom, pivotSx, pivotSy) {
+  // Zoomer en gardant le point pivot fixe à l'écran
+  const oldZoom = G.zoom;
+  newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));
+  if (newZoom === oldZoom) return;
+
+  // Ajuster camX/camY pour que le point monde sous le pivot reste identique
+  const ratio = newZoom / oldZoom;
+  G.camX = pivotSx - ratio * (pivotSx - G.camX);
+  G.camY = pivotSy - ratio * (pivotSy - G.camY);
+  G.zoom = newZoom;
+
+  // Mettre à jour l'indicateur
+  const ind = document.getElementById('zoom-indicator');
+  if (ind) ind.textContent = Math.round(newZoom * 100) + '%';
+
+  drawBoard();
+}
+
+function onBoardWheel(e) {
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX - rect.left;
+  const sy = e.clientY - rect.top;
+  const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+  applyZoom(G.zoom * factor, sx, sy);
+}
+
+function onBoardPointerDown(e) {
+  e.preventDefault();
+  _pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+  const ptsArr = Object.values(_pointers);
+
+  if (ptsArr.length === 1) {
+    G.dragging = false;
+    G.dragStartCam = { x: G.camX, y: G.camY };
+    G.dragStartPos = { x: e.clientX, y: e.clientY };
+    _tapStart = { x: e.clientX, y: e.clientY, time: Date.now() };
+    _lastPinchDist = null;
+  } else if (ptsArr.length === 2) {
+    // Début du pinch
+    _tapStart = null;
+    _lastPinchDist = Math.hypot(
+      ptsArr[0].x - ptsArr[1].x,
+      ptsArr[0].y - ptsArr[1].y
+    );
+    _pinchMidpoint = {
+      x: (ptsArr[0].x + ptsArr[1].x) / 2,
+      y: (ptsArr[0].y + ptsArr[1].y) / 2,
+    };
+    G.dragStartCam = { x: G.camX, y: G.camY };
+  }
+}
+
+function onBoardPointerMove(e) {
+  e.preventDefault();
+  _pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+  const ptsArr = Object.values(_pointers);
+
+  if (ptsArr.length === 2) {
+    // ── PINCH ZOOM ──
+    const dist = Math.hypot(ptsArr[0].x - ptsArr[1].x, ptsArr[0].y - ptsArr[1].y);
+    const mid  = {
+      x: (ptsArr[0].x + ptsArr[1].x) / 2,
+      y: (ptsArr[0].y + ptsArr[1].y) / 2,
+    };
+
+    if (_lastPinchDist) {
+      // ── Zoom ──
+      const factor = dist / _lastPinchDist;
+      const rect = canvas.getBoundingClientRect();
+      applyZoom(G.zoom * factor, mid.x - rect.left, mid.y - rect.top);
+
+      // ── Rotation : angle entre les deux doigts ──
+      const angle = Math.atan2(
+        ptsArr[1].y - ptsArr[0].y,
+        ptsArr[1].x - ptsArr[0].x
+      );
+      if (_lastPinchAngle !== null) {
+        const dAngle = angle - _lastPinchAngle;
+        G.rotation += dAngle;
+        // Mettre à jour l'indicateur
+        const ind = document.getElementById('zoom-indicator');
+        if (ind) {
+          const deg = Math.round(((G.rotation * 180 / Math.PI) % 360 + 360) % 360);
+          ind.textContent = Math.round(G.zoom * 100) + '% · ' + deg + '°';
+        }
+      }
+      _lastPinchAngle = angle;
+
+      // ── Pan simultané ──
+      G.camX += mid.x - _pinchMidpoint.x;
+      G.camY += mid.y - _pinchMidpoint.y;
+    } else {
+      // Initialiser l'angle au début du pinch
+      _lastPinchAngle = Math.atan2(
+        ptsArr[1].y - ptsArr[0].y,
+        ptsArr[1].x - ptsArr[0].x
+      );
+    }
+    _lastPinchDist = dist;
+    _pinchMidpoint = mid;
+    G.dragging = true;
+    drawBoard();
+
+  } else if (ptsArr.length === 1) {
+    // ── PAN ──
+    const dx = e.clientX - G.dragStartPos.x;
+    const dy = e.clientY - G.dragStartPos.y;
+    if (Math.hypot(dx, dy) > 6) G.dragging = true;
+    if (G.dragging) {
+      G.camX = G.dragStartCam.x + dx;
+      G.camY = G.dragStartCam.y + dy;
+      drawBoard();
+    }
+  }
+}
+
+function onBoardPointerUp(e) {
+  e.preventDefault();
+  const was = _pointers[e.pointerId];
+  delete _pointers[e.pointerId];
+
+  if (Object.keys(_pointers).length < 2) {
+    _lastPinchDist  = null;
+    _pinchMidpoint  = null;
+    _lastPinchAngle = null;
+  }
+
+  if (!G.dragging && was && _tapStart) {
+    const dt   = Date.now() - _tapStart.time;
+    const dist = Math.hypot(e.clientX - _tapStart.x, e.clientY - _tapStart.y);
+    if (dt < 400 && dist < 14) {
+      onBoardTap(e.clientX, e.clientY);
+    }
+  }
+  if (Object.keys(_pointers).length === 0) {
+    _tapStart = null;
+    G.dragging = false;
+  }
+}
+
+// ── Boutons zoom UI ──
+function zoomIn()    { applyZoom(G.zoom * 1.25, _W/2, _H/2); }
+function zoomOut()   { applyZoom(G.zoom / 1.25, _W/2, _H/2); }
+function resetRotation() {
+  // Animation fluide de retour à 0
+  const startRot = G.rotation % (Math.PI * 2);
+  const targetRot = 0;
+  const diff = ((targetRot - startRot + Math.PI) % (Math.PI * 2)) - Math.PI;
+  const steps = 20;
+  let step = 0;
+  const anim = setInterval(() => {
+    step++;
+    G.rotation = startRot + diff * (step / steps);
+    drawBoard();
+    if (step >= steps) {
+      G.rotation = 0;
+      clearInterval(anim);
+      const ind = document.getElementById('zoom-indicator');
+      if (ind) ind.textContent = Math.round(G.zoom * 100) + '%';
+      drawBoard();
+    }
+  }, 16);
+}
+
+// Centrer la vue sur un ensemble de tuiles avec animation douce
+function focusOnTiles(tiles) {
+  if (!tiles || tiles.length === 0) return;
+  const cx = tiles.reduce((s,t) => s + t.wx, 0) / tiles.length;
+  const cy = tiles.reduce((s,t) => s + t.wy, 0) / tiles.length;
+  const targetX = -cx * CELL * G.zoom;
+  const targetY = -cy * CELL * G.zoom;
+  const startX = G.camX, startY = G.camY;
+  const steps = 20;
+  let step = 0;
+  const anim = setInterval(() => {
+    step++;
+    const t = step / steps;
+    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t; // easeInOut
+    G.camX = startX + (targetX - startX) * ease;
+    G.camY = startY + (targetY - startY) * ease;
+    drawBoard();
+    if (step >= steps) clearInterval(anim);
+  }, 16);
+}
+
+function zoomReset() {
+  // Recentrer sur le centre des tuiles posées
+  const keys = Object.keys(G.board);
+  if (keys.length === 0) { G.camX = 0; G.camY = 0; G.zoom = 1; }
+  else {
+    const coords = keys.map(k => k.split(',').map(Number));
+    const cx = coords.reduce((s,[x]) => s+x, 0) / coords.length;
+    const cy = coords.reduce((s,[,y]) => s+y, 0) / coords.length;
+    // Zoom pour que le plateau tienne dans la vue
+    const xs = coords.map(([x]) => x), ys = coords.map(([,y]) => y);
+    const spanX = (Math.max(...xs) - Math.min(...xs) + 2) * CELL;
+    const spanY = (Math.max(...ys) - Math.min(...ys) + 2) * CELL;
+    const fitZoom = Math.min(_W / spanX, _H / spanY, 1.0);
+    G.zoom = Math.max(ZOOM_MIN, fitZoom);
+    G.camX = -cx * CELL * G.zoom;
+    G.camY = -cy * CELL * G.zoom;
+  }
+  const ind = document.getElementById('zoom-indicator');
+  if (ind) ind.textContent = Math.round(G.zoom * 100) + '%';
+  drawBoard();
+}
+
+function onBoardTap(sx, sy) {
+  if (G.selectedTile === null) return;
+  const player = G.players[G.current];
+  if (!player.isHuman) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const { x: wx, y: wy } = screenToWorld(sx - rect.left, sy - rect.top);
+  const tile = player.hand[G.selectedTile];
+
+  if (isValidPlacement(G.board, G.pendingTiles, wx, wy, tile)) {
+    // Poser la tuile
+    G.pendingTiles.push({ ...tile, wx, wy });
+    player.hand[G.selectedTile] = null; // ghost
+    G.selectedTile = null;
+    document.getElementById('btn-confirm').disabled = false;
+    renderHand();
+    drawBoard();
+    showToast(`+placé en (${wx},${wy})`, 'ok', 900);
+  } else {
+    showToast('Position invalide', 'err', 1200);
+    // Shake visuel
+    canvas.style.transform = 'translateX(-4px)';
+    setTimeout(() => canvas.style.transform = '', 150);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// INTERFACE : MAIN DU JOUEUR
+// ══════════════════════════════════════════════════════════════
+function renderHand() {
+  const player = G.players[G.current];
+  const container = document.getElementById('hand-tiles');
+  container.innerHTML = '';
+
+  player.hand.forEach((tile, idx) => {
+    const el = document.createElement('div');
+    let cls = 'tile';
+    if (tile === null) cls += ' ghost';
+    else if (G.discardMode && G.toDiscard.has(idx)) cls += ' to-discard';
+    else if (!G.discardMode && G.selectedTile === idx) cls += ' selected';
+    el.className = cls;
+    el.dataset.idx = idx;
+    if (tile) {
+      const svg = makeTileSVG(tile);
+      el.appendChild(svg);
+      el.onclick = () => selectTile(idx);
+    }
+    container.appendChild(el);
+  });
+}
+
+function selectTile(idx) {
+  if (G.players[G.current].hand[idx] === null) return;
+
+  if (G.discardMode) {
+    // Mode jeter : toggle la sélection de cette tuile
+    if (G.toDiscard.has(idx)) G.toDiscard.delete(idx);
+    else G.toDiscard.add(idx);
+    updateDiscardBtn();
+    renderHand();
+    return;
+  }
+
+  // Mode normal : sélectionner pour poser
+  G.selectedTile = G.selectedTile === idx ? null : idx;
+  renderHand();
+  drawBoard();
+}
+
+// Génère un SVG précis pour chaque forme — utilisé dans la main du joueur
+function makeTileSVG(tile) {
+  const color = COLORS[tile.color];
+  const shape = SHAPES[tile.shape];
+  const C = 20; // centre
+  let inner = '';
+
+  switch (shape) {
+
+    case 'circle':
+      inner = `<circle cx="${C}" cy="${C}" r="13.5" fill="${color}"/>`;
+      break;
+
+    case 'cross':
+      // Croix à 4 branches larges et symétriques
+      inner = `<path fill="${color}" d="
+        M13.5 4 H26.5 V13.5 H36 V26.5 H26.5 V36 H13.5 V26.5 H4 V13.5 H13.5 Z"/>`;
+      break;
+
+    case 'diamond':
+      // Losange élancé
+      inner = `<path fill="${color}" d="M20 2 L35.5 20 L20 38 L4.5 20 Z"/>`;
+      break;
+
+    case 'square':
+      // Carré avec coins légèrement arrondis
+      inner = `<rect x="5.5" y="5.5" width="29" height="29" rx="2.5" fill="${color}"/>`;
+      break;
+
+    case 'star': {
+      // Étoile 8 pointes fines — r1=17 (longues), r2=5.5 (creux profonds)
+      const pts = [];
+      for (let i = 0; i < 16; i++) {
+        const a = (i * Math.PI / 8) - Math.PI / 2;
+        const r = i % 2 === 0 ? 17.0 : 5.5;
+        pts.push(`${(C + r * Math.cos(a)).toFixed(2)},${(C + r * Math.sin(a)).toFixed(2)}`);
+      }
+      inner = `<path fill="${color}" d="M${pts.join('L')}Z"/>`;
+      break;
+    }
+
+    case 'clover':
+      // Trèfle as de trèfle : 3 lobes + tige
+      inner = `
+        <circle cx="20"   cy="12.5" r="7.5" fill="${color}"/>
+        <circle cx="12.5" cy="22.5" r="7.5" fill="${color}"/>
+        <circle cx="27.5" cy="22.5" r="7.5" fill="${color}"/>
+        <path fill="${color}" d="M17.5 27 Q17 34 14 37 H26 Q23 34 22.5 27 Z"/>`;
+      break;
+  }
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 40 40');
+  svg.setAttribute('width', '36');
+  svg.setAttribute('height', '36');
+  svg.innerHTML = inner;
+  return svg;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ACTIONS : CONFIRMER, DÉFAUSSER, ANNULER
+// ══════════════════════════════════════════════════════════════
+function doConfirm() {
+  if (G.pendingTiles.length === 0) return;
+  const player = G.players[G.current];
+
+  // Valider le coup complet
+  const pts = calcPoints(G.board, G.pendingTiles);
+  for (const pt of G.pendingTiles) {
+    G.board[`${pt.wx},${pt.wy}`] = pt;
+  }
+  player.score += pts;
+  // Repiocher
+  player.hand = player.hand.map(t => t === null ? draw(G.deck, 1)[0] || null : t);
+  G.pendingTiles = [];
+  G.selectedTile = null;
+
+  const isQwirkle = pts >= 12;
+  showToast(isQwirkle ? `🔥 QWIRKLE ! +${pts}` : `+${pts} pts`, isQwirkle ? 'pts' : 'ok', 1800);
+
+  updateHeader();
+  renderHand();
+  drawBoard();
+  document.getElementById('btn-confirm').disabled = true;
+
+  checkGameOver(() => nextTurn());
+}
+
+// Activer/désactiver le mode jeter
+function toggleDiscardMode() {
+  if (G.discardMode) {
+    // Déjà en mode jeter : confirmer si des tuiles sélectionnées, sinon annuler
+    if (G.toDiscard.size > 0) {
+      confirmDiscard();
+    } else {
+      exitDiscardMode();
+    }
+    return;
+  }
+
+  // Entrer en mode jeter
+  if (G.deck.length === 0) { showToast('Sac vide — impossible de piocher !', 'err'); return; }
+  if (G.pendingTiles.length > 0) cancelPending();
+  G.selectedTile = null;
+  G.discardMode = true;
+  G.toDiscard = new Set();
+  updateDiscardBtn();
+  renderHand();
+  showToast('Sélectionne les tuiles à jeter', 'ok', 2000);
+}
+
+// Mettre à jour le label et l'état du bouton
+function updateDiscardBtn() {
+  const btn = document.getElementById('btn-discard');
+  const lbl = document.getElementById('hand-label-text');
+  if (!btn) return;
+  if (G.discardMode) {
+    const n = G.toDiscard.size;
+    btn.textContent = n > 0 ? `🗑 Jeter (${n}) ✓` : '✕ Annuler';
+    btn.style.background = n > 0 ? 'rgba(255,159,0,0.15)' : 'rgba(255,71,87,0.08)';
+    btn.style.borderColor = n > 0 ? 'rgba(255,159,0,0.4)' : 'rgba(255,71,87,0.3)';
+    btn.style.color = n > 0 ? 'var(--orange)' : 'var(--red)';
+    if (lbl) lbl.textContent = 'Sélectionne les tuiles à jeter';
+  } else {
+    btn.textContent = '🗑 Jeter';
+    btn.style.background = '';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    if (lbl) lbl.textContent = 'Votre main';
+  }
+}
+
+// Confirmer le jet des tuiles sélectionnées
+function confirmDiscard() {
+  const player = G.players[G.current];
+  const n = G.toDiscard.size;
+  if (n === 0) { exitDiscardMode(); return; }
+
+  // Remplacer les tuiles jetées par de nouvelles pioches
+  const newTiles = draw(G.deck, Math.min(n, G.deck.length));
+  let newIdx = 0;
+  G.toDiscard.forEach(idx => {
+    player.hand[idx] = newTiles[newIdx++] || null;
+  });
+
+  showToast(`${n} tuile${n > 1 ? 's' : ''} jetée${n > 1 ? 's' : ''} — +${newTiles.length} piochée${newTiles.length > 1 ? 's' : ''}`, 'ok', 1800);
+  exitDiscardMode();
+  updateHeader();
+  renderHand();
+  nextTurn();
+}
+
+function exitDiscardMode() {
+  G.discardMode = false;
+  G.toDiscard = new Set();
+  G.selectedTile = null;
+  updateDiscardBtn();
+  renderHand();
+  drawBoard();
+}
+
+function doUndo() {
+  if (G.pendingTiles.length === 0) return;
+  cancelPending();
+}
+
+function cancelPending() {
+  if (G.discardMode) { exitDiscardMode(); return; }
+  const player = G.players[G.current];
+  for (const pt of G.pendingTiles) {
+    // Remettre dans la main
+    const emptyIdx = player.hand.findIndex(t => t === null);
+    if (emptyIdx >= 0) player.hand[emptyIdx] = { shape: pt.shape, color: pt.color, id: pt.id };
+  }
+  G.pendingTiles = [];
+  G.selectedTile = null;
+  document.getElementById('btn-confirm').disabled = true;
+  renderHand();
+  drawBoard();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOUR SUIVANT
+// ══════════════════════════════════════════════════════════════
+function nextTurn() {
+  G.current = (G.current + 1) % G.players.length;
+  G.selectedTile = null;
+  G.discardMode = false;
+  G.toDiscard = new Set();
+  updateDiscardBtn();
+  startTurnTimer(); // reset le chrono pour le nouveau joueur
+  updateHeader();
+  renderHand();
+  drawBoard();
+
+  const player = G.players[G.current];
+  if (!player.isHuman) {
+    setTimeout(() => aiPlay(), 600);
+  }
+}
+
+function updateHeader() {
+  const scoresEl = document.getElementById('gh-scores');
+  scoresEl.innerHTML = G.players.map((p, i) => `
+    <div class="player-score-chip${i === G.current ? ' active' : ''}" style="--col:${p.color}">
+      <div class="psc-dot"></div>
+      <span class="psc-name">${p.name}</span>
+      <span class="psc-score">${p.score}</span>
+    </div>`).join('');
+  document.getElementById('bag-count').textContent = G.deck.length;
+}
+
+// ══════════════════════════════════════════════════════════════
+// IA
+// ══════════════════════════════════════════════════════════════
+function aiPlay() {
+  showAIThinking(true);
+  const delay = G.diff === 'easy' ? 600 : G.diff === 'medium' ? 900 : 1400;
+
+  // Timeout de sécurité : si l'IA reste bloquée plus de 10s, on force la suite
+  const safetyTimer = setTimeout(() => {
+    console.warn('IA timeout — forçage nextTurn');
+    showAIThinking(false);
+    updateHeader();
+    drawBoard();
+    checkGameOver(() => nextTurn());
+  }, 10000);
+
+  // Fonction finale commune — toujours appelée quelle que soit l'issue
+  const finishAI = () => {
+    clearTimeout(safetyTimer);
+    showAIThinking(false);
+    updateHeader();
+    drawBoard();
+    checkGameOver(() => nextTurn());
+  };
+
+  setTimeout(() => {
+    try {
+      const player = G.players[G.current];
+      const best = findBestMove(player.hand, G.diff);
+
+      if (!best || best.tiles.length === 0) {
+        // Pas de coup possible : passer le tour
+        if (G.deck.length > 0) {
+          // Défausser et repiocher si sac non vide
+          const n = player.hand.filter(Boolean).length;
+          player.hand = draw(G.deck, n);
+          showToast(`${player.name} pioche`, 'ok', 1200);
+        } else {
+          showToast(`${player.name} passe`, 'ok', 1200);
+        }
+        finishAI();
+        return;
+      }
+
+      // Jouer les tuiles une par une avec animation
+      G.lastPlayedTiles = [];
+      G.highlightUntil = Date.now() + 3000;
+
+      const playTile = (i) => {
+        try {
+          if (i >= best.tiles.length) {
+            player.score += best.pts;
+            const isQwirkle = best.pts >= 12;
+            showToast(
+              isQwirkle ? `🤖 QWIRKLE ! +${best.pts}` : `🤖 IA +${best.pts}`,
+              isQwirkle ? 'pts' : 'ok', 2000
+            );
+            focusOnTiles(G.lastPlayedTiles);
+            finishAI();
+            return;
+          }
+          const t = best.tiles[i];
+          G.board[`${t.wx},${t.wy}`] = t;
+          G.lastPlayedTiles.push(t);
+          G.highlightUntil = Date.now() + 3000;
+          const idx = player.hand.findIndex(h => h && h.id === t.id);
+          if (idx >= 0) player.hand[idx] = draw(G.deck, 1)[0] || null;
+          drawBoard();
+          setTimeout(() => playTile(i + 1), 350);
+        } catch(e) {
+          console.error('Erreur playTile:', e);
+          finishAI();
+        }
+      };
+      playTile(0);
+
+    } catch(e) {
+      console.error('Erreur aiPlay:', e);
+      finishAI();
+    }
+  }, delay);
+}
+
+function findBestMove(hand, diff) {
+  const validTiles = hand.filter(Boolean);
+  let best = null;
+
+  for (const tile of validTiles) {
+    const cells = getValidCells(tile);
+    if (diff === 'easy') shuffle(cells); // facile : aléatoire
+
+    for (const [wx, wy] of cells) {
+      // Essayer un coup simple
+      const move = [{ ...tile, wx, wy }];
+      const pts = calcPoints(G.board, move);
+
+      if (!best || pts > best.pts) {
+        best = { tiles: move, pts };
+      }
+
+      if (diff === 'hard') {
+        // Essayer d'étendre le coup (même ligne)
+        const extended = extendMove(hand, tile, wx, wy);
+        if (extended && extended.pts > (best?.pts || 0)) best = extended;
+      }
+    }
+  }
+  return best;
+}
+
+function extendMove(hand, firstTile, wx, wy) {
+  // Cherche à poser plusieurs tuiles alignées
+  const tmpBoard = { ...G.board };
+  const placed = [{ ...firstTile, wx, wy }];
+  tmpBoard[`${wx},${wy}`] = firstTile;
+  let pts = calcPoints(G.board, placed);
+
+  const remaining = hand.filter(t => t && t.id !== firstTile.id);
+  for (const tile of remaining) {
+    for (const [dx, dy] of [[1,0],[0,1]]) {
+      for (const d of [1,-1]) {
+        let nx = wx + dx*d, ny = wy + dy*d;
+        while (tmpBoard[`${nx},${ny}`]) { nx += dx*d; ny += dy*d; }
+        if (isValidPlacement(tmpBoard, placed.slice(1), nx, ny, tile)) {
+          placed.push({ ...tile, wx: nx, wy: ny });
+          tmpBoard[`${nx},${ny}`] = tile;
+          pts = calcPoints(G.board, placed);
+          break;
+        }
+      }
+    }
+  }
+  return placed.length > 1 ? { tiles: placed, pts } : null;
+}
+
+// ══════════════════════════════════════════════════════════════
+// FIN DE PARTIE
+// ══════════════════════════════════════════════════════════════
+function checkGameOver(onContinue) {
+  const allHandsEmpty = G.players.every(p => p.hand.every(t => t === null));
+  const deckEmpty = G.deck.length === 0;
+
+  if (allHandsEmpty || (deckEmpty && canNoOnePlaceAnything())) {
+    showEndScreen();
+  } else {
+    onContinue();
+  }
+}
+
+function canNoOnePlaceAnything() {
+  for (const p of G.players) {
+    for (const tile of p.hand.filter(Boolean)) {
+      if (getValidCells(tile).length > 0) return false;
+    }
+  }
+  return true;
+}
+
+function showEndScreen() {
+  G.gameOver = true;
+  if (_timerRaf) { cancelAnimationFrame(_timerRaf); _timerRaf = null; }
+  const sorted = [...G.players].sort((a, b) => b.score - a.score);
+  const medals = ['🥇','🥈','🥉','🏅'];
+  const winner = sorted[0];
+
+  document.getElementById('end-title').textContent = `🏆 ${winner.name} gagne !`;
+  document.getElementById('end-scores').innerHTML = sorted.map((p, i) => `
+    <div class="end-score-row">
+      <span class="end-rank">${medals[i]||''}</span>
+      <span class="end-name" style="color:${p.color}">${p.name}</span>
+      <span class="end-pts" style="color:${p.color}">${p.score} pts</span>
+    </div>`).join('');
+
+  document.getElementById('end-overlay').classList.remove('hidden');
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILS UI
+// ══════════════════════════════════════════════════════════════
+function showToast(msg, type, duration = 1600) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.add('hidden'), duration);
+}
+
+function showAIThinking(v) {
+  document.getElementById('ai-thinking').classList.toggle('hidden', !v);
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+let _mode = 'solo', _diff = 'medium';
+
+// ── Palette couleur plateau ──
+let _boardTheme = 0;
+
+function initBoardColorPicker() {
+  const row = document.getElementById('board-color-row');
+  if (!row) return;
+  const dark  = BOARD_THEMES.filter(t => !t.light);
+  const light = BOARD_THEMES.filter(t =>  t.light);
+
+  const renderGroup = (list, label) => {
+    const offset = BOARD_THEMES.indexOf(list[0]);
+    return `<div class="board-color-section">${label}</div>` +
+      list.map((t, j) => {
+        const i = offset + j;
+        const sel = i === _boardTheme;
+        const border = t.light ? (sel?'#333':'rgba(0,0,0,0.2)') : (sel?'#fff':'rgba(255,255,255,0.15)');
+        return `<div class="board-color-swatch${sel?' selected':''}"
+          style="background:${t.bg}; border-color:${border};
+                 box-shadow:inset 0 0 0 2px rgba(0,0,0,0.08);"
+          title="${t.name}" onclick="selectBoardTheme(${i})"></div>`;
+      }).join('');
+  };
+
+  row.innerHTML = renderGroup(dark, '🌑 Sombres') + renderGroup(light, '☀️ Clairs');
+}
+
+function selectBoardTheme(i) {
+  _boardTheme = i;
+  if (G.zoom !== undefined) G.boardTheme = i; // mise à jour en cours de partie
+  initBoardColorPicker();
+  renderThemePanelGame();
+  drawBoard();
+}
+
+function toggleThemePanel() {
+  const panel = document.getElementById('theme-panel');
+  if (!panel) return;
+  const isHidden = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden');
+  if (isHidden) renderThemePanelGame();
+}
+
+function renderThemePanelGame() {
+  const el = document.getElementById('theme-swatches-game');
+  if (!el) return;
+  const cur = G.boardTheme || 0;
+  let html = '';
+  BOARD_THEMES.forEach((t, i) => {
+    // Séparateur entre sombres et clairs
+    if (i === 6) html += `<div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0;"></div>`;
+    const shadow = t.light
+      ? 'inset 0 0 0 1px rgba(0,0,0,0.15)'
+      : 'inset 0 0 0 1px rgba(255,255,255,0.15)';
+    html += `<div class="theme-swatch-row${i===cur?' active':''}" onclick="selectBoardTheme(${i})">
+      <div class="theme-swatch-dot" style="background:${t.bg};box-shadow:${shadow};"></div>
+      <span class="theme-swatch-name">${t.name}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function selectMode(m) {
+  _mode = m;
+  document.getElementById('card-solo').classList.toggle('selected', m==='solo');
+  document.getElementById('card-multi').classList.toggle('selected', m==='multi');
+  // Afficher/masquer la sélection de difficulté
+  document.getElementById('diff-row').style.display = m==='solo' ? 'flex' : 'none';
+}
+
+function selectDiff(d) {
+  _diff = d;
+  document.querySelectorAll('.diff-btn').forEach(b =>
+    b.classList.toggle('selected', b.dataset.d === d));
+}
+
+let _timerRaf = null;
+
+function startGame() {
+  initState(_mode, _diff);
+  document.getElementById('screen-home').classList.add('hidden');
+  document.getElementById('screen-game').classList.remove('hidden');
+  document.getElementById('end-overlay').classList.add('hidden');
+  initCanvas();
+  updateHeader();
+  renderHand();
+  drawBoard();
+  startTurnTimer();
+}
+
+function startTurnTimer() {
+  G.turnStartTime = Date.now();
+  if (_timerRaf) cancelAnimationFrame(_timerRaf);
+  tickTimer();
+}
+
+function tickTimer() {
+  if (!G.isGameActive && G.gameOver) return;
+  const el = document.getElementById('turn-timer');
+  if (!el) return;
+
+  const elapsed = Math.floor((Date.now() - G.turnStartTime) / 1000);
+  const m = Math.floor(elapsed / 60);
+  const s = (elapsed % 60).toString().padStart(2, '0');
+  el.textContent = `${m}:${s}`;
+
+  // Couleur selon durée
+  el.className = 'gh-timer-val';
+  if (elapsed >= 60) el.classList.add('danger');
+  else if (elapsed >= 40) el.classList.add('warning');
+
+  _timerRaf = requestAnimationFrame(tickTimer);
+}
+
+function goHome() {
+  document.getElementById('screen-game').classList.add('hidden');
+  document.getElementById('screen-home').classList.remove('hidden');
+  document.getElementById('end-overlay').classList.add('hidden');
+}
+
+// Init
+selectMode('solo');
+selectDiff('medium');
+initBoardColorPicker();
+</script>
+</body>
+</html>
