@@ -944,7 +944,8 @@ async function refreshRooms() { await loadRooms(); }
 
 async function createRoom() {
   if (!sb) { showToast('Connexion requise','err'); return; }
-  const { data, error } = await sb.from('qv_rooms').insert({
+  // Colonnes minimales — sans chat (peut ne pas exister)
+  const roomData = {
     host_device_id: DEVICE_ID,
     status: 'waiting',
     max_players: 4,
@@ -957,9 +958,15 @@ async function createRoom() {
       emoji:  ME.emoji,
       ready:  false,
     }],
-    chat: [],
-  }).select().single();
-  if (error) { showToast('Erreur : ' + error.message, 'err'); return; }
+  };
+
+  const { data, error } = await sb.from('qv_rooms')
+    .insert(roomData).select().single();
+  if (error) {
+    console.error('createRoom error:', error.code, error.message, error.details);
+    showToast(error.message || 'Erreur création', 'err', 4000);
+    return;
+  }
   ROOM = data;
   IS_HOST = true;
   enterRoom();
@@ -1805,18 +1812,26 @@ function doConfirm() {
 }
 
 function doNextTurn() {
+  // Nettoyer l'état du tour précédent
+  G.pendingTiles  = [];
+  G.selectedTile  = null;
+  _discardMode    = false;
+  _toDiscard      = new Set();
+  document.getElementById('btn-ok').disabled = true;
+
   G.current = (G.current + 1) % G.players.length;
   updateUI();
   renderHand();
   drawBoard();
   if (ROOM) saveGameState();
   checkEnd();
+  if (G.gameOver) return;
 
-  if (!myTurn()) {
+  if (myTurn()) {
+    startTimer();
+  } else {
     const cur = G.players[G.current];
     if (!ROOM && cur.isAI) setTimeout(aiPlay, 600);
-  } else {
-    startTimer();
   }
 }
 
@@ -1921,23 +1936,35 @@ function aiPlay() {
       }
 
       G.lastMoves=[]; G.lastPts=0;
+      // Montrer les tuiles progressivement comme "pending" avant de les valider
+      const staged = []; // tuiles à poser (copies avec wx,wy)
+      best.tiles.forEach(t => staged.push({...t}));
+
       let i=0;
       const step=()=>{
         try {
-          if(i>=best.tiles.length){
+          if(i>=staged.length){
+            // Valider toutes les tuiles
+            for(const t of staged){
+              G.board[`${t.wx},${t.wy}`]=t;
+              const hi=cur.hand.findIndex(h=>h&&h.id===t.id);
+              if(hi>=0) cur.hand[hi]=drawCards(G.deck,1)[0]||null;
+            }
+            G.pendingTiles=[]; // vider le pending
             cur.score+=best.pts;
-            G.lastMoves=[...best.tiles]; G.lastPts=best.pts;
+            G.lastMoves=[...staged]; G.lastPts=best.pts;
             animTiles(G.lastMoves);
             showAnnounce(best.pts,best.pts>=12,cur.pseudo,cur.score);
             playSound(best.pts>=12?'qwirkle':'score');
             done(); return;
           }
-          const t=best.tiles[i++];
-          G.board[`${t.wx},${t.wy}`]=t;
-          const hi=cur.hand.findIndex(h=>h&&h.id===t.id);
-          if(hi>=0) cur.hand[hi]=drawCards(G.deck,1)[0]||null;
-          drawBoard(); setTimeout(step,300);
-        } catch(e){done();}
+          // Ajouter la tuile suivante en pending (visible mais pas encore validée)
+          const t=staged[i++];
+          G.pendingTiles.push(t);
+          playSound('place');
+          drawBoard();
+          setTimeout(step, 350);
+        } catch(e){console.error(e);done();}
       };
       step();
     } catch(e){done();}
@@ -2449,11 +2476,13 @@ async function sendMsg(){
   addMsg(msg,true);
   scrollMsgs();
   if(!ROOM||!sb) return;
-  const{data}=await sb.from('qv_rooms').select('chat').eq('id',ROOM.id).single();
-  const chat=Array.isArray(data?.chat)?data.chat:[];
-  chat.push(msg);
-  if(chat.length>50) chat.splice(0,chat.length-50);
-  await sbRun(()=>sb.from('qv_rooms').update({chat}).eq('id',ROOM.id));
+  try {
+    const{data}=await sb.from('qv_rooms').select('chat').eq('id',ROOM.id).single();
+    const chat=Array.isArray(data?.chat)?data.chat:[];
+    chat.push(msg);
+    if(chat.length>50) chat.splice(0,chat.length-50);
+    await sbRun(()=>sb.from('qv_rooms').update({chat}).eq('id',ROOM.id));
+  } catch(e) { console.warn('chat send:', e); }
 }
 async function pollChat(){
   if(!ROOM||!sb) return;
