@@ -923,8 +923,15 @@ async function syncOnlineGame() {
     renderHand();
     drawBoard();
 
-    // Relancer le timer si c'est maintenant notre tour
-    if (G.players[G.current]?.isHuman) startTurnTimer();
+    const isMyTurnNow = (G.myIdx === G.current);
+    if (isMyTurnNow) {
+      startTurnTimer();
+      document.getElementById('btn-confirm').disabled = true; // reset
+      document.getElementById('btn-discard').disabled = false;
+    } else {
+      // Pas notre tour : bloquer les boutons d'action
+      document.getElementById('btn-confirm').disabled = true;
+    }
 
   } catch(e) { console.warn('syncOnlineGame:', e); }
 }
@@ -1862,9 +1869,9 @@ function renderHand(){
   if (!me) return;
 
   // Indiquer si c'est notre tour ou non
-  const isMyTurn = (G.myIdx === G.current);
   const handLabel = document.getElementById('hand-label');
   if (handLabel) {
+    const isMyTurn = (G.myIdx === G.current);
     if (isMyTurn) {
       handLabel.textContent = 'Votre main';
       handLabel.style.color = '';
@@ -1877,12 +1884,15 @@ function renderHand(){
 
   // Afficher les tuiles même si ce n'est pas notre tour (grises)
   const player = me;
+  const isMyTurn = (G.myIdx === G.current);
   player.hand.forEach((tile,idx)=>{
     const el=document.createElement('div');
     let cls='tile';
-    if(tile===null)cls+=' ghost';
-    else if(G.discardMode&&G.toDiscard.has(idx))cls+=' to-discard';
-    else if(!G.discardMode&&G.selectedTile===idx)cls+=' selected';
+    if(tile===null) cls+=' ghost';
+    else if(G.discardMode && G.toDiscard.has(idx)) cls+=' to-discard';
+    else if(!G.discardMode && G.selectedTile===idx) cls+=' selected';
+    // En ligne, hors de notre tour : tuiles visibles mais non interactives
+    if(_currentRoom && !isMyTurn) el.style.opacity='0.5';
     el.className=cls;el.dataset.idx=idx;
     if(tile){el.appendChild(makeTileSVG(tile));el.onclick=()=>selectTile(idx);}
     container.appendChild(el);
@@ -1905,7 +1915,7 @@ function selectTile(idx){
 // ACTIONS JEU
 // ════════════════════════════════════════════════════════════════
 function doConfirm(){
-  if(G.myIdx !== G.current) return; // pas notre tour
+  if(G.myIdx !== G.current) return;
   if(!G.pendingTiles.length)return;
   const player=G.players[G.myIdx];
   const pts=calcPoints(G.board,G.pendingTiles);
@@ -1916,9 +1926,11 @@ function doConfirm(){
   G.discardMode=false;G.toDiscard=new Set();
   showToast(pts>=12?`🔥 QWIRKLE +${pts}`:`+${pts} pts`,pts>=12?'pts':'ok',1800);
   document.getElementById('btn-confirm').disabled=true;
-  updateHeader();renderHand();drawBoard();
-  if (_currentRoom) saveOnlineGameState();
-  checkGameOver(()=>nextTurn());
+  checkGameOver(() => {
+    nextTurn(); // incrémente G.current
+    updateHeader();renderHand();drawBoard();
+    if (_currentRoom) saveOnlineGameState(); // sauvegarde avec le nouveau current
+  });
 }
 
 function toggleDiscardMode(){
@@ -1938,10 +1950,11 @@ function confirmDiscard(){
   const player=G.players[G.myIdx];const n=G.toDiscard.size;if(!n){exitDiscardMode();return;}
   const newTiles=draw(G.deck,Math.min(n,G.deck.length));let ni=0;
   G.toDiscard.forEach(idx=>{player.hand[idx]=newTiles[ni++]||null;});
-  showToast(`${n} tuile${n>1?'s':''} jetée${n>1?'s':''}`,  'ok',1800);
-  exitDiscardMode();updateHeader();renderHand();
-  if (_currentRoom) saveOnlineGameState();
-  nextTurn();
+  showToast(`${n} tuile${n>1?'s':''} jetée${n>1?'s':''}`, 'ok',1800);
+  exitDiscardMode();
+  nextTurn(); // incrémente G.current
+  updateHeader();renderHand();
+  if (_currentRoom) saveOnlineGameState(); // sauvegarde avec le nouveau current
 }
 function exitDiscardMode(){G.discardMode=false;G.toDiscard=new Set();G.selectedTile=null;updateDiscardBtn();renderHand();drawBoard();}
 function updateDiscardBtn(){
@@ -1966,13 +1979,15 @@ function cancelPending(){
 function nextTurn(){
   G.current=(G.current+1)%G.players.length;
   G.selectedTile=null;G.discardMode=false;G.toDiscard=new Set();
-  updateDiscardBtn();startTurnTimer();updateHeader();renderHand();drawBoard();
+  updateDiscardBtn();startTurnTimer();
   const cur = G.players[G.current];
-  if (!cur.isHuman && cur.isAI) {
+  // Solo : déclencher l'IA si besoin
+  if (!_currentRoom && !cur.isHuman && cur.isAI) {
+    updateHeader();renderHand();drawBoard();
     setTimeout(()=>aiPlay(), 600);
-  } else if (_currentRoom && !cur.isHuman && !cur.isAI) {
-    // Joueur distant : il joue de son côté, on attend le sync
   }
+  // En ligne : le rendu est géré par l'appelant (doConfirm/confirmDiscard)
+  // ou par syncOnlineGame pour les autres joueurs
 }
 
 function updateHeader(){
