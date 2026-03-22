@@ -1109,7 +1109,7 @@ async function syncOnlineGame() {
 
     // Tuiles adverses en cours (temps réel — pas encore validées)
     if (state.livePending && state.livePending.length &&
-        G.myIdx !== G.current) {
+        !isMyTurn()) {
       G._opponentPending = state.livePending;
     } else {
       G._opponentPending = [];
@@ -1124,8 +1124,7 @@ async function syncOnlineGame() {
         G.players[i].isHuman   = (sp.device_id === DEVICE_ID);
         G.players[i].isAI      = false;
       });
-      G.myIdx = G.players.findIndex(p => p.isHuman);
-      if (G.myIdx < 0) G.myIdx = 0;
+      // myIdx calculé dynamiquement par myPlayerIdx()
     }
 
     // Animer les tuiles adverses
@@ -1137,7 +1136,7 @@ async function syncOnlineGame() {
     renderHand();
     drawBoard();
 
-    const isMyTurn = (G.myIdx === G.current);
+    const isMyTurn = (isMyTurn());
     if (isMyTurn) {
       startTurnTimer();
       document.getElementById('btn-confirm').disabled = true;
@@ -1594,6 +1593,28 @@ const BOARD_THEMES = [
 // ════════════════════════════════════════════════════════════════
 // DECK & ÉTAT DU JEU
 // ════════════════════════════════════════════════════════════════
+// Retourne true si c'est notre tour (fonctionne solo ET en ligne)
+function isMyTurn() {
+  const cur = G.players && G.players[G.current];
+  if (!cur) return false;
+  if (_currentRoom) {
+    // En ligne : vérifier par device_id
+    return cur.device_id === DEVICE_ID;
+  }
+  // En solo : vérifier isHuman
+  return cur.isHuman === true;
+}
+
+// Index du joueur humain local dans le tableau
+function myPlayerIdx() {
+  if (_currentRoom) {
+    const idx = G.players.findIndex(p => p.device_id === DEVICE_ID);
+    return idx >= 0 ? idx : 0;
+  }
+  const idx = G.players.findIndex(p => p.isHuman);
+  return idx >= 0 ? idx : 0;
+}
+
 function makeDeck() {
   const d = [];
   for (let s=0;s<6;s++) for (let c=0;c<6;c++) for (let k=0;k<3;k++) d.push({shape:s,color:c,id:`${s}-${c}-${k}`});
@@ -1608,7 +1629,6 @@ function initGame(players, boardTheme) {
   const deck = makeDeck();
   const builtPlayers = players.map((p, i) => ({ ...p, score:0, hand:draw(deck, 6) }));
   // Trouver l'index de CE joueur dans la liste
-  const myIdx = builtPlayers.findIndex(p => p.device_id === DEVICE_ID);
   G = {
     deck, board:{}, current:0,
     players: builtPlayers,
@@ -1666,7 +1686,7 @@ async function startOnlineGame() {
     G = {
       deck:[], board:{}, current:0,
       players: roomPlayers.map(p => ({ ...p, score:0, hand:[] })),
-      myIdx: roomPlayers.findIndex(p => p.device_id === DEVICE_ID),
+      // myIdx dynamique
       pendingTiles:[], selectedTile:null,
       discardMode:false, toDiscard:new Set(),
       lastPlayedTiles:[], highlightUntil:0,
@@ -1675,7 +1695,7 @@ async function startOnlineGame() {
       gameOver:false,
       camX:0, camY:0, zoom:1.0, rotation:0, dragging:false,
     };
-    if(G.myIdx < 0) G.myIdx = 0;
+    
     _lastSyncTs = 0; // forcer le premier sync
     launchGame();
   }
@@ -1933,7 +1953,7 @@ function drawBoard() {
   } else if(G.lastPlayedTiles.length>0&&Date.now()>=G.highlightUntil){G.lastPlayedTiles=[];}
 
   if(G.selectedTile!==null){
-    const tile=G.players[G.myIdx].hand[G.selectedTile];
+    const tile=G.players[myPlayerIdx()].hand[G.selectedTile];
     if(tile){
       const cells=getValidCells(tile);
       ctx2d.fillStyle='rgba(0,240,255,0.08)';ctx2d.strokeStyle='rgba(0,240,255,0.4)';ctx2d.lineWidth=1.5/G.zoom;
@@ -2183,13 +2203,13 @@ function renderHand(){
   const container=document.getElementById('hand-tiles');
   container.innerHTML='';
   // Toujours afficher SA propre main
-  const me = G.players[G.myIdx];
+  const me = G.players[myPlayerIdx()];
   if (!me) return;
 
   // Indiquer si c'est notre tour ou non
   const handLabel = document.getElementById('hand-label');
   if (handLabel) {
-    const isMyTurn = (G.myIdx === G.current);
+    const isMyTurn = (isMyTurn());
     if (isMyTurn) {
       handLabel.textContent = 'Votre main';
       handLabel.style.color = '';
@@ -2202,7 +2222,7 @@ function renderHand(){
 
   // Afficher les tuiles même si ce n'est pas notre tour (grises)
   const player = me;
-  const isMyTurn = (G.myIdx === G.current);
+  const isMyTurn = (isMyTurn());
   let _dragSrc = null;
 
   player.hand.forEach((tile, idx) => {
@@ -2245,7 +2265,7 @@ function renderHand(){
         el.classList.remove('drag-over');
         if (_dragSrc === null || _dragSrc === idx) return;
         // Échanger les deux tuiles dans la main
-        const hand = G.players[G.myIdx].hand;
+        const hand = G.players[myPlayerIdx()].hand;
         [hand[_dragSrc], hand[idx]] = [hand[idx], hand[_dragSrc]];
         // Ajuster selectedTile si besoin
         if (G.selectedTile === _dragSrc) G.selectedTile = idx;
@@ -2274,7 +2294,7 @@ function renderHand(){
           if (ex >= r.left && ex <= r.right) targetIdx = parseInt(t.dataset.idx);
         });
         if (targetIdx !== null && targetIdx !== touchStartIdx) {
-          const hand = G.players[G.myIdx].hand;
+          const hand = G.players[myPlayerIdx()].hand;
           [hand[touchStartIdx], hand[targetIdx]] = [hand[targetIdx], hand[touchStartIdx]];
           if (G.selectedTile === touchStartIdx) G.selectedTile = targetIdx;
           else if (G.selectedTile === targetIdx) G.selectedTile = touchStartIdx;
@@ -2288,8 +2308,8 @@ function renderHand(){
 
 function selectTile(idx){
   // On ne peut interagir que si c'est notre tour
-  if(G.myIdx !== G.current) return;
-  if(G.players[G.myIdx].hand[idx]===null)return;
+  if(!isMyTurn()) return;
+  if(G.players[myPlayerIdx()].hand[idx]===null)return;
   if(G.discardMode){
     if(G.toDiscard.has(idx))G.toDiscard.delete(idx);else G.toDiscard.add(idx);
     updateDiscardBtn();renderHand();return;
@@ -2302,9 +2322,9 @@ function selectTile(idx){
 // ACTIONS JEU
 // ════════════════════════════════════════════════════════════════
 function doConfirm(){
-  if(G.myIdx !== G.current) return;
+  if(!isMyTurn()) return;
   if(!G.pendingTiles.length) return;
-  const player = G.players[G.myIdx];
+  const player = G.players[myPlayerIdx()];
   const pts = calcPoints(G.board, G.pendingTiles);
 
   // Valider les tuiles sur le board
@@ -2340,7 +2360,7 @@ function doConfirm(){
 }
 
 function toggleDiscardMode(){
-  if(G.myIdx !== G.current && !G.discardMode) {
+  if(!isMyTurn() && !G.discardMode) {
     showToast(`Ce n'est pas votre tour`,'err',1500); return;
   }
   if(G.discardMode){
@@ -2353,7 +2373,7 @@ function toggleDiscardMode(){
   showToast('Sélectionne les tuiles à jeter','ok',2000);
 }
 function confirmDiscard(){
-  const player=G.players[G.myIdx];const n=G.toDiscard.size;if(!n){exitDiscardMode();return;}
+  const player=G.players[myPlayerIdx()];const n=G.toDiscard.size;if(!n){exitDiscardMode();return;}
   const newTiles=draw(G.deck,Math.min(n,G.deck.length));let ni=0;
   G.toDiscard.forEach(idx=>{player.hand[idx]=newTiles[ni++]||null;});
   showToast(`${n} tuile${n>1?'s':''} jetée${n>1?'s':''}`, 'ok',1800);
@@ -2372,7 +2392,7 @@ function updateDiscardBtn(){
 function doUndo(){if(!G.pendingTiles.length)return;cancelPending();}
 function cancelPending(){
   if(G.discardMode){exitDiscardMode();return;}
-  const player=G.players[G.myIdx];
+  const player=G.players[myPlayerIdx()];
   for(const pt of G.pendingTiles){const ei=player.hand.findIndex(t=>t===null);if(ei>=0)player.hand[ei]={shape:pt.shape,color:pt.color,id:pt.id};}
   G.pendingTiles=[];G.selectedTile=null;
   document.getElementById('btn-confirm').disabled=true;
@@ -2600,13 +2620,13 @@ function onPU(e){
 }
 function onBoardTap(sx,sy){
   if(G.selectedTile===null)return;
-  if(G.myIdx !== G.current)return; // pas notre tour
+  if(!isMyTurn())return; // pas notre tour
   const rect=canvas.getBoundingClientRect();
   const{x:wx,y:wy}=screenToWorld(sx-rect.left,sy-rect.top);
-  const tile=G.players[G.myIdx].hand[G.selectedTile];
+  const tile=G.players[myPlayerIdx()].hand[G.selectedTile];
   if(isValidPlacement(G.board,G.pendingTiles,wx,wy,tile)){
     G.pendingTiles.push({...tile,wx,wy});
-    G.players[G.myIdx].hand[G.selectedTile]=null;
+    G.players[myPlayerIdx()].hand[G.selectedTile]=null;
     G.selectedTile=null;
     playSound('place');
     document.getElementById('btn-confirm').disabled=false;
@@ -2817,7 +2837,7 @@ async function sendChatMsg() {
   const input = document.getElementById('chat-input');
   if (!input) return;
   const text = input.value.trim();
-  if (!text || !_currentRoom || !sb) return;
+  if (!text) return;
   input.value = '';
 
   const msg = {
@@ -2829,16 +2849,20 @@ async function sendChatMsg() {
     ts: Date.now(),
   };
 
+  // Afficher immédiatement côté local
+  renderChatMsg(msg, true);
+  scrollChat();
+
+  // Si pas en ligne, juste local
+  if (!_currentRoom || !sb) return;
+
   try {
-    // Stocker dans qv_rooms.chat (jsonb array)
-    const { data } = await sb.from('qv_rooms').select('chat').eq('id', _currentRoom.id).single();
-    const chat = data?.chat || [];
+    const { data } = await sb.from('qv_rooms')
+      .select('chat').eq('id', _currentRoom.id).single();
+    const chat = Array.isArray(data?.chat) ? data.chat : [];
     chat.push(msg);
-    // Garder les 50 derniers messages max
     if (chat.length > 50) chat.splice(0, chat.length - 50);
     await sb.from('qv_rooms').update({ chat }).eq('id', _currentRoom.id);
-    renderChatMsg(msg, true);
-    scrollChat();
   } catch(e) { console.warn('sendChatMsg:', e); }
 }
 
@@ -3000,41 +3024,32 @@ function _handleCall(call) {
 
 async function toggleVoice() {
   const btn = document.getElementById('voice-btn');
+
   if (_voiceActive) {
-    // Couper le micro
     _voiceActive = false;
-    if (_localStream) {
-      _localStream.getTracks().forEach(t => t.stop());
-      _localStream = null;
-    }
-    _voiceCalls.forEach(c => c.close());
+    if (_localStream) { _localStream.getTracks().forEach(t => t.stop()); _localStream = null; }
+    _voiceCalls.forEach(c => { try { c.close(); } catch(e){} });
     _voiceCalls = [];
+    if (_peer) { _peer.destroy(); _peer = null; }
     if (btn) { btn.textContent = '🎤'; btn.style.color = 'rgba(255,255,255,0.4)'; }
     addSystemMsg('🔇 Micro coupé');
     return;
   }
 
+  if (!_currentRoom) {
+    showToast('Chat vocal disponible uniquement en ligne', 'err', 2000);
+    return;
+  }
+
   try {
-    _localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    _localStream = await navigator.mediaDevices.getUserMedia({ audio:true, video:false });
     _voiceActive = true;
     if (btn) { btn.textContent = '🎙️'; btn.style.color = '#00ff88'; }
-
-    if (!_peer) initPeer();
-
-    // Appeler les autres joueurs de la room
-    const otherPlayers = G.players.filter(p => p.device_id && p.device_id !== DEVICE_ID);
-    for (const p of otherPlayers) {
-      const otherId = p.device_id.replace(/[^a-zA-Z0-9-]/g, '-');
-      try {
-        const call = _peer.call(otherId, _localStream);
-        if (call) _handleCall(call);
-      } catch(e) { console.warn('Appel échoué vers', otherId, e); }
-    }
-
-    addSystemMsg('🎙️ Micro activé — connexion en cours…');
+    initPeer();
+    addSystemMsg('🎙️ Micro activé');
   } catch(e) {
-    showToast('Micro refusé', 'err', 2000);
-    console.warn('getUserMedia:', e);
+    showToast('Accès micro refusé', 'err', 2000);
+    _voiceActive = false;
   }
 }
 </script>
