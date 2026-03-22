@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>QWIRKLE</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.2/peerjs.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
 :root {
@@ -864,10 +863,6 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
       <div class="chat-header" onclick="toggleChat()">
         <span class="chat-toggle-icon">▲</span>
         <span class="chat-label">💬 Chat</span>
-        <button id="voice-btn" onclick="event.stopPropagation();toggleVoice()"
-          style="background:none;border:none;cursor:pointer;padding:4px 8px;
-          border-radius:20px;font-size:15px;color:rgba(255,255,255,0.35);
-          transition:color 0.2s;">🎤</button>
         <span class="chat-unread hidden" id="chat-unread">0</span>
       </div>
       <div class="chat-messages" id="chat-messages"></div>
@@ -984,7 +979,18 @@ async function testSBConnection() {
 
 async function sbUpsertProfile(p) {
   if (!sb) return;
-  await sb.from('qv_profiles').upsert({ device_id: DEVICE_ID, ...p, updated_at: new Date().toISOString() });
+  // N'envoyer que les colonnes qui existent dans la table
+  const { error } = await sb.from('qv_profiles').upsert({
+    device_id:   DEVICE_ID,
+    pseudo:      p.pseudo      || '',
+    color:       p.color       || '#00f0ff',
+    emoji:       p.emoji       || '🎮',
+    games:       p.games       || 0,
+    wins:        p.wins        || 0,
+    best_score:  p.best_score  || 0,
+    updated_at:  new Date().toISOString(),
+  });
+  if (error) console.error('sbUpsertProfile:', error.message);
 }
 
 async function sbGetProfile() {
@@ -2346,18 +2352,17 @@ function doConfirm(){
   playSound(pts >= 12 ? 'qwirkle' : 'score');
   animateTilesFromSky(G._lastConfirmedMoves);
 
-  // Vérifier fin de partie (avant nextTurn pour détecter main vide)
-  const gameEnds = checkGameOver();
-  if (gameEnds) return;
-
   // Passer au tour suivant
   nextTurn();
   updateHeader();
   renderHand();
   drawBoard();
 
-  // Sauvegarder en ligne (après nextTurn pour avoir le bon G.current)
+  // Sauvegarder en ligne
   if (_currentRoom) saveOnlineGameState();
+
+  // Vérifier fin de partie APRÈS la pioche et le rendu
+  checkGameOver();
 }
 
 function toggleDiscardMode(){
@@ -2431,13 +2436,13 @@ function updateHeader(){
 function aiPlay(){
   showAIThinking(true);
   const delay=G.players[G.current].diff==='easy'?700:G.players[G.current].diff==='hard'?1400:1000;
-  const safety=setTimeout(()=>{showAIThinking(false);updateHeader();drawBoard();checkGameOver(()=>nextTurn());},10000);
+  const safety=setTimeout(()=>{showAIThinking(false);nextTurn();updateHeader();drawBoard();checkGameOver();},10000);
   const done=()=>{
     clearTimeout(safety);
     showAIThinking(false);
-    if(checkGameOver()) return;
     nextTurn();
     updateHeader();renderHand();drawBoard();
+    checkGameOver();
   };
   setTimeout(()=>{
     try{
@@ -2510,38 +2515,54 @@ function extendMove(hand,firstTile,wx,wy){
 // ════════════════════════════════════════════════════════════════
 // FIN DE PARTIE
 // ════════════════════════════════════════════════════════════════
-function checkGameOver(onContinue){
-  const allEmpty=G.players.every(p=>p.hand.every(t=>t===null));
+function checkGameOver(){
+  if(G.gameOver) return true;
+  const allEmpty=G.players.every(p=>p.hand.filter(Boolean).length===0&&G.deck.length===0);
   const deckEmpty=G.deck.length===0;
   let noCoup=false;
   if(deckEmpty){noCoup=G.players.every(p=>p.hand.filter(Boolean).every(t=>getValidCells(t).length===0));}
-  if(allEmpty||noCoup){showEndScreen();return true;}
-  if(onContinue) onContinue();
+  if(allEmpty||noCoup){
+    setTimeout(showEndScreen, 800); // laisser le temps à l'animation
+    return true;
+  }
   return false;
 }
 function showEndScreen(){
+  if(G.gameOver) return; // éviter double appel
   G.gameOver=true;
   if(_timerRaf){cancelAnimationFrame(_timerRaf);_timerRaf=null;}
   if(_gamePolling){clearInterval(_gamePolling);_gamePolling=null;}
+  if(typeof _chatPolling!=='undefined'&&_chatPolling){clearInterval(_chatPolling);_chatPolling=null;}
+
   const sorted=[...G.players].sort((a,b)=>b.score-a.score);
   const medals=['🥇','🥈','🥉','🏅'];
-  // Mettre à jour les stats du joueur humain
+  const winner=sorted[0];
+
+  // Mettre à jour les stats
   const me=G.players.find(p=>p.device_id===DEVICE_ID);
   if(me){
-    PROFILE.games++;
-    if(sorted[0].device_id===DEVICE_ID)PROFILE.wins++;
-    if(me.score>PROFILE.best_score)PROFILE.best_score=me.score;
-    updateProfileStats();
+    PROFILE.games=(PROFILE.games||0)+1;
+    if(winner.device_id===DEVICE_ID) PROFILE.wins=(PROFILE.wins||0)+1;
+    if(me.score>(PROFILE.best_score||0)) PROFILE.best_score=me.score;
+    localStorage.setItem('qv_profile',JSON.stringify(PROFILE));
+    sbUpsertProfile(PROFILE); // async, pas besoin d'await ici
   }
-  document.getElementById('end-title').textContent=`🏆 ${sorted[0].pseudo} gagne !`;
-  document.getElementById('end-scores').innerHTML=sorted.map((p,i)=>`
+
+  // Afficher l'écran
+  const titleEl=document.getElementById('end-title');
+  const scoresEl=document.getElementById('end-scores');
+  const overlayEl=document.getElementById('end-overlay');
+  if(!titleEl||!scoresEl||!overlayEl){console.error('end-overlay elements manquants');return;}
+
+  titleEl.textContent=`🏆 ${winner.pseudo} gagne !`;
+  scoresEl.innerHTML=sorted.map((p,i)=>`
     <div class="end-row">
       <span class="end-rank">${medals[i]||''}</span>
       <div class="end-avatar" style="background:${p.color}33">${p.emoji||'🎮'}</div>
       <span class="end-name" style="color:${p.color}">${p.pseudo}</span>
       <span class="end-pts" style="color:${p.color}">${p.score}</span>
     </div>`).join('');
-  document.getElementById('end-overlay').classList.remove('hidden');
+  overlayEl.classList.remove('hidden');
 }
 function confirmQuit() {
   document.getElementById('modal-quit').classList.remove('hidden');
@@ -2989,95 +3010,7 @@ function initChat() {
   }
 })();
 
-// ════════════════════════════════════════════════════════════════
-// PEERJS — CHAT VOCAL
-// ════════════════════════════════════════════════════════════════
-let _peer = null;
-let _voiceActive = false;
-let _voiceCalls = [];
-let _localStream = null;
 
-function initPeer() {
-  if (!_currentRoom || typeof Peer === 'undefined') return;
-  // ID unique = device_id nettoyé (PeerJS n'accepte que alphanums + tirets)
-  const peerId = DEVICE_ID.replace(/[^a-zA-Z0-9-]/g, '-');
-  _peer = new Peer(peerId, {
-    config: {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-      ]
-    }
-  });
-
-  _peer.on('open', id => {
-    console.log('PeerJS connecté :', id);
-    // Sauvegarder notre peer_id dans la room pour que les autres puissent nous appeler
-    if (sb && _currentRoom) {
-      sb.from('qv_rooms').update({
-        [`peer_${DEVICE_ID.slice(-8)}`]: id
-      }).eq('id', _currentRoom.id).then(() => {});
-    }
-  });
-
-  // Répondre aux appels entrants
-  _peer.on('call', call => {
-    if (!_localStream) return;
-    call.answer(_localStream);
-    _handleCall(call);
-  });
-
-  _peer.on('error', e => console.warn('PeerJS error:', e.type));
-}
-
-function _handleCall(call) {
-  _voiceCalls.push(call);
-  call.on('stream', remoteStream => {
-    // Lire le flux audio distant
-    const audio = document.createElement('audio');
-    audio.srcObject = remoteStream;
-    audio.autoplay = true;
-    audio.style.display = 'none';
-    document.body.appendChild(audio);
-    call._audioEl = audio;
-  });
-  call.on('close', () => {
-    if (call._audioEl) call._audioEl.remove();
-    _voiceCalls = _voiceCalls.filter(c => c !== call);
-  });
-}
-
-async function toggleVoice() {
-  const btn = document.getElementById('voice-btn');
-
-  if (_voiceActive) {
-    _voiceActive = false;
-    if (_localStream) { _localStream.getTracks().forEach(t => t.stop()); _localStream = null; }
-    _voiceCalls.forEach(c => { try { c.close(); } catch(e){} });
-    _voiceCalls = [];
-    if (_peer) { _peer.destroy(); _peer = null; }
-    if (btn) { btn.textContent = '🎤'; btn.style.color = 'rgba(255,255,255,0.4)'; }
-    addSystemMsg('🔇 Micro coupé');
-    return;
-  }
-
-  if (!_currentRoom) {
-    showToast('Chat vocal disponible uniquement en ligne', 'err', 2000);
-    return;
-  }
-
-  try {
-    _localStream = await navigator.mediaDevices.getUserMedia({ audio:true, video:false });
-    _voiceActive = true;
-    if (btn) { btn.textContent = '🎙️'; btn.style.color = '#00ff88'; }
-    initPeer();
-    addSystemMsg('🎙️ Micro activé');
-  } catch(e) {
-    showToast('Accès micro refusé', 'err', 2000);
-    _voiceActive = false;
-  }
-}
 </script>
 </body>
 </html>
-
