@@ -1155,6 +1155,8 @@ async function syncOnlineGame() {
     if (turnChanged) {
       if (state.lastMoves && state.lastMoves.length) {
         animateTilesFromSky(state.lastMoves);
+        G.lastPlayedTiles = state.lastMoves;
+        G.highlightUntil  = Date.now() + 5000;
       }
       if (state.lastPts > 0 && !myTurn) {
         const prevIdx = (G.current + G.players.length - 1) % G.players.length;
@@ -1582,7 +1584,10 @@ function goOnline() {
 const SHAPES = ['circle','cross','diamond','square','star','clover'];
 // Couleurs fidèles à la boîte Qwirkle Edition Deluxe
 // Rouge vif, Orange saturé, Jaune pur, Vert franc, Bleu royal, Mauve
-const COLORS = ['#e8001c','#f87200','#f5d800','#00a832','#0055cc','#8800cc'];
+// Couleurs Qwirkle officielles — saturées, franches, bien distinctes
+const COLORS = ['#d90000','#f07800','#f0d000','#009030','#0050c0','#7800b0'];
+// Noms pour les modales
+const COLOR_LABELS = ['rouge','orange','jaune','vert','bleu','violet'];
 const TILE_SIZE = 60;
 const GAP = 4;
 const CELL = TILE_SIZE + GAP;
@@ -1760,65 +1765,120 @@ function determineFirstPlayer(onDone) {
 function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
   const overlay = document.createElement('div');
   overlay.id = 'first-player-modal';
-  overlay.style.cssText = `position:fixed;inset:0;background:rgba(5,7,9,0.94);
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(5,7,9,0.95);
     z-index:600;display:flex;align-items:center;justify-content:center;
-    padding:20px;backdrop-filter:blur(12px);opacity:0;transition:opacity 0.4s;`;
+    padding:20px;backdrop-filter:blur(16px);opacity:0;transition:opacity 0.5s;`;
 
   const winner = G.players[firstIdx];
   const scoresHTML = scores.map(s => `
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;
-      border-radius:12px;background:rgba(255,255,255,0.03);
-      border:1px solid ${s.idx===firstIdx?s.color+'55':'rgba(255,255,255,0.06)'};">
-      <span style="font-size:1.3rem;">${s.emoji}</span>
-      <span style="flex:1;font-size:13px;font-weight:800;color:${s.color}">${s.pseudo}</span>
-      <span style="font-size:11px;color:rgba(255,255,255,0.5);">${s.best} tuile${s.best>1?'s':''}</span>
-      ${s.idx===firstIdx?`<span style="font-size:10px;font-weight:900;color:${s.color};
-        background:${s.color}22;padding:3px 10px;border-radius:20px;">⭐ 1er</span>`:''}
+    <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;
+      border-radius:14px;background:rgba(255,255,255,0.03);
+      border:1px solid ${s.idx===firstIdx?s.color+'66':'rgba(255,255,255,0.06)'};
+      transition:all 0.3s;">
+      <span style="font-size:1.5rem;">${s.emoji}</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:900;color:${s.color}">${s.pseudo}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">
+          Peut poser ${s.best} tuile${s.best>1?'s':''} d'entrée
+        </div>
+      </div>
+      ${s.idx===firstIdx?`<span style="font-size:11px;font-weight:900;color:${s.color};
+        background:${s.color}22;border:1px solid ${s.color}44;
+        padding:4px 12px;border-radius:20px;">⭐ Premier</span>`
+        :'<span style="font-size:10px;color:rgba(255,255,255,0.25);">En attente</span>'}
     </div>`).join('');
 
   overlay.innerHTML = `
-    <div style="background:#0a0d12;border:1px solid rgba(255,255,255,0.1);
-      border-radius:24px;padding:28px 24px;max-width:380px;width:100%;
-      display:flex;flex-direction:column;gap:18px;transform:scale(0.9);transition:transform 0.4s;">
+    <div id="fpm-card" style="background:linear-gradient(145deg,#0d1018,#080b10);
+      border:1px solid rgba(255,255,255,0.1);border-top:2px solid rgba(0,240,255,0.3);
+      border-radius:28px;padding:32px 28px;max-width:400px;width:100%;
+      display:flex;flex-direction:column;gap:20px;
+      transform:scale(0.85) translateY(30px);transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow:0 40px 80px rgba(0,0,0,0.9),inset 0 1px 0 rgba(255,255,255,0.06);">
+
       <div style="text-align:center;">
-        <div style="font-size:2.5rem;margin-bottom:8px;">${isTie?'🎲':'⭐'}</div>
-        <div style="font-size:17px;font-weight:900;margin-bottom:6px;">
-          ${isTie ? 'Égalité ! Tirage au sort' : `${winner.pseudo} commence !`}
+        <div id="fpm-icon" style="font-size:3.5rem;margin-bottom:14px;
+          display:block;animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;">
+          ${isTie?'🎲':'⭐'}
         </div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.6;">
+        <div style="font-size:9px;font-weight:800;letter-spacing:4px;
+          color:rgba(0,240,255,0.6);text-transform:uppercase;margin-bottom:10px;">
+          ${isTie?'TIRAGE AU SORT':'QUI COMMENCE ?'}
+        </div>
+        <div id="fpm-title" style="font-size:20px;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px;
+          background:linear-gradient(135deg,#fff,rgba(255,255,255,0.7));
+          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
+          ${isTie?'Égalité !':winner.pseudo+' commence !'}
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;">
           ${isTie
-            ? `Plusieurs joueurs peuvent poser <strong style="color:#fff">${maxTiles} tuiles</strong>.<br>L'IA désigne <strong style="color:${winner.color}">${winner.pseudo}</strong> pour commencer.`
-            : `Peut poser le plus de tuiles d'entrée : <strong style="color:${winner.color}">${maxTiles} tuile${maxTiles>1?'s':''}</strong>`}
+            ? `Plusieurs joueurs peuvent poser <b style="color:#fff">${maxTiles} tuile${maxTiles>1?'s':''}</b>.<br>Tirage au sort en cours…`
+            : `Peut placer le plus de tuiles : <b style="color:${winner.color}">${maxTiles} tuile${maxTiles>1?'s':''}</b>`}
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;">${scoresHTML}</div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">${scoresHTML}</div>
+
       <div id="fpm-countdown" style="text-align:center;font-size:11px;
-        color:rgba(255,255,255,0.3);letter-spacing:1px;">Démarrage dans 4…</div>
+        color:rgba(255,255,255,0.25);letter-spacing:2px;text-transform:uppercase;">
+        Démarrage dans 5…
+      </div>
     </div>`;
 
   document.body.appendChild(overlay);
 
-  // Animation entrée
   requestAnimationFrame(() => {
     overlay.style.opacity = '1';
-    overlay.querySelector('div').style.transform = 'scale(1)';
+    document.getElementById('fpm-card').style.transform = 'scale(1) translateY(0)';
   });
 
-  // Si tirage au sort : animation de dés
+  let count = 5;
+  const cd = document.getElementById('fpm-countdown');
+  const icon = document.getElementById('fpm-icon');
+  const title = document.getElementById('fpm-title');
+
+  // Animation tirage au sort si égalité
   if (isTie) {
-    let frame = 0;
-    const diceEmojis = ['🎲','🎯','🎰','🎲','🎯'];
-    const icon = overlay.querySelector('div > div:first-child');
-    const diceAnim = setInterval(() => {
-      icon.textContent = diceEmojis[frame % diceEmojis.length];
+    const names = scores.map(s=>s.pseudo);
+    const colors = scores.map(s=>s.color);
+    let frame = 0, spinIdx = 0;
+    const dices = ['🎲','🎯','🎰','🎲','🎯','🎰'];
+
+    const spinAnim = setInterval(() => {
+      // Faire tourner les noms
+      spinIdx = (spinIdx + 1) % names.length;
+      title.textContent = names[spinIdx] + ' ?';
+      title.style.color = colors[spinIdx];
+      title.style['-webkit-text-fill-color'] = colors[spinIdx];
+      icon.textContent = dices[frame % dices.length];
       frame++;
-      if (frame > 10) clearInterval(diceAnim);
-    }, 120);
+    }, 80);
+
+    // Après 2 secondes, ralentir et révéler le gagnant
+    setTimeout(() => {
+      clearInterval(spinAnim);
+      let slow = 80, si = 0;
+      const slowDown = () => {
+        if (slow > 450) {
+          // Révéler le vrai gagnant
+          title.textContent = winner.pseudo + ' commence !';
+          title.style.color = winner.color;
+          title.style['-webkit-text-fill-color'] = winner.color;
+          icon.textContent = '🎉';
+          return;
+        }
+        spinIdx = (spinIdx + 1) % names.length;
+        title.textContent = names[spinIdx] + ' ?';
+        title.style.color = colors[spinIdx];
+        title.style['-webkit-text-fill-color'] = colors[spinIdx];
+        slow *= 1.35;
+        setTimeout(slowDown, slow);
+      };
+      slowDown();
+    }, 2000);
   }
 
-  // Countdown 4→1 puis lancer
-  let count = 4;
-  const cd = overlay.querySelector('#fpm-countdown');
+  // Countdown
   const interval = setInterval(() => {
     count--;
     if (count > 0) {
@@ -1826,6 +1886,7 @@ function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
     } else {
       clearInterval(interval);
       overlay.style.opacity = '0';
+      overlay.style.transition = 'opacity 0.4s';
       setTimeout(() => { overlay.remove(); onDone(); }, 400);
     }
   }, 1000);
@@ -1953,18 +2014,38 @@ function drawBoard() {
   drawSkyAnimations();
 
   if(G.lastPlayedTiles.length>0&&Date.now()<G.highlightUntil){
-    const pulse=0.5+0.5*Math.sin(Date.now()/150);
-    const alpha=Math.max(0,1-(1-(G.highlightUntil-Date.now())/3000)*1.2);
-    ctx2d.strokeStyle=`rgba(255,215,0,${0.9*alpha*(0.7+0.3*pulse)})`;
-    ctx2d.lineWidth=(3+pulse*2)/G.zoom;
+    const remaining=(G.highlightUntil-Date.now())/5000; // 0→1 (1=début, 0=fin)
+    const pulse=0.5+0.5*Math.sin(Date.now()/180);
+    const alpha=Math.min(1,remaining*3); // fade out sur les 2 dernières secondes
+
     for(const t of G.lastPlayedTiles){
-      const tz=TILE_SIZE*1.12;
-      ctx2d.beginPath();ctx2d.roundRect(t.wx*CELL-tz/2,t.wy*CELL-tz/2,tz,tz,8);ctx2d.stroke();
-      ctx2d.fillStyle=`rgba(255,215,0,${0.6*alpha*pulse})`;
-      ctx2d.beginPath();ctx2d.arc(t.wx*CELL,t.wy*CELL,(4+pulse*3)/G.zoom,0,Math.PI*2);ctx2d.fill();
+      const tx=t.wx*CELL, ty=t.wy*CELL;
+      const tz=TILE_SIZE;
+
+      // Halo coloré autour de la tuile
+      const tileColor=COLORS[t.color]||'#fff';
+      const glowSize=(8+pulse*6)/G.zoom;
+      ctx2d.save();
+      ctx2d.shadowColor=tileColor;
+      ctx2d.shadowBlur=glowSize*G.zoom*2;
+      ctx2d.strokeStyle=`rgba(255,255,255,${0.4*alpha*(0.6+0.4*pulse)})`;
+      ctx2d.lineWidth=(2+pulse*1.5)/G.zoom;
+      ctx2d.beginPath();
+      ctx2d.roundRect(tx-tz/2-2/G.zoom, ty-tz/2-2/G.zoom,
+                      tz+4/G.zoom, tz+4/G.zoom, 10/G.zoom);
+      ctx2d.stroke();
+      ctx2d.restore();
+
+      // Particule centrale pulsante
+      ctx2d.fillStyle=`rgba(255,255,255,${0.35*alpha*pulse})`;
+      ctx2d.beginPath();
+      ctx2d.arc(tx,ty,(3+pulse*4)/G.zoom,0,Math.PI*2);
+      ctx2d.fill();
     }
     requestAnimationFrame(drawBoard);
-  } else if(G.lastPlayedTiles.length>0&&Date.now()>=G.highlightUntil){G.lastPlayedTiles=[];}
+  } else if(G.lastPlayedTiles.length>0&&Date.now()>=G.highlightUntil){
+    G.lastPlayedTiles=[];
+  }
 
   if(G.selectedTile!==null){
     const tile=G.players[myPlayerIdx()].hand[G.selectedTile];
@@ -2102,27 +2183,75 @@ function drawTileWorld(wx,wy,tile,pending){
 }
 
 function drawShape(ctx,shape,color,cx,cy,size){
-  const h=size/2;ctx.fillStyle=color;
-  ctx.shadowColor='rgba(0,0,0,0.6)';ctx.shadowBlur=size*0.10;ctx.shadowOffsetY=size*0.04;ctx.shadowOffsetX=0;
+  const h=size/2;
+  ctx.shadowColor='rgba(0,0,0,0.55)';
+  ctx.shadowBlur=size*0.12;
+  ctx.shadowOffsetY=size*0.05;
+  ctx.shadowOffsetX=0;
+
   switch(shape){
-    case 'circle':ctx.beginPath();ctx.arc(cx,cy,h*0.82,0,Math.PI*2);ctx.fill();break;
-    case 'clover':{const lr=h*0.38;
-      ctx.beginPath();ctx.arc(cx,cy-h*0.28,lr,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(cx-h*0.42,cy+h*0.10,lr,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.arc(cx+h*0.42,cy+h*0.10,lr,0,Math.PI*2);ctx.fill();
-      const sw=h*0.22;ctx.beginPath();
-      ctx.moveTo(cx-sw*0.5,cy+h*0.40);ctx.lineTo(cx+sw*0.5,cy+h*0.40);
-      ctx.lineTo(cx+sw*0.8,cy+h*0.85);ctx.lineTo(cx-sw*0.8,cy+h*0.85);ctx.closePath();ctx.fill();break;}
-    case 'diamond':ctx.beginPath();ctx.moveTo(cx,cy-h*0.92);ctx.lineTo(cx+h*0.62,cy);ctx.lineTo(cx,cy+h*0.92);ctx.lineTo(cx-h*0.62,cy);ctx.closePath();ctx.fill();break;
-    case 'square':{const sq=h*0.76;ctx.beginPath();ctx.roundRect(cx-sq,cy-sq,sq*2,sq*2,Math.max(2,sq*0.10));ctx.fill();break;}
-    case 'cross':{const arm=h*0.31,tip=h*0.84;ctx.beginPath();
-      ctx.moveTo(cx-arm,cy-tip);ctx.lineTo(cx+arm,cy-tip);ctx.lineTo(cx+arm,cy-arm);ctx.lineTo(cx+tip,cy-arm);
-      ctx.lineTo(cx+tip,cy+arm);ctx.lineTo(cx+arm,cy+arm);ctx.lineTo(cx+arm,cy+tip);ctx.lineTo(cx-arm,cy+tip);
-      ctx.lineTo(cx-arm,cy+arm);ctx.lineTo(cx-tip,cy+arm);ctx.lineTo(cx-tip,cy-arm);ctx.lineTo(cx-arm,cy-arm);
+
+    // ── Cercle : anneau épais (comme le vrai Qwirkle) ──
+    case 'circle':{
+      const ro=h*0.84, ri=h*0.46;
+      ctx.beginPath();ctx.arc(cx,cy,ro,0,Math.PI*2);
+      ctx.arc(cx,cy,ri,0,Math.PI*2,true);
+      ctx.fillStyle=color;ctx.fill('evenodd');
+      break;}
+
+    // ── Trèfle : 4 lobes disposés en croix ──
+    case 'clover':{
+      const lr=h*0.36,off=h*0.30;
+      ctx.fillStyle=color;
+      // 4 lobes (haut, bas, gauche, droite)
+      [[0,-off],[0,off],[-off,0],[off,0]].forEach(([dx,dy])=>{
+        ctx.beginPath();ctx.arc(cx+dx,cy+dy,lr,0,Math.PI*2);ctx.fill();
+      });
+      // Centre
+      const cw=h*0.28;
+      ctx.beginPath();ctx.arc(cx,cy,cw,0,Math.PI*2);ctx.fill();
+      break;}
+
+    // ── Losange : bien pointu, légèrement allongé verticalement ──
+    case 'diamond':{
+      ctx.fillStyle=color;ctx.beginPath();
+      ctx.moveTo(cx,       cy-h*0.95);
+      ctx.lineTo(cx+h*0.60,cy);
+      ctx.lineTo(cx,       cy+h*0.95);
+      ctx.lineTo(cx-h*0.60,cy);
       ctx.closePath();ctx.fill();break;}
-    case 'star':{const r1=h*0.90,r2=h*0.28;ctx.beginPath();
-      for(let i=0;i<16;i++){const a=(i*Math.PI/8)-Math.PI/2,r=i%2===0?r1:r2;
-        i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a)):ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));}
+
+    // ── Carré : bords franchement arrondis ──
+    case 'square':{
+      const sq=h*0.78,rd=sq*0.20;
+      ctx.fillStyle=color;ctx.beginPath();
+      ctx.roundRect(cx-sq,cy-sq,sq*2,sq*2,rd);
+      ctx.fill();break;}
+
+    // ── Croix : 4 branches courtes et larges (style +) ──
+    case 'cross':{
+      const arm=h*0.34,tip=h*0.82,rd=h*0.12;
+      ctx.fillStyle=color;ctx.beginPath();
+      // Branche horizontale
+      ctx.roundRect(cx-tip,cy-arm,tip*2,arm*2,rd);
+      ctx.fill();
+      // Branche verticale
+      ctx.beginPath();
+      ctx.roundRect(cx-arm,cy-tip,arm*2,tip*2,rd);
+      ctx.fill();
+      break;}
+
+    // ── Étoile : 4 pointes (comme le vrai Qwirkle) ──
+    case 'star':{
+      ctx.fillStyle=color;ctx.beginPath();
+      // 8 points = 4 pointes grandes + 4 creux
+      const r1=h*0.88,r2=h*0.34;
+      for(let i=0;i<8;i++){
+        const a=(i*Math.PI/4)-Math.PI/4;
+        const r=i%2===0?r1:r2;
+        i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a))
+             :ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
+      }
       ctx.closePath();ctx.fill();break;}
   }
   ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
@@ -2191,15 +2320,32 @@ function calcPoints(board,tiles){
 function shapeInner(shape, color) {
   const C=20;
   switch(shape){
-    case 'circle': return `<circle cx="${C}" cy="${C}" r="13.5" fill="${color}"/>`;
-    case 'cross':  return `<path fill="${color}" d="M13.5 4H26.5V13.5H36V26.5H26.5V36H13.5V26.5H4V13.5H13.5Z"/>`;
-    case 'diamond':return `<path fill="${color}" d="M20 2L35.5 20 20 38 4.5 20Z"/>`;
-    case 'square': return `<rect x="5.5" y="5.5" width="29" height="29" rx="2.5" fill="${color}"/>`;
+    // Cercle = anneau épais
+    case 'circle': return `<path fill="${color}" fill-rule="evenodd"
+      d="M20 3.5A16.5 16.5 0 1 1 20 36.5A16.5 16.5 0 0 1 20 3.5Z
+         M20 11.5A8.5 8.5 0 1 0 20 28.5A8.5 8.5 0 0 0 20 11.5Z"/>`;
+    // Croix avec bords arrondis (rect H + rect V)
+    case 'cross': return `<rect x="2.5" y="13.5" width="35" height="13" rx="4" fill="${color}"/>
+      <rect x="13.5" y="2.5" width="13" height="35" rx="4" fill="${color}"/>`;
+    // Losange pointu
+    case 'diamond':return `<path fill="${color}" d="M20 1L37 20 20 39 3 20Z"/>`;
+    // Carré arrondi
+    case 'square': return `<rect x="4" y="4" width="32" height="32" rx="6" fill="${color}"/>`;
     case 'star':{
-      const pts=[];for(let i=0;i<16;i++){const a=(i*Math.PI/8)-Math.PI/2,r=i%2===0?17:5.5;pts.push(`${(C+r*Math.cos(a)).toFixed(2)},${(C+r*Math.sin(a)).toFixed(2)}`);}
+      // 4 pointes comme le vrai Qwirkle
+      const pts=[];for(let i=0;i<8;i++){
+        const a=(i*Math.PI/4)-Math.PI/4,r=i%2===0?17.5:6.5;
+        pts.push(`${(C+r*Math.cos(a)).toFixed(2)},${(C+r*Math.sin(a)).toFixed(2)}`);
+      }
       return `<path fill="${color}" d="M${pts.join('L')}Z"/>`;
     }
-    case 'clover': return `<circle cx="20" cy="12.5" r="7.5" fill="${color}"/><circle cx="12.5" cy="22.5" r="7.5" fill="${color}"/><circle cx="27.5" cy="22.5" r="7.5" fill="${color}"/><path fill="${color}" d="M17.5 27Q17 34 14 37H26Q23 34 22.5 27Z"/>`;
+    case 'clover':
+      // 4 lobes en croix (comme l'as de trèfle Qwirkle)
+      return `<circle cx="20" cy="12" r="7.5" fill="${color}"/>
+              <circle cx="20" cy="28" r="7.5" fill="${color}"/>
+              <circle cx="12" cy="20" r="7.5" fill="${color}"/>
+              <circle cx="28" cy="20" r="7.5" fill="${color}"/>
+              <circle cx="20" cy="20" r="5.5" fill="${color}"/>`;
   }
   return '';
 }
@@ -2345,6 +2491,9 @@ function doConfirm(){
   for(const pt of G.pendingTiles) G.board[`${pt.wx},${pt.wy}`] = pt;
   G._lastConfirmedMoves = [...G.pendingTiles];
   G._lastConfirmedPts   = pts;
+  // Lueur 5 secondes sur les tuiles posées
+  G.lastPlayedTiles  = G._lastConfirmedMoves.map(t=>({...t}));
+  G.highlightUntil   = Date.now() + 5000;
 
   // Mettre à jour le joueur
   player.score += pts;
@@ -2477,6 +2626,9 @@ function aiPlay(){
             player.score+=best.pts;
             G._lastConfirmedMoves=[...staged];
             G._lastConfirmedPts=best.pts;
+            // Lueur 5s
+            G.lastPlayedTiles=[...staged];
+            G.highlightUntil=Date.now()+5000;
             animateTilesFromSky(staged);
             showAnnounce(best.pts,best.pts>=12,player.pseudo,player.score);
             playSound(best.pts>=12?'qwirkle':'score');
@@ -2525,12 +2677,25 @@ function extendMove(hand,firstTile,wx,wy){
 // ════════════════════════════════════════════════════════════════
 function checkGameOver(){
   if(G.gameOver) return true;
-  const allEmpty=G.players.every(p=>p.hand.filter(Boolean).length===0&&G.deck.length===0);
+  // Fin si un joueur a la main vide ET le sac est vide
   const deckEmpty=G.deck.length===0;
+  const winner=G.players.find(p=>p.hand.filter(Boolean).length===0);
+  const allEmpty=G.players.every(p=>p.hand.filter(Boolean).length===0)&&deckEmpty;
   let noCoup=false;
-  if(deckEmpty){noCoup=G.players.every(p=>p.hand.filter(Boolean).every(t=>getValidCells(t).length===0));}
-  if(allEmpty||noCoup){
-    setTimeout(showEndScreen, 800); // laisser le temps à l'animation
+  if(deckEmpty&&!winner){
+    noCoup=G.players.every(p=>p.hand.filter(Boolean).every(t=>getValidCells(t).length===0));
+  }
+
+  if(winner||allEmpty||noCoup){
+    // Bonus +6 pour le joueur qui a vidé sa main
+    if(winner&&deckEmpty){
+      winner.score+=6;
+      // Afficher le bonus
+      showAnnounce(6,false,winner.pseudo,winner.score,'🎉 Bonus main vide !');
+      setTimeout(showEndScreen,2200);
+    } else {
+      setTimeout(showEndScreen,800);
+    }
     return true;
   }
   return false;
@@ -2755,7 +2920,7 @@ function showAIThinking(v){document.getElementById('ai-thinking').classList.togg
 
 // ── Modale announce ──
 let _announceTimer = null;
-function showAnnounce(pts, isQwirkle, playerName, newTotal) {
+function showAnnounce(pts, isQwirkle, playerName, newTotal, subtitle) {
   const overlay = document.getElementById('announce-overlay');
   const card    = document.getElementById('announce-card');
   if (!overlay || !card) return;
@@ -2769,7 +2934,7 @@ function showAnnounce(pts, isQwirkle, playerName, newTotal) {
   document.getElementById('announce-pts').style.color  =
     isQwirkle ? 'var(--orange)' : pts >= 6 ? 'var(--accent)' : 'var(--gold)';
   document.getElementById('announce-text').textContent =
-    isQwirkle ? `${playerName} réalise un Qwirkle !` : `${playerName} marque ${pts} point${pts>1?'s':''}`;
+    subtitle || (isQwirkle ? `${playerName} réalise un Qwirkle !` : `${playerName} marque ${pts} point${pts>1?'s':''}`);
   document.getElementById('announce-total').textContent =
     newTotal !== undefined ? `Total : ${newTotal} pts` : '';
 
