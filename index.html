@@ -1094,14 +1094,15 @@ async function saveOnlineGameState() {
   }
 }
 
+// Index du joueur actif lors du dernier sync — pour détecter un vrai changement de tour
+let _lastSyncCurrent = -1;
+
 async function syncOnlineGame() {
   if (!_currentRoom || !sb || G.gameOver) return;
   try {
     const data = await sbGetGameState(_currentRoom.id);
     if (!data || !data.state) return;
 
-    // Utiliser updated_at de Supabase comme horloge globale
-    // (pas de version locale qui repart à 0 sur chaque client)
     const updatedAt = data.updated_at;
     if (updatedAt && updatedAt === _lastSyncAt) return;
     _lastSyncAt = updatedAt;
@@ -1113,9 +1114,8 @@ async function syncOnlineGame() {
     G.deck    = state.deck  || [];
     G.current = (state.current !== undefined) ? state.current : 0;
 
-    // Tuiles adverses en cours (temps réel — pas encore validées)
-    if (state.livePending && state.livePending.length &&
-        !isMyTurn()) {
+    // Tuiles adverses en cours (temps réel)
+    if (state.livePending && state.livePending.length && !isMyTurn()) {
       G._opponentPending = state.livePending;
     } else {
       G._opponentPending = [];
@@ -1130,12 +1130,6 @@ async function syncOnlineGame() {
         G.players[i].isHuman   = (sp.device_id === DEVICE_ID);
         G.players[i].isAI      = false;
       });
-      // myIdx calculé dynamiquement par myPlayerIdx()
-    }
-
-    // Animer les tuiles adverses
-    if (state.lastMoves && state.lastMoves.length && prevCurrent !== G.current) {
-      animateTilesFromSky(state.lastMoves);
     }
 
     updateHeader();
@@ -1143,7 +1137,12 @@ async function syncOnlineGame() {
     drawBoard();
 
     const myTurn = isMyTurn();
-    if (myTurn) {
+    // "À vous de jouer" uniquement si G.current vient de CHANGER vers moi
+    // (pas à chaque sync pendant que c'est déjà mon tour)
+    const turnJustChangedToMe = myTurn && (G.current !== _lastSyncCurrent);
+
+    if (turnJustChangedToMe) {
+      _lastSyncCurrent = G.current;
       startTurnTimer();
       document.getElementById('btn-confirm').disabled = true;
       document.getElementById('btn-discard').disabled = false;
@@ -1151,11 +1150,18 @@ async function syncOnlineGame() {
       showToast(`À vous de jouer !`, 'ok', 1800);
     }
 
-    // Announce des points adverses
-    if (state.lastPts !== undefined && state.lastPts > 0 && !myTurn) {
-      const adv = G.players[G.current];
-      showAnnounce(state.lastPts, state.lastPts >= 12, adv?.pseudo || '?', adv?.score);
-      playSound(state.lastPts >= 12 ? 'qwirkle' : 'score');
+    // Animer + announce les tuiles adverses seulement si le tour a changé
+    const turnChanged = G.current !== prevCurrent;
+    if (turnChanged) {
+      if (state.lastMoves && state.lastMoves.length) {
+        animateTilesFromSky(state.lastMoves);
+      }
+      if (state.lastPts > 0 && !myTurn) {
+        const prevIdx = (G.current + G.players.length - 1) % G.players.length;
+        const adv = G.players[prevIdx];
+        showAnnounce(state.lastPts, state.lastPts >= 12, adv?.pseudo || '?', adv?.score);
+        playSound(state.lastPts >= 12 ? 'qwirkle' : 'score');
+      }
     }
 
   } catch(e) { console.warn('syncOnlineGame:', e); }
@@ -1834,6 +1840,8 @@ function launchGame() {
   // Démarrer le polling en ligne
   if (_currentRoom) {
     clearInterval(_gamePolling);
+    _lastSyncAt = null;       // forcer resync au lancement
+    _lastSyncCurrent = -1;    // forcer notification au premier tour
     _gamePolling = setInterval(syncOnlineGame, 2000);
   }
 
