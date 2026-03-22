@@ -887,13 +887,16 @@ async function syncOnlineGame() {
     if (state.players) {
       state.players.forEach((sp, i) => {
         if (G.players[i]) {
-          G.players[i].score = sp.score || 0;
-          G.players[i].hand  = sp.hand  || [];
-          // CRUCIAL : recalculer isHuman selon le device_id de CE client
-          G.players[i].isHuman = (sp.device_id === DEVICE_ID);
-          G.players[i].isAI    = false;
+          G.players[i].score     = sp.score || 0;
+          G.players[i].hand      = sp.hand  || [];
+          G.players[i].device_id = sp.device_id;
+          G.players[i].isHuman   = (sp.device_id === DEVICE_ID);
+          G.players[i].isAI      = false;
         }
       });
+      // Recalculer myIdx (au cas où l'ordre aurait changé)
+      const newMyIdx = G.players.findIndex(p => p.device_id === DEVICE_ID);
+      if (newMyIdx >= 0) G.myIdx = newMyIdx;
     }
 
     updateHeader();
@@ -1354,13 +1357,13 @@ let G = {};
 
 function initGame(players, boardTheme) {
   const deck = makeDeck();
+  const builtPlayers = players.map((p, i) => ({ ...p, score:0, hand:draw(deck, 6) }));
+  // Trouver l'index de CE joueur dans la liste
+  const myIdx = builtPlayers.findIndex(p => p.device_id === DEVICE_ID);
   G = {
     deck, board:{}, current:0,
-    players: players.map((p, i) => ({
-      ...p,
-      score: 0,
-      hand: draw(deck, 6),
-    })),
+    players: builtPlayers,
+    myIdx: myIdx >= 0 ? myIdx : 0,  // index stable de CE client
     pendingTiles:[], selectedTile:null,
     discardMode:false, toDiscard:new Set(),
     lastPlayedTiles:[], highlightUntil:0,
@@ -1517,7 +1520,7 @@ function drawBoard() {
   } else if(G.lastPlayedTiles.length>0&&Date.now()>=G.highlightUntil){G.lastPlayedTiles=[];}
 
   if(G.selectedTile!==null){
-    const tile=G.players[G.current].hand[G.selectedTile];
+    const tile=G.players[G.myIdx].hand[G.selectedTile];
     if(tile){
       const cells=getValidCells(tile);
       ctx2d.fillStyle='rgba(0,240,255,0.08)';ctx2d.strokeStyle='rgba(0,240,255,0.4)';ctx2d.lineWidth=1.5/G.zoom;
@@ -1684,14 +1687,28 @@ function makeTileSVG(tile){
 // HAND & INTERACTIONS
 // ════════════════════════════════════════════════════════════════
 function renderHand(){
-  const player=G.players[G.current];
   const container=document.getElementById('hand-tiles');
   container.innerHTML='';
-  if(!player.isHuman){
-    const msg = player.isAI ? `L'IA réfléchit…` : `Tour de ${player.pseudo}…`;
-    container.innerHTML=`<div style="color:rgba(255,255,255,0.25);font-size:11px;letter-spacing:1px;text-align:center;">${msg}</div>`;
-    return;
+  // Toujours afficher SA propre main
+  const me = G.players[G.myIdx];
+  if (!me) return;
+
+  // Indiquer si c'est notre tour ou non
+  const isMyTurn = (G.myIdx === G.current);
+  const handLabel = document.getElementById('hand-label');
+  if (handLabel) {
+    if (isMyTurn) {
+      handLabel.textContent = 'Votre main';
+      handLabel.style.color = '';
+    } else {
+      const active = G.players[G.current];
+      handLabel.textContent = `Tour de ${active ? active.pseudo : '…'}`;
+      handLabel.style.color = active ? active.color : 'rgba(255,255,255,0.4)';
+    }
   }
+
+  // Afficher les tuiles même si ce n'est pas notre tour (grises)
+  const player = me;
   player.hand.forEach((tile,idx)=>{
     const el=document.createElement('div');
     let cls='tile';
@@ -1705,7 +1722,9 @@ function renderHand(){
 }
 
 function selectTile(idx){
-  if(G.players[G.current].hand[idx]===null)return;
+  // On ne peut interagir que si c'est notre tour
+  if(G.myIdx !== G.current) return;
+  if(G.players[G.myIdx].hand[idx]===null)return;
   if(G.discardMode){
     if(G.toDiscard.has(idx))G.toDiscard.delete(idx);else G.toDiscard.add(idx);
     updateDiscardBtn();renderHand();return;
@@ -1718,13 +1737,15 @@ function selectTile(idx){
 // ACTIONS JEU
 // ════════════════════════════════════════════════════════════════
 function doConfirm(){
+  if(G.myIdx !== G.current) return; // pas notre tour
   if(!G.pendingTiles.length)return;
-  const player=G.players[G.current];
+  const player=G.players[G.myIdx];
   const pts=calcPoints(G.board,G.pendingTiles);
   for(const pt of G.pendingTiles)G.board[`${pt.wx},${pt.wy}`]=pt;
   player.score+=pts;
   player.hand=player.hand.map(t=>t===null?draw(G.deck,1)[0]||null:t);
   G.pendingTiles=[];G.selectedTile=null;
+  G.discardMode=false;G.toDiscard=new Set();
   showToast(pts>=12?`🔥 QWIRKLE +${pts}`:`+${pts} pts`,pts>=12?'pts':'ok',1800);
   document.getElementById('btn-confirm').disabled=true;
   updateHeader();renderHand();drawBoard();
@@ -1733,6 +1754,9 @@ function doConfirm(){
 }
 
 function toggleDiscardMode(){
+  if(G.myIdx !== G.current && !G.discardMode) {
+    showToast(`Ce n'est pas votre tour`,'err',1500); return;
+  }
   if(G.discardMode){
     if(G.toDiscard.size>0)confirmDiscard();else exitDiscardMode();return;
   }
@@ -1743,7 +1767,7 @@ function toggleDiscardMode(){
   showToast('Sélectionne les tuiles à jeter','ok',2000);
 }
 function confirmDiscard(){
-  const player=G.players[G.current];const n=G.toDiscard.size;if(!n){exitDiscardMode();return;}
+  const player=G.players[G.myIdx];const n=G.toDiscard.size;if(!n){exitDiscardMode();return;}
   const newTiles=draw(G.deck,Math.min(n,G.deck.length));let ni=0;
   G.toDiscard.forEach(idx=>{player.hand[idx]=newTiles[ni++]||null;});
   showToast(`${n} tuile${n>1?'s':''} jetée${n>1?'s':''}`,  'ok',1800);
@@ -1761,7 +1785,7 @@ function updateDiscardBtn(){
 function doUndo(){if(!G.pendingTiles.length)return;cancelPending();}
 function cancelPending(){
   if(G.discardMode){exitDiscardMode();return;}
-  const player=G.players[G.current];
+  const player=G.players[G.myIdx];
   for(const pt of G.pendingTiles){const ei=player.hand.findIndex(t=>t===null);if(ei>=0)player.hand[ei]={shape:pt.shape,color:pt.color,id:pt.id};}
   G.pendingTiles=[];G.selectedTile=null;
   document.getElementById('btn-confirm').disabled=true;
@@ -1983,13 +2007,13 @@ function onPU(e){
 }
 function onBoardTap(sx,sy){
   if(G.selectedTile===null)return;
-  if(!G.players[G.current].isHuman)return;
+  if(G.myIdx !== G.current)return; // pas notre tour
   const rect=canvas.getBoundingClientRect();
   const{x:wx,y:wy}=screenToWorld(sx-rect.left,sy-rect.top);
-  const tile=G.players[G.current].hand[G.selectedTile];
+  const tile=G.players[G.myIdx].hand[G.selectedTile];
   if(isValidPlacement(G.board,G.pendingTiles,wx,wy,tile)){
     G.pendingTiles.push({...tile,wx,wy});
-    G.players[G.current].hand[G.selectedTile]=null;
+    G.players[G.myIdx].hand[G.selectedTile]=null;
     G.selectedTile=null;
     document.getElementById('btn-confirm').disabled=false;
     renderHand();drawBoard();
@@ -2098,4 +2122,3 @@ function showToast(msg,type,dur=1600){
 </script>
 </body>
 </html>
-
