@@ -931,6 +931,11 @@ let PROFILE = {
   pseudo: '', color: '#00f0ff', emoji: '🎮',
   games: 0, wins: 0, best_score: 0,
 };
+// Garantir une couleur par défaut si jamais le profil est vide
+function ensureProfileDefaults() {
+  if (!PROFILE.color) PROFILE.color = '#00f0ff';
+  if (!PROFILE.emoji) PROFILE.emoji = '🎮';
+}
 
 const PLAYER_COLORS = [
   '#00f0ff','#00ff88','#ff4757','#ff9f00','#bd00ff','#FFD700',
@@ -941,18 +946,29 @@ const EMOJI_LIST = ['🎮','🦊','🐼','🐸','🦁','🐯','🤖','👾','�
   '🌟','🔥','⚡','💎','🦄','🐉','🦅','🐺','🦝','🎭'];
 
 function initProfileScreen() {
+  ensureProfileDefaults();
   // Couleurs
   const row = document.getElementById('color-row');
-  row.innerHTML = PLAYER_COLORS.map(c => `
-    <div class="color-dot${c===PROFILE.color?' selected':''}"
-         style="background:${c}" data-color="${c}"
-         onclick="selectColor('${c}')"></div>`).join('');
+  row.innerHTML = '';
+  PLAYER_COLORS.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'color-dot' + (c === PROFILE.color ? ' selected' : '');
+    d.style.background = c;
+    d.dataset.color = c;
+    d.addEventListener('click', () => selectColor(c));
+    row.appendChild(d);
+  });
 
   // Emojis
   const picker = document.getElementById('emoji-picker');
-  picker.innerHTML = EMOJI_LIST.map(e =>
-    `<span class="emoji-opt" onclick="selectEmoji('${e}'); event.stopPropagation()">${e}</span>`
-  ).join('');
+  picker.innerHTML = '';
+  EMOJI_LIST.forEach(e => {
+    const span = document.createElement('span');
+    span.className = 'emoji-opt';
+    span.textContent = e;
+    span.addEventListener('click', (ev) => { ev.stopPropagation(); selectEmoji(e); });
+    picker.appendChild(span);
+  });
 
   // Remplir depuis profil sauvegardé
   document.getElementById('pseudo-input').value = PROFILE.pseudo;
@@ -974,7 +990,8 @@ function initProfileScreen() {
 function onPseudoInput() { updateSaveBtn(); }
 function updateSaveBtn() {
   const v = document.getElementById('pseudo-input').value.trim();
-  document.getElementById('btn-save-profile').disabled = v.length < 2;
+  const hasColor = !!PROFILE.color;
+  document.getElementById('btn-save-profile').disabled = v.length < 2 || !hasColor;
 }
 
 function selectColor(c) {
@@ -1668,7 +1685,7 @@ function renderHand(){
   const container=document.getElementById('hand-tiles');
   container.innerHTML='';
   if(!player.isHuman){
-    const msg = player.isAI ? 'L'IA réfléchit…' : `Tour de ${player.pseudo}…`;
+    const msg = player.isAI ? `L'IA réfléchit…` : `Tour de ${player.pseudo}…`;
     container.innerHTML=`<div style="color:rgba(255,255,255,0.25);font-size:11px;letter-spacing:1px;text-align:center;">${msg}</div>`;
     return;
   }
@@ -2078,3 +2095,4 @@ function showToast(msg,type,dur=1600){
 </script>
 </body>
 </html>
+
