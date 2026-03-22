@@ -1136,8 +1136,8 @@ async function syncOnlineGame() {
     renderHand();
     drawBoard();
 
-    const isMyTurn = (isMyTurn());
-    if (isMyTurn) {
+    const myTurn = isMyTurn();
+    if (myTurn) {
       startTurnTimer();
       document.getElementById('btn-confirm').disabled = true;
       document.getElementById('btn-discard').disabled = false;
@@ -1146,7 +1146,7 @@ async function syncOnlineGame() {
     }
 
     // Announce des points adverses
-    if (state.lastPts !== undefined && state.lastPts > 0 && !isMyTurn) {
+    if (state.lastPts !== undefined && state.lastPts > 0 && !myTurn) {
       const adv = G.players[G.current];
       showAnnounce(state.lastPts, state.lastPts >= 12, adv?.pseudo || '?', adv?.score);
       playSound(state.lastPts >= 12 ? 'qwirkle' : 'score');
@@ -2209,7 +2209,7 @@ function renderHand(){
   // Indiquer si c'est notre tour ou non
   const handLabel = document.getElementById('hand-label');
   if (handLabel) {
-    const isMyTurn = (isMyTurn());
+    const myTurn = isMyTurn();
     if (isMyTurn) {
       handLabel.textContent = 'Votre main';
       handLabel.style.color = '';
@@ -2222,7 +2222,7 @@ function renderHand(){
 
   // Afficher les tuiles même si ce n'est pas notre tour (grises)
   const player = me;
-  const isMyTurn = (isMyTurn());
+  const myTurnNow = isMyTurn();
   let _dragSrc = null;
 
   player.hand.forEach((tile, idx) => {
@@ -2231,7 +2231,7 @@ function renderHand(){
     if (tile === null) cls += ' ghost';
     else if (G.discardMode && G.toDiscard.has(idx)) cls += ' to-discard';
     else if (!G.discardMode && G.selectedTile === idx) cls += ' selected';
-    if (_currentRoom && !isMyTurn) el.style.opacity = '0.5';
+    if (_currentRoom && !myTurnNow) el.style.opacity = '0.5';
     el.className = cls;
     el.dataset.idx = idx;
 
