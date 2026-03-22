@@ -315,6 +315,7 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
 .hand-tiles{display:flex;gap:8px;justify-content:center;margin-bottom:12px;
   min-height:62px;align-items:center;}
 .tile{width:58px;height:58px;border-radius:10px;
+  -webkit-user-drag:none;
   background:linear-gradient(145deg,#2c3044 0%,#181c28 40%,#0d1018 100%);
   display:flex;align-items:center;justify-content:center;
   cursor:grab;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.15s;
@@ -328,6 +329,9 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
   box-shadow:3px 12px 0 #02030a,0 18px 36px rgba(0,240,255,0.4),
              0 0 0 2px var(--accent),inset 0 1px 0 rgba(255,255,255,0.12);}
 .tile.ghost{opacity:0.28;pointer-events:none;}
+.tile.drag-over{border:2px solid var(--accent)!important;
+  box-shadow:0 0 16px rgba(0,240,255,0.4)!important;transform:scale(1.05)!important;}
+.tile.dragging{opacity:0.4;transform:scale(0.92);}
 .tile.to-discard{border:2px solid var(--orange) !important;
   box-shadow:2px 4px 0 #03040a,0 0 16px rgba(255,159,0,0.4),0 0 0 2px var(--orange) !important;
   transform:translateY(-4px) scale(1.06) !important;filter:brightness(0.7) sepia(0.3);}
@@ -409,6 +413,22 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
 /* ══════════════════════════════════════════════════
    RESPONSIVE — TABLETTE (≥ 600px)
 ══════════════════════════════════════════════════ */
+/* ═══ TABLETTE PORTRAIT ═══ */
+@media (min-width: 480px) and (max-width: 767px) {
+  .tile { width:62px; height:62px; }
+  .tile svg { width:40px; height:40px; }
+  .mode-btn { padding:22px 16px; }
+  .mode-btn .icon { font-size:2.6rem; }
+  .profile-card { padding:26px 22px; }
+  .color-dot { width:34px; height:34px; }
+  .btn-primary { padding:18px; font-size:14px; }
+  .act-btn { padding:14px 10px; font-size:11px; }
+  .game-bottom { padding:14px 18px 18px; }
+  .diff-btn { padding:13px 8px; font-size:11px; }
+  .slot { padding:13px 16px; }
+  .slot-name { font-size:14px; }
+}
+
 @media (min-width: 600px) {
   /* Base : tout est plus aéré */
   body { font-size:16px; }
@@ -864,59 +884,65 @@ async function sbGetGameState(roomId) {
   return data || null;
 }
 
+let _gameVersion = 0;   // compteur de version incrémental
+let _lastSyncVer = -1;  // dernière version reçue
+
 // Sauvegarder l'état du jeu sur Supabase après chaque coup
 async function saveOnlineGameState() {
   if (!_currentRoom || !sb) return;
-  // N'importe quel joueur peut sauvegarder (celui qui vient de jouer)
+  _gameVersion++;
   const state = {
-    board: G.board,
-    deck: G.deck,
+    board:   G.board,
+    deck:    G.deck,
     current: G.current,
+    version: _gameVersion,
+    lastMoves: G.pendingTiles.length ? G.pendingTiles : G._lastConfirmedMoves || [],
     players: G.players.map(p => ({
       pseudo: p.pseudo, color: p.color, emoji: p.emoji,
-      score: p.score, hand: p.hand,
-      device_id: p.device_id, isAI: false, // jamais d'IA en ligne
+      score:  p.score,  hand:  p.hand,
+      device_id: p.device_id,
     })),
-    turn: G.turn || 1,
-    ts: Date.now(),
   };
-  try { await sbSaveGameState(_currentRoom.id, state); } catch(e) {}
+  try { await sbSaveGameState(_currentRoom.id, state); } catch(e) {
+    console.error('saveOnlineGameState:', e);
+  }
 }
-
-let _lastSyncTs = 0;
 
 // Synchroniser l'état depuis Supabase (pour les joueurs non-host)
 async function syncOnlineGame() {
   if (!_currentRoom || !sb || G.gameOver) return;
-
   try {
     const data = await sbGetGameState(_currentRoom.id);
     if (!data || !data.state) return;
     const state = data.state;
 
-    // Ignorer si aucun changement
-    if (state.ts && state.ts <= _lastSyncTs) return;
-    _lastSyncTs = state.ts || 0;
+    // Ignorer si même version ou plus vieille
+    const ver = state.version || 0;
+    if (ver <= _lastSyncVer) return;
+    _lastSyncVer = ver;
 
-    // Reconstruire l'état complet
-    G.board   = state.board   || {};
-    G.deck    = state.deck    || [];
-    G.current = state.current || 0;
+    // Reconstruire l'état depuis Supabase
+    G.board   = state.board || {};
+    G.deck    = state.deck  || [];
+    // current peut valoir 0 — ne pas utiliser || 0 qui confondrait 0 et undefined
+    G.current = (state.current !== undefined) ? state.current : 0;
 
     if (state.players && state.players.length) {
-      // Reconstruire chaque joueur en conservant isHuman/isAI calculés localement
       state.players.forEach((sp, i) => {
         if (!G.players[i]) return;
         G.players[i].score     = sp.score || 0;
         G.players[i].hand      = sp.hand  || [];
         G.players[i].device_id = sp.device_id;
-        // Calculer isHuman selon CE client, pas ce qui est sauvegardé
         G.players[i].isHuman   = (sp.device_id === DEVICE_ID);
         G.players[i].isAI      = false;
       });
-      // Recalculer myIdx
       G.myIdx = G.players.findIndex(p => p.isHuman);
       if (G.myIdx < 0) G.myIdx = 0;
+    }
+
+    // Animer les nouvelles tuiles posées
+    if (state.lastMoves && state.lastMoves.length) {
+      animateTilesFromSky(state.lastMoves);
     }
 
     updateHeader();
@@ -926,11 +952,9 @@ async function syncOnlineGame() {
     const isMyTurnNow = (G.myIdx === G.current);
     if (isMyTurnNow) {
       startTurnTimer();
-      document.getElementById('btn-confirm').disabled = true; // reset
-      document.getElementById('btn-discard').disabled = false;
-    } else {
-      // Pas notre tour : bloquer les boutons d'action
       document.getElementById('btn-confirm').disabled = true;
+      document.getElementById('btn-discard').disabled = false;
+      showToast(`C'est votre tour !`, 'ok', 1800);
     }
 
   } catch(e) { console.warn('syncOnlineGame:', e); }
@@ -1679,6 +1703,7 @@ function drawBoard() {
 
   for(const [key,tile] of Object.entries(G.board)){const[wx,wy]=key.split(',').map(Number);drawTileWorld(wx,wy,tile,false);}
   for(const pt of G.pendingTiles) drawTileWorld(pt.wx,pt.wy,pt,true);
+  drawSkyAnimations();
 
   if(G.lastPlayedTiles.length>0&&Date.now()<G.highlightUntil){
     const pulse=0.5+0.5*Math.sin(Date.now()/150);
@@ -1722,6 +1747,80 @@ function drawMarble(ctx,w,h){
     ctx.bezierCurveTo(l.x2*w+3,l.y2*h+2,l.x3*w+3,l.y3*h+1,l.x4*w+4,l.y4*h+2);
     ctx.strokeStyle=`rgba(200,192,184,${l.a*0.6})`;ctx.lineWidth=l.lw*0.4;ctx.stroke();
   });
+}
+
+// Animation "tombée du ciel"
+let _skyAnims = [];
+let _skyRunning = false;
+
+function animateTilesFromSky(moves) {
+  if (!moves || !moves.length) return;
+  const now = performance.now();
+  moves.forEach((t, i) => {
+    _skyAnims.push({ wx:t.wx, wy:t.wy, tile:t,
+      startTime: now + i*180, duration:440 });
+  });
+  if (!_skyRunning) _runSkyAnim();
+}
+
+function _runSkyAnim() {
+  _skyRunning = true;
+  const now = performance.now();
+  _skyAnims = _skyAnims.filter(a => now < a.startTime + a.duration + 60);
+  if (!_skyAnims.length) { _skyRunning = false; drawBoard(); return; }
+  drawBoard();
+  requestAnimationFrame(_runSkyAnim);
+}
+
+function drawSkyAnimations() {
+  const now = performance.now();
+  for (const a of _skyAnims) {
+    if (now < a.startTime) continue;
+    const raw = Math.min(1, (now - a.startTime) / a.duration);
+    const DROP = 9; // cellules au dessus
+    let fy, alpha, sx=1, sy=1;
+    if (raw < 0.72) {
+      const t = raw/0.72;
+      const ease = t*t*(3-2*t); // smoothstep
+      fy = a.wy - DROP*(1-ease);
+      alpha = 0.2 + 0.8*ease;
+    } else {
+      // Rebond léger
+      const b = (raw-0.72)/0.28;
+      const squish = Math.sin(b*Math.PI)*0.14*(1-b);
+      fy = a.wy;
+      alpha = 1;
+      sx = 1 + squish;
+      sy = 1 - squish*0.6;
+    }
+    _drawTileAt(a.wx, fy, a.tile, alpha, sx, sy);
+  }
+}
+
+function _drawTileAt(wx, fy, tile, alpha, sx, sy) {
+  const x=wx*CELL, y=fy*CELL;
+  const s=TILE_SIZE, r=Math.max(2/G.zoom,s*0.10), dep=Math.max(1/G.zoom,s*0.06);
+  ctx2d.globalAlpha = alpha;
+  ctx2d.save();
+  ctx2d.translate(x, y); ctx2d.scale(sx, sy); ctx2d.translate(-x, -y);
+  ctx2d.shadowColor='rgba(0,0,0,0.8)';
+  ctx2d.shadowBlur=s*0.2*G.zoom;
+  ctx2d.shadowOffsetY=dep*2*G.zoom;
+  ctx2d.beginPath();
+  ctx2d.roundRect(x-s/2+dep*0.8,y-s/2+dep*1.5,s,s,r);
+  ctx2d.fillStyle='#03040a'; ctx2d.fill();
+  ctx2d.shadowColor='transparent'; ctx2d.shadowBlur=0; ctx2d.shadowOffsetY=0;
+  ctx2d.beginPath();
+  ctx2d.roundRect(x-s/2,y-s/2,s,s,r);
+  const g=ctx2d.createLinearGradient(x-s/2,y-s/2,x-s/2,y+s/2);
+  g.addColorStop(0,'#2a2d38');g.addColorStop(0.15,'#1a1d28');
+  g.addColorStop(0.85,'#111318');g.addColorStop(1,'#0c0e14');
+  ctx2d.fillStyle=g; ctx2d.fill();
+  ctx2d.strokeStyle='rgba(255,255,255,0.08)';
+  ctx2d.lineWidth=Math.max(0.3/G.zoom,s*0.012); ctx2d.stroke();
+  drawShape(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.60);
+  ctx2d.restore();
+  ctx2d.globalAlpha=1;
 }
 
 function drawTileWorld(wx,wy,tile,pending){
@@ -1885,16 +1984,85 @@ function renderHand(){
   // Afficher les tuiles même si ce n'est pas notre tour (grises)
   const player = me;
   const isMyTurn = (G.myIdx === G.current);
-  player.hand.forEach((tile,idx)=>{
-    const el=document.createElement('div');
-    let cls='tile';
-    if(tile===null) cls+=' ghost';
-    else if(G.discardMode && G.toDiscard.has(idx)) cls+=' to-discard';
-    else if(!G.discardMode && G.selectedTile===idx) cls+=' selected';
-    // En ligne, hors de notre tour : tuiles visibles mais non interactives
-    if(_currentRoom && !isMyTurn) el.style.opacity='0.5';
-    el.className=cls;el.dataset.idx=idx;
-    if(tile){el.appendChild(makeTileSVG(tile));el.onclick=()=>selectTile(idx);}
+  let _dragSrc = null;
+
+  player.hand.forEach((tile, idx) => {
+    const el = document.createElement('div');
+    let cls = 'tile';
+    if (tile === null) cls += ' ghost';
+    else if (G.discardMode && G.toDiscard.has(idx)) cls += ' to-discard';
+    else if (!G.discardMode && G.selectedTile === idx) cls += ' selected';
+    if (_currentRoom && !isMyTurn) el.style.opacity = '0.5';
+    el.className = cls;
+    el.dataset.idx = idx;
+
+    if (tile) {
+      el.appendChild(makeTileSVG(tile));
+
+      // Sélection au tap
+      el.addEventListener('click', () => selectTile(idx));
+
+      // Drag & drop pour réorganiser (toujours disponible)
+      el.draggable = true;
+      el.addEventListener('dragstart', e => {
+        _dragSrc = idx;
+        el.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', idx);
+      });
+      el.addEventListener('dragend', () => {
+        el.classList.remove('dragging');
+        container.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-over'));
+      });
+      el.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (_dragSrc !== null && _dragSrc !== idx)
+          el.classList.add('drag-over');
+      });
+      el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+      el.addEventListener('drop', e => {
+        e.preventDefault();
+        el.classList.remove('drag-over');
+        if (_dragSrc === null || _dragSrc === idx) return;
+        // Échanger les deux tuiles dans la main
+        const hand = G.players[G.myIdx].hand;
+        [hand[_dragSrc], hand[idx]] = [hand[idx], hand[_dragSrc]];
+        // Ajuster selectedTile si besoin
+        if (G.selectedTile === _dragSrc) G.selectedTile = idx;
+        else if (G.selectedTile === idx) G.selectedTile = _dragSrc;
+        _dragSrc = null;
+        renderHand();
+      });
+
+      // Touch drag (mobile/tablette)
+      let touchStartX, touchStartY, touchStartIdx;
+      el.addEventListener('touchstart', e => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartIdx = idx;
+      }, {passive:true});
+      el.addEventListener('touchend', e => {
+        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+        if (dx < 8 && dy < 8) return; // c'était un tap, pas un drag
+        // Trouver la tuile cible
+        const ex = e.changedTouches[0].clientX;
+        const tiles = [...container.querySelectorAll('.tile')];
+        let targetIdx = null;
+        tiles.forEach((t, i) => {
+          const r = t.getBoundingClientRect();
+          if (ex >= r.left && ex <= r.right) targetIdx = parseInt(t.dataset.idx);
+        });
+        if (targetIdx !== null && targetIdx !== touchStartIdx) {
+          const hand = G.players[G.myIdx].hand;
+          [hand[touchStartIdx], hand[targetIdx]] = [hand[targetIdx], hand[touchStartIdx]];
+          if (G.selectedTile === touchStartIdx) G.selectedTile = targetIdx;
+          else if (G.selectedTile === targetIdx) G.selectedTile = touchStartIdx;
+          renderHand();
+        }
+      }, {passive:true});
+    }
     container.appendChild(el);
   });
 }
@@ -1920,6 +2088,8 @@ function doConfirm(){
   const player=G.players[G.myIdx];
   const pts=calcPoints(G.board,G.pendingTiles);
   for(const pt of G.pendingTiles)G.board[`${pt.wx},${pt.wy}`]=pt;
+  G._lastConfirmedMoves = [...G.pendingTiles];
+  animateTilesFromSky(G._lastConfirmedMoves); // animation locale
   player.score+=pts;
   player.hand=player.hand.map(t=>t===null?draw(G.deck,1)[0]||null:t);
   G.pendingTiles=[];G.selectedTile=null;
