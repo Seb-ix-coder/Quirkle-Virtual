@@ -362,7 +362,7 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
 .ai-dot:nth-child(3){animation-delay:0.4s;}
 @keyframes aipulse{from{opacity:0.2;transform:scale(0.8)}to{opacity:1;transform:scale(1.2)}}
 
-/* Toast */
+/* ── Toast erreur (petit) ── */
 .toast{position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-10px);
   background:rgba(10,13,20,0.95);border:1px solid var(--border);border-radius:50px;
   padding:10px 22px;font-size:11px;font-weight:800;letter-spacing:1px;
@@ -371,7 +371,86 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
 .toast.hidden{opacity:0;transform:translateX(-50%) translateY(-20px);pointer-events:none;}
 .toast.ok{color:var(--green);border-color:rgba(0,255,136,0.3);}
 .toast.err{color:var(--red);border-color:rgba(255,71,87,0.3);}
-.toast.pts{color:var(--gold);border-color:rgba(255,215,0,0.3);}
+
+/* ── Modale announce style Qwirkle Pro ── */
+@keyframes announceIn{0%{transform:scale(0.5) translateY(60px);opacity:0}
+  100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes announceOut{0%{transform:scale(1);opacity:1}
+  100%{transform:scale(0.85) translateY(-20px);opacity:0}}
+@keyframes iconPop{0%{transform:scale(0) rotate(-20deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes ptsPop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes frameSweep{0%,100%{transform:translateX(-200%)}50%{transform:translateX(200%)}}
+@keyframes qwirkleGlow{0%,100%{box-shadow:0 0 30px rgba(255,159,0,0.3),0 30px 80px rgba(0,0,0,0.9)}
+  50%{box-shadow:0 0 60px rgba(255,159,0,0.6),0 30px 80px rgba(0,0,0,0.9)}}
+
+.announce-overlay{position:fixed;inset:0;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(5,7,9,0.75);backdrop-filter:blur(12px);
+  transition:opacity 0.3s;}
+.announce-overlay.hidden{opacity:0;pointer-events:none;}
+.announce-card{max-width:340px;width:92%;background:#0a0d12;
+  border:1px solid rgba(255,255,255,0.1);border-radius:28px;
+  padding:32px 36px;text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,0.9),inset 0 0 0 1px rgba(255,255,255,0.03);
+  transform:scale(0.5) translateY(60px);opacity:0;position:relative;overflow:hidden;}
+.announce-card::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(110deg,transparent 38%,rgba(255,255,255,0.02) 50%,transparent 62%);
+  animation:frameSweep 6s ease-in-out infinite;pointer-events:none;}
+.announce-card.show{animation:announceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;}
+.announce-card.hide{animation:announceOut 0.3s ease-in forwards;}
+.announce-card.is-qwirkle{animation:announceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards,
+  qwirkleGlow 1.5s ease-in-out 0.5s infinite;}
+.announce-icon{font-size:4.5rem;margin-bottom:12px;
+  animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;display:block;}
+.announce-type{font-size:11px;font-weight:800;letter-spacing:4px;
+  text-transform:uppercase;margin-bottom:10px;opacity:0.6;}
+.announce-pts{font-size:3.2rem;font-weight:900;margin:10px 0 6px;
+  letter-spacing:-2px;font-variant-numeric:tabular-nums;
+  animation:ptsPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;display:block;}
+.announce-text{font-size:13px;font-weight:600;line-height:1.5;color:rgba(255,255,255,0.8);}
+.announce-total{font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;
+  letter-spacing:0.5px;display:block;}
+
+/* ── Chat ── */
+.chat-panel{position:fixed;bottom:0;left:0;right:0;z-index:200;
+  background:rgba(10,13,20,0.97);backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,0.08);
+  transition:transform 0.3s var(--ease);}
+.chat-panel.collapsed{transform:translateY(calc(100% - 44px));}
+.chat-header{display:flex;align-items:center;gap:10px;padding:12px 16px;
+  cursor:pointer;user-select:none;}
+.chat-toggle-icon{font-size:12px;transition:transform 0.3s;}
+.chat-panel.collapsed .chat-toggle-icon{transform:rotate(180deg);}
+.chat-label{font-size:10px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;color:rgba(255,255,255,0.5);flex:1;}
+.chat-unread{background:var(--red);color:#fff;border-radius:50%;
+  width:18px;height:18px;font-size:9px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;}
+.chat-unread.hidden{display:none;}
+.chat-messages{height:160px;overflow-y:auto;padding:8px 16px;
+  display:flex;flex-direction:column;gap:6px;scrollbar-width:thin;}
+.chat-msg{display:flex;gap:8px;align-items:flex-start;}
+.chat-msg-avatar{width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;flex-shrink:0;margin-top:2px;}
+.chat-msg-body{flex:1;}
+.chat-msg-name{font-size:9px;font-weight:800;letter-spacing:0.5px;margin-bottom:2px;}
+.chat-msg-text{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.4;
+  background:rgba(255,255,255,0.04);border-radius:10px;padding:6px 10px;
+  display:inline-block;max-width:100%;}
+.chat-msg.mine .chat-msg-text{background:rgba(0,240,255,0.08);color:#fff;}
+.chat-msg.system .chat-msg-text{background:rgba(255,255,255,0.03);
+  color:rgba(255,255,255,0.4);font-style:italic;font-size:10px;}
+.chat-input-row{display:flex;gap:8px;padding:10px 16px 14px;}
+.chat-input{flex:1;padding:10px 14px;border-radius:50px;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  color:#fff;font-size:13px;outline:none;transition:all 0.2s;}
+.chat-input:focus{border-color:rgba(0,240,255,0.4);background:rgba(0,240,255,0.04);}
+.chat-send{width:38px;height:38px;border-radius:50%;border:none;
+  background:var(--accent);color:#050709;font-size:16px;
+  cursor:pointer;transition:all 0.2s;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;}
+.chat-send:hover{box-shadow:0 0 16px rgba(0,240,255,0.4);}
 
 /* End screen */
 .end-overlay{position:fixed;inset:0;background:rgba(5,7,9,0.94);z-index:400;
@@ -753,8 +832,34 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
   <span>L'IA réfléchit…</span>
 </div>
 
-<!-- Toast -->
+<!-- Toast (erreurs seulement) -->
 <div class="toast hidden" id="toast"></div>
+
+<!-- Modale announce points (style Qwirkle Pro) -->
+<div class="announce-overlay hidden" id="announce-overlay">
+  <div class="announce-card" id="announce-card">
+    <span class="announce-icon" id="announce-icon">⭐</span>
+    <div class="announce-type" id="announce-type">POINTS</div>
+    <span class="announce-pts" id="announce-pts">+0</span>
+    <div class="announce-text" id="announce-text"></div>
+    <span class="announce-total" id="announce-total"></span>
+  </div>
+</div>
+
+<!-- Chat -->
+<div class="chat-panel collapsed hidden" id="chat-panel">
+  <div class="chat-header" onclick="toggleChat()">
+    <span class="chat-toggle-icon">▲</span>
+    <span class="chat-label">💬 Chat</span>
+    <span class="chat-unread hidden" id="chat-unread">0</span>
+  </div>
+  <div class="chat-messages" id="chat-messages"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chat-input" placeholder="Message…" maxlength="120"
+      onkeydown="if(event.key==='Enter') sendChatMsg()">
+    <button class="chat-send" onclick="sendChatMsg()">➤</button>
+  </div>
+</div>
 
 <!-- Modal quitter -->
 <div class="modal-overlay hidden" id="modal-quit">
@@ -891,10 +996,12 @@ let _lastSyncAt = null;  // updated_at de la dernière sync reçue
 async function saveOnlineGameState() {
   if (!_currentRoom || !sb) return;
   const state = {
-    board:     G.board,
-    deck:      G.deck,
-    current:   G.current,
+    board:       G.board,
+    deck:        G.deck,
+    current:     G.current,
+    livePending: G.pendingTiles, // tuiles en cours de placement (temps réel)
     lastMoves: G._lastConfirmedMoves || [],
+    lastPts:   G._lastConfirmedPts  || 0,
     players:   G.players.map(p => ({
       pseudo: p.pseudo, color: p.color, emoji: p.emoji,
       score:  p.score,  hand:  p.hand,
@@ -927,6 +1034,14 @@ async function syncOnlineGame() {
     G.deck    = state.deck  || [];
     G.current = (state.current !== undefined) ? state.current : 0;
 
+    // Tuiles adverses en cours (temps réel — pas encore validées)
+    if (state.livePending && state.livePending.length &&
+        G.myIdx !== G.current) {
+      G._opponentPending = state.livePending;
+    } else {
+      G._opponentPending = [];
+    }
+
     if (state.players && state.players.length) {
       state.players.forEach((sp, i) => {
         if (!G.players[i]) return;
@@ -954,7 +1069,15 @@ async function syncOnlineGame() {
       startTurnTimer();
       document.getElementById('btn-confirm').disabled = true;
       document.getElementById('btn-discard').disabled = false;
+      playSound('turn');
       showToast(`À vous de jouer !`, 'ok', 1800);
+    }
+
+    // Announce des points adverses
+    if (state.lastPts !== undefined && state.lastPts > 0 && !isMyTurn) {
+      const adv = G.players[G.current];
+      showAnnounce(state.lastPts, state.lastPts >= 12, adv?.pseudo || '?', adv?.score);
+      playSound(state.lastPts >= 12 ? 'qwirkle' : 'score');
     }
 
   } catch(e) { console.warn('syncOnlineGame:', e); }
@@ -1625,6 +1748,7 @@ function launchGame() {
       renderHand();
       renderThemePanelGame();
       startTurnTimer();
+      initChat();
       // IA en premier ?
       const cur = G.players[G.current];
       if (!cur.isHuman && cur.isAI) setTimeout(() => aiPlay(), 600);
@@ -1635,6 +1759,7 @@ function launchGame() {
     renderHand();
     renderThemePanelGame();
     startTurnTimer();
+    initChat();
   }
 }
 
@@ -1703,6 +1828,21 @@ function drawBoard() {
 
   for(const [key,tile] of Object.entries(G.board)){const[wx,wy]=key.split(',').map(Number);drawTileWorld(wx,wy,tile,false);}
   for(const pt of G.pendingTiles) drawTileWorld(pt.wx,pt.wy,pt,true);
+
+  // Tuiles adverses en cours (temps réel)
+  if (G._opponentPending && G._opponentPending.length) {
+    ctx2d.globalAlpha = 0.45;
+    for (const pt of G._opponentPending) {
+      drawTileWorld(pt.wx, pt.wy, pt, false);
+      ctx2d.fillStyle = 'rgba(255,159,0,0.7)';
+      ctx2d.beginPath();
+      ctx2d.arc(pt.wx*CELL + TILE_SIZE*0.3, pt.wy*CELL - TILE_SIZE*0.3,
+                Math.max(3, 5/G.zoom), 0, Math.PI*2);
+      ctx2d.fill();
+    }
+    ctx2d.globalAlpha = 1;
+  }
+
   drawSkyAnimations();
 
   if(G.lastPlayedTiles.length>0&&Date.now()<G.highlightUntil){
@@ -2095,12 +2235,16 @@ function doConfirm(){
   const pts=calcPoints(G.board,G.pendingTiles);
   for(const pt of G.pendingTiles)G.board[`${pt.wx},${pt.wy}`]=pt;
   G._lastConfirmedMoves = [...G.pendingTiles];
-  animateTilesFromSky(G._lastConfirmedMoves); // animation locale
+  G._lastConfirmedPts   = pts;
+  animateTilesFromSky(G._lastConfirmedMoves);
   player.score+=pts;
   player.hand=player.hand.map(t=>t===null?draw(G.deck,1)[0]||null:t);
   G.pendingTiles=[];G.selectedTile=null;
   G.discardMode=false;G.toDiscard=new Set();
-  showToast(pts>=12?`🔥 QWIRKLE +${pts}`:`+${pts} pts`,pts>=12?'pts':'ok',1800);
+  const isQwirkle = pts >= 12;
+  const playerName = G.players[G.myIdx].pseudo;
+  showAnnounce(pts, isQwirkle, playerName, G.players[G.myIdx].score);
+  playSound(isQwirkle ? 'qwirkle' : 'score');
   document.getElementById('btn-confirm').disabled=true;
   checkGameOver(() => {
     nextTurn(); // incrémente G.current
@@ -2277,7 +2421,8 @@ function closeQuitModal() {
 function doQuit() {
   closeQuitModal();
   if (_timerRaf) { cancelAnimationFrame(_timerRaf); _timerRaf = null; }
-  if (_gamePolling) { clearInterval(_gamePolling); _gamePolling = null; }
+  if (_gamePolling)  { clearInterval(_gamePolling);  _gamePolling  = null; }
+  if (_chatPolling)  { clearInterval(_chatPolling);  _chatPolling  = null; }
   G.gameOver = true;
   sbUnsubscribe();
   if (_currentRoom) {
@@ -2377,8 +2522,10 @@ function onBoardTap(sx,sy){
     G.pendingTiles.push({...tile,wx,wy});
     G.players[G.myIdx].hand[G.selectedTile]=null;
     G.selectedTile=null;
+    playSound('place');
     document.getElementById('btn-confirm').disabled=false;
     renderHand();drawBoard();
+    if (_currentRoom) saveOnlineGameState(); // sync temps réel des pending
   } else {
     showToast('Position invalide','err',1200);
     canvas.style.transform='translateX(-4px)';setTimeout(()=>canvas.style.transform='',150);
@@ -2443,12 +2590,238 @@ function setTheme(i){
 function showAIThinking(v){document.getElementById('ai-thinking').classList.toggle('hidden',!v);}
 
 // ════════════════════════════════════════════════════════════════
-// TOAST & UTILS
+// ANNOUNCE (style Qwirkle Pro) + SONS + CHAT
 // ════════════════════════════════════════════════════════════════
-function showToast(msg,type,dur=1600){
-  const el=document.getElementById('toast');el.textContent=msg;
-  el.className=`toast ${type}`;clearTimeout(el._t);
+
+// ── Modale announce ──
+let _announceTimer = null;
+function showAnnounce(pts, isQwirkle, playerName, newTotal) {
+  const overlay = document.getElementById('announce-overlay');
+  const card    = document.getElementById('announce-card');
+  if (!overlay || !card) return;
+
+  // Contenu
+  document.getElementById('announce-icon').textContent =
+    isQwirkle ? '🔥' : pts >= 6 ? '⚡' : pts >= 3 ? '✨' : '⭐';
+  document.getElementById('announce-type').textContent =
+    isQwirkle ? 'QWIRKLE !' : 'POINTS';
+  document.getElementById('announce-pts').textContent  = `+${pts}`;
+  document.getElementById('announce-pts').style.color  =
+    isQwirkle ? 'var(--orange)' : pts >= 6 ? 'var(--accent)' : 'var(--gold)';
+  document.getElementById('announce-text').textContent =
+    isQwirkle ? `${playerName} réalise un Qwirkle !` : `${playerName} marque ${pts} point${pts>1?'s':''}`;
+  document.getElementById('announce-total').textContent =
+    newTotal !== undefined ? `Total : ${newTotal} pts` : '';
+
+  // Afficher
+  overlay.classList.remove('hidden');
+  card.classList.remove('show','hide','is-qwirkle');
+  void card.offsetWidth; // reflow
+  card.classList.add('show');
+  if (isQwirkle) card.classList.add('is-qwirkle');
+
+  clearTimeout(_announceTimer);
+  const dur = isQwirkle ? 2800 : pts >= 6 ? 2200 : 1800;
+  _announceTimer = setTimeout(() => {
+    card.classList.add('hide');
+    setTimeout(() => overlay.classList.add('hidden'), 320);
+  }, dur);
+}
+
+// ── Toast (erreurs/infos) ──
+function showToast(msg, type, dur=1600){
+  if (type === 'pts') { return; } // les points passent par showAnnounce
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type}`;
+  clearTimeout(el._t);
   el._t=setTimeout(()=>el.classList.add('hidden'),dur);
+}
+
+// ── Sons Web Audio ──
+let _audioCtx = null;
+function getAudioCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    const now = ctx.currentTime;
+
+    switch(type) {
+      case 'place': // tuile posée — clic sourd
+        o.type = 'sine';
+        o.frequency.setValueAtTime(220, now);
+        o.frequency.exponentialRampToValueAtTime(110, now + 0.08);
+        g.gain.setValueAtTime(0.18, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        o.start(now); o.stop(now + 0.12);
+        break;
+      case 'score': // points — ding montant
+        o.type = 'triangle';
+        o.frequency.setValueAtTime(440, now);
+        o.frequency.exponentialRampToValueAtTime(660, now + 0.15);
+        g.gain.setValueAtTime(0.15, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        o.start(now); o.stop(now + 0.25);
+        break;
+      case 'qwirkle': // Qwirkle — fanfare
+        [0,0.08,0.16].forEach((delay, i) => {
+          const oq = ctx.createOscillator();
+          const gq = ctx.createGain();
+          oq.connect(gq); gq.connect(ctx.destination);
+          oq.type = 'triangle';
+          oq.frequency.setValueAtTime([523,659,784][i], now+delay);
+          gq.gain.setValueAtTime(0.2, now+delay);
+          gq.gain.exponentialRampToValueAtTime(0.001, now+delay+0.3);
+          oq.start(now+delay); oq.stop(now+delay+0.3);
+        });
+        return;
+      case 'error': // erreur — buzz
+        o.type = 'sawtooth';
+        o.frequency.setValueAtTime(150, now);
+        g.gain.setValueAtTime(0.12, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        o.start(now); o.stop(now + 0.15);
+        break;
+      case 'turn': // c'est votre tour — notification douce
+        o.type = 'sine';
+        o.frequency.setValueAtTime(880, now);
+        o.frequency.setValueAtTime(1100, now + 0.1);
+        g.gain.setValueAtTime(0.1, now);
+        g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        o.start(now); o.stop(now + 0.3);
+        break;
+    }
+  } catch(e) {}
+}
+
+// ── Chat ──
+let _chatOpen = false;
+let _unreadCount = 0;
+let _chatPolling = null;
+
+function toggleChat() {
+  _chatOpen = !_chatOpen;
+  const panel = document.getElementById('chat-panel');
+  panel.classList.toggle('collapsed', !_chatOpen);
+  if (_chatOpen) {
+    _unreadCount = 0;
+    updateChatBadge();
+    document.getElementById('chat-input')?.focus();
+  }
+}
+
+function updateChatBadge() {
+  const badge = document.getElementById('chat-unread');
+  if (!badge) return;
+  if (_unreadCount > 0) {
+    badge.textContent = _unreadCount;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+async function sendChatMsg() {
+  const input = document.getElementById('chat-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text || !_currentRoom || !sb) return;
+  input.value = '';
+
+  const msg = {
+    device_id: DEVICE_ID,
+    pseudo: PROFILE.pseudo,
+    color: PROFILE.color,
+    emoji: PROFILE.emoji,
+    text,
+    ts: Date.now(),
+  };
+
+  try {
+    // Stocker dans qv_rooms.chat (jsonb array)
+    const { data } = await sb.from('qv_rooms').select('chat').eq('id', _currentRoom.id).single();
+    const chat = data?.chat || [];
+    chat.push(msg);
+    // Garder les 50 derniers messages max
+    if (chat.length > 50) chat.splice(0, chat.length - 50);
+    await sb.from('qv_rooms').update({ chat }).eq('id', _currentRoom.id);
+    renderChatMsg(msg, true);
+    scrollChat();
+  } catch(e) { console.warn('sendChatMsg:', e); }
+}
+
+let _lastChatTs = 0;
+async function pollChat() {
+  if (!_currentRoom || !sb) return;
+  try {
+    const { data } = await sb.from('qv_rooms').select('chat').eq('id', _currentRoom.id).single();
+    const msgs = data?.chat || [];
+    const newMsgs = msgs.filter(m => m.ts > _lastChatTs);
+    if (!newMsgs.length) return;
+    _lastChatTs = Math.max(...newMsgs.map(m => m.ts));
+    newMsgs.forEach(m => {
+      const isMe = m.device_id === DEVICE_ID;
+      if (!isMe) {
+        renderChatMsg(m, false);
+        if (!_chatOpen) { _unreadCount++; updateChatBadge(); }
+      }
+    });
+    scrollChat();
+  } catch(e) {}
+}
+
+function renderChatMsg(msg, isMe, isSystem=false) {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'chat-msg' + (isMe?' mine':'') + (isSystem?' system':'');
+  if (!isSystem) {
+    div.innerHTML = `
+      <div class="chat-msg-avatar" style="background:${msg.color}33">${msg.emoji||'🎮'}</div>
+      <div class="chat-msg-body">
+        ${!isMe?`<div class="chat-msg-name" style="color:${msg.color}">${msg.pseudo}</div>`:''}
+        <span class="chat-msg-text">${escapeHtml(msg.text)}</span>
+      </div>`;
+  } else {
+    div.innerHTML = `<div style="flex:1"><span class="chat-msg-text">${msg.text}</span></div>`;
+  }
+  container.appendChild(div);
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function scrollChat() {
+  const c = document.getElementById('chat-messages');
+  if (c) c.scrollTop = c.scrollHeight;
+}
+
+function addSystemMsg(text) {
+  renderChatMsg({ text }, false, true);
+  scrollChat();
+}
+
+// Activer le chat quand une partie en ligne commence
+function initChat() {
+  const panel = document.getElementById('chat-panel');
+  if (!panel) return;
+  if (_currentRoom) {
+    panel.classList.remove('hidden');
+    panel.classList.add('collapsed');
+    _lastChatTs = Date.now(); // ne pas afficher les vieux messages
+    if (_chatPolling) clearInterval(_chatPolling);
+    _chatPolling = setInterval(pollChat, 2500);
+    addSystemMsg('Chat activé — dites bonjour !');
+  } else {
+    panel.classList.add('hidden');
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
