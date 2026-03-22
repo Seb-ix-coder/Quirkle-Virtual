@@ -856,7 +856,7 @@ async function saveOnlineGameState() {
     players: G.players.map(p => ({
       pseudo: p.pseudo, color: p.color, emoji: p.emoji,
       score: p.score, hand: p.hand,
-      device_id: p.device_id, isAI: p.isAI,
+      device_id: p.device_id, isAI: false, // jamais d'IA en ligne
     })),
     turn: G.turn || 1,
     ts: Date.now(),
@@ -869,27 +869,29 @@ let _lastSyncTs = 0;
 // Synchroniser l'état depuis Supabase (pour les joueurs non-host)
 async function syncOnlineGame() {
   if (!_currentRoom || !sb || G.gameOver) return;
-  const cur = G.players[G.current];
-  // Si c'est notre tour, pas besoin de sync (on attend notre propre action)
-  if (cur.isHuman) return;
 
   try {
     const data = await sbGetGameState(_currentRoom.id);
     if (!data || !data.state) return;
     const state = data.state;
-    // Ignorer si pas de changement
-    if (state.ts <= _lastSyncTs) return;
-    _lastSyncTs = state.ts;
 
-    // Mettre à jour l'état local
-    G.board = state.board || {};
-    G.deck  = state.deck  || [];
+    // Ignorer si pas de changement (même timestamp)
+    if (state.ts && state.ts <= _lastSyncTs) return;
+    _lastSyncTs = state.ts || 0;
+
+    // Mettre à jour l'état complet depuis Supabase
+    G.board   = state.board   || {};
+    G.deck    = state.deck    || [];
     G.current = state.current || 0;
+
     if (state.players) {
       state.players.forEach((sp, i) => {
         if (G.players[i]) {
           G.players[i].score = sp.score || 0;
           G.players[i].hand  = sp.hand  || [];
+          // CRUCIAL : recalculer isHuman selon le device_id de CE client
+          G.players[i].isHuman = (sp.device_id === DEVICE_ID);
+          G.players[i].isAI    = false;
         }
       });
     }
@@ -897,11 +899,8 @@ async function syncOnlineGame() {
     updateHeader();
     renderHand();
     drawBoard();
+    startTurnTimer();
 
-    // Si le tour est maintenant à nous, arrêter le polling temporairement
-    if (G.players[G.current].isHuman) {
-      startTurnTimer();
-    }
   } catch(e) { console.warn('syncOnlineGame:', e); }
 }
 
@@ -938,8 +937,8 @@ function ensureProfileDefaults() {
 }
 
 const PLAYER_COLORS = [
-  '#00f0ff','#00ff88','#ff4757','#ff9f00','#bd00ff','#FFD700',
-  '#ff6b9d','#4ecdc4','#45b7d1','#96ceb4','#ff8b94','#a8e6cf',
+  '#00f0ff','#00ff88','#ff4757','#ff9f00','#bd00ff','#fff176',
+  '#ff6b9d','#4ecdc4','#29b6f6','#a5d6a7','#ce93d8','#ffcc80',
 ];
 
 const EMOJI_LIST = ['🎮','🦊','🐼','🐸','🦁','🐯','🤖','👾','🎲','🎯',
@@ -1318,7 +1317,9 @@ function goOnline() {
 // CONSTANTES QWIRKLE
 // ════════════════════════════════════════════════════════════════
 const SHAPES = ['circle','cross','diamond','square','star','clover'];
-const COLORS = ['#ff2e2e','#ff9f00','#FFD700','#00ff88','#00f0ff','#bd00ff'];
+// Couleurs fidèles à la boîte Qwirkle Edition Deluxe
+// Rouge vif, Orange saturé, Jaune pur, Vert franc, Bleu royal, Mauve
+const COLORS = ['#e8001c','#f87200','#f5d800','#00a832','#0055cc','#8800cc'];
 const TILE_SIZE = 60;
 const GAP = 4;
 const CELL = TILE_SIZE + GAP;
@@ -1428,8 +1429,10 @@ function launchGame() {
   if (_currentRoom) {
     clearInterval(_gamePolling);
     _gamePolling = setInterval(syncOnlineGame, 2000);
-    // Sauvegarder l'état initial
+    // Le host sauvegarde l'état initial (deck mélangé, mains distribuées)
     if (_isRoomHost) saveOnlineGameState();
+    // Les non-hosts attendent la première sync pour récupérer l'état
+    // (ils ne jouent que quand c'est leur tour)
   }
 }
 
