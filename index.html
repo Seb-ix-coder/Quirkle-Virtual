@@ -407,39 +407,71 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
 
 /* ══════════════════════════════════════════════════
-   RESPONSIVE — TABLETTE (≥ 640px)
+   RESPONSIVE — TABLETTE (≥ 600px)
 ══════════════════════════════════════════════════ */
-@media (min-width: 640px) {
+@media (min-width: 600px) {
+  /* Base : tout est plus aéré */
+  body { font-size:16px; }
+
   /* Profil */
-  #s-profile { gap:28px; }
-  .profile-card { max-width:520px; padding:32px 28px; }
-  .avatar-circle { width:76px; height:76px; font-size:2.4rem; }
-  .profile-input { font-size:17px; padding:14px 18px; }
-  .color-dot { width:36px; height:36px; }
-  .btn-primary { max-width:520px; padding:18px; font-size:14px; }
+  #s-profile { gap:32px; padding:32px; }
+  .profile-card { max-width:560px; padding:36px 32px; gap:24px; }
+  .avatar-circle { width:88px; height:88px; font-size:2.8rem; }
+  .profile-input { font-size:18px; padding:16px 20px; }
+  .field-label { font-size:11px; letter-spacing:2.5px; margin-bottom:8px; }
+  .color-label { font-size:11px; letter-spacing:2.5px; margin-bottom:12px; }
+  .color-dot { width:40px; height:40px; }
+  .color-row { gap:12px; }
+  .btn-primary { max-width:560px; padding:20px; font-size:15px; letter-spacing:2.5px; }
+  .profile-stats { gap:12px; }
+  .stat-val { font-size:26px; }
+  .stat-lbl { font-size:10px; }
 
   /* Lobby */
   .lobby-header, .lobby-title, .mode-grid,
   .diff-row, #btn-play-solo,
   .online-header, .section-label,
-  .create-room-btn, .rooms-list { max-width:560px; }
-  .mode-btn { padding:28px 20px; }
-  .mode-btn .icon { font-size:2.8rem; }
-  .mode-btn .title { font-size:15px; }
-  .mode-btn .desc { font-size:11px; }
+  .create-room-btn, .rooms-list { max-width:600px; }
+  .mode-grid { gap:16px; }
+  .mode-btn { padding:32px 24px; border-radius:24px; }
+  .mode-btn .icon { font-size:3.2rem; margin-bottom:14px; }
+  .mode-btn .title { font-size:17px; margin-bottom:6px; }
+  .mode-btn .desc { font-size:12px; line-height:1.6; }
+  .lobby-player-chip { padding:10px 18px 10px 10px; }
+  .chip-avatar { width:44px; height:44px; font-size:1.4rem; }
+  .chip-name { font-size:16px; }
+  .diff-btn { padding:14px 10px; font-size:12px; }
 
   /* Salle */
-  .room-waiting-card { max-width:560px; padding:28px; }
+  .room-waiting-card { max-width:600px; padding:32px; gap:20px; }
+  .slot { padding:14px 18px; }
+  .slot-avatar { width:44px; height:44px; font-size:1.3rem; }
+  .slot-name { font-size:15px; }
+  .slot-ready { font-size:11px; padding:5px 12px; }
+  .btn-ready, .btn-leave, .btn-start { padding:16px; font-size:13px; }
 
-  /* Jeu — tuiles plus grandes */
-  .tile { width:64px; height:64px; border-radius:12px; }
-  .tile svg { width:40px; height:40px; }
-  .hand-tiles { gap:10px; min-height:70px; }
-  .act-btn { padding:13px 10px; font-size:10px; }
-  .game-bottom { padding:14px 20px; }
-  .game-header { padding:12px 20px; }
-  .psc-name { font-size:11px; }
-  .psc-score { font-size:16px; }
+  /* Online */
+  .room-card { padding:18px 20px; border-radius:20px; }
+  .room-host { font-size:15px; }
+  .room-meta { font-size:11px; }
+  .create-room-btn { padding:20px; font-size:13px; }
+
+  /* Jeu */
+  .tile { width:72px; height:72px; border-radius:13px; }
+  .tile svg { width:46px; height:46px; }
+  .hand-tiles { gap:12px; min-height:82px; margin-bottom:16px; }
+  .act-btn { padding:15px 12px; font-size:11px; border-radius:14px; }
+  .game-bottom { padding:16px 24px 20px; }
+  .game-header { padding:12px 24px; }
+  .psc-name { font-size:12px; }
+  .psc-score { font-size:17px; }
+  .gh-bag-num, .gh-timer-val { font-size:17px; }
+  .hand-label { font-size:11px; letter-spacing:3px; margin-bottom:10px; }
+  .nav-btn { width:42px; height:42px; font-size:18px; }
+  .zoom-indicator { font-size:10px; padding:5px 12px; }
+  .player-score-chip { padding:8px 14px; gap:8px; }
+  .psc-avatar { width:24px; height:24px; font-size:0.8rem; }
+  .gh-quit-btn { width:38px; height:38px; font-size:18px; }
 }
 
 /* ══════════════════════════════════════════════════
@@ -447,66 +479,52 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
 ══════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
 
-  /* Écrans non-jeu : layout centré avec sidebar OU card centrale */
   #s-profile, #s-lobby, #s-online, #s-room {
-    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(0,240,255,0.03), transparent),
-                var(--bg);
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(0,240,255,0.03), transparent), var(--bg);
   }
 
-  /* Profil — card plus large, deux colonnes */
-  .profile-card {
-    max-width:640px;
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    grid-template-rows:auto auto auto;
-    gap:24px 32px;
-  }
+  /* Profil */
+  .profile-card { max-width:680px; display:grid;
+    grid-template-columns:1fr 1fr; gap:28px 36px; }
   .profile-avatar-row { grid-column:1/-1; }
-  .profile-card > div:nth-child(2) { grid-column:1; } /* couleurs */
-  .profile-card > div:nth-child(3) { grid-column:2; align-self:start; } /* stats */
-  .btn-primary { max-width:640px; }
+  .profile-card > div:nth-child(2) { grid-column:1; }
+  .profile-card > div:nth-child(3) { grid-column:2; align-self:start; }
+  .btn-primary { max-width:680px; font-size:15px; }
 
-  /* Lobby — deux colonnes : modes à gauche, infos à droite */
+  /* Lobby */
   #s-lobby { flex-direction:row; flex-wrap:wrap; justify-content:center;
-    align-items:flex-start; gap:24px; padding:40px; }
-  .lobby-header { max-width:100%; flex-basis:100%; }
-  .lobby-title  { max-width:100%; flex-basis:100%; }
-  .mode-grid {
-    max-width:none; width:460px;
-    grid-template-columns:1fr 1fr;
-  }
-  .diff-row { max-width:460px; }
-  #btn-play-solo { max-width:460px; }
+    align-items:flex-start; gap:28px; padding:48px; }
+  .lobby-header, .lobby-title { max-width:100%; flex-basis:100%; }
+  .mode-grid { max-width:none; width:520px; }
+  .diff-row, #btn-play-solo { max-width:520px; }
 
-  /* Online — deux colonnes */
+  /* Online */
   #s-online { flex-direction:row; flex-wrap:wrap; justify-content:center;
-    align-items:flex-start; gap:20px; padding:40px; }
+    align-items:flex-start; gap:24px; padding:48px; }
   .online-header { flex-basis:100%; max-width:100%; }
-  .create-room-btn { max-width:360px; }
+  .create-room-btn { max-width:400px; }
   .section-label { max-width:100%; flex-basis:100%; }
-  .rooms-list {
-    max-width:none; width:100%; max-width:760px;
-    display:grid; grid-template-columns:1fr 1fr; gap:10px;
-  }
+  .rooms-list { max-width:820px; display:grid;
+    grid-template-columns:1fr 1fr; gap:12px; }
 
-  /* Salle d'attente */
+  /* Salle */
   #s-room { flex-direction:row; flex-wrap:wrap; justify-content:center;
-    align-items:flex-start; gap:24px; padding:40px; }
+    align-items:flex-start; gap:28px; padding:48px; }
   #s-room .online-header { flex-basis:100%; max-width:100%; }
-  .room-waiting-card { max-width:none; width:560px; }
+  .room-waiting-card { max-width:none; width:620px; }
 
-  /* Jeu — header et bottom plus confortables */
-  .game-header { padding:14px 32px; }
-  .game-bottom { padding:16px 32px; }
-  .tile { width:68px; height:68px; }
-  .tile svg { width:42px; height:42px; }
-  .hand-tiles { gap:12px; min-height:74px; }
-  .act-btn { padding:14px 16px; font-size:10px; }
-  .psc-score { font-size:17px; }
-  .gh-bag-num, .gh-timer-val { font-size:16px; }
-
-  /* Nav plateau — légèrement plus grands */
-  .nav-btn { width:40px; height:40px; font-size:18px; }
+  /* Jeu */
+  .game-header { padding:16px 40px; }
+  .game-bottom { padding:18px 40px 22px; }
+  .tile { width:76px; height:76px; }
+  .tile svg { width:48px; height:48px; }
+  .hand-tiles { gap:14px; min-height:86px; }
+  .act-btn { padding:16px 18px; font-size:12px; border-radius:14px; }
+  .psc-name { font-size:13px; }
+  .psc-score { font-size:19px; }
+  .gh-bag-num, .gh-timer-val { font-size:18px; }
+  .nav-btn { width:44px; height:44px; font-size:20px; }
+  .hand-label { font-size:11px; margin-bottom:12px; }
 }
 
 /* ══════════════════════════════════════════════════
@@ -849,6 +867,7 @@ async function sbGetGameState(roomId) {
 // Sauvegarder l'état du jeu sur Supabase après chaque coup
 async function saveOnlineGameState() {
   if (!_currentRoom || !sb) return;
+  // N'importe quel joueur peut sauvegarder (celui qui vient de jouer)
   const state = {
     board: G.board,
     deck: G.deck,
@@ -875,34 +894,37 @@ async function syncOnlineGame() {
     if (!data || !data.state) return;
     const state = data.state;
 
-    // Ignorer si pas de changement (même timestamp)
+    // Ignorer si aucun changement
     if (state.ts && state.ts <= _lastSyncTs) return;
     _lastSyncTs = state.ts || 0;
 
-    // Mettre à jour l'état complet depuis Supabase
+    // Reconstruire l'état complet
     G.board   = state.board   || {};
     G.deck    = state.deck    || [];
     G.current = state.current || 0;
 
-    if (state.players) {
+    if (state.players && state.players.length) {
+      // Reconstruire chaque joueur en conservant isHuman/isAI calculés localement
       state.players.forEach((sp, i) => {
-        if (G.players[i]) {
-          G.players[i].score     = sp.score || 0;
-          G.players[i].hand      = sp.hand  || [];
-          G.players[i].device_id = sp.device_id;
-          G.players[i].isHuman   = (sp.device_id === DEVICE_ID);
-          G.players[i].isAI      = false;
-        }
+        if (!G.players[i]) return;
+        G.players[i].score     = sp.score || 0;
+        G.players[i].hand      = sp.hand  || [];
+        G.players[i].device_id = sp.device_id;
+        // Calculer isHuman selon CE client, pas ce qui est sauvegardé
+        G.players[i].isHuman   = (sp.device_id === DEVICE_ID);
+        G.players[i].isAI      = false;
       });
-      // Recalculer myIdx (au cas où l'ordre aurait changé)
-      const newMyIdx = G.players.findIndex(p => p.device_id === DEVICE_ID);
-      if (newMyIdx >= 0) G.myIdx = newMyIdx;
+      // Recalculer myIdx
+      G.myIdx = G.players.findIndex(p => p.isHuman);
+      if (G.myIdx < 0) G.myIdx = 0;
     }
 
     updateHeader();
     renderHand();
     drawBoard();
-    startTurnTimer();
+
+    // Relancer le timer si c'est maintenant notre tour
+    if (G.players[G.current]?.isHuman) startTurnTimer();
 
   } catch(e) { console.warn('syncOnlineGame:', e); }
 }
@@ -1397,20 +1419,39 @@ function startSolo() {
 // START ONLINE
 // ════════════════════════════════════════════════════════════════
 async function startOnlineGame() {
-  if (_isRoomHost) {
-    await sbUpdateRoom(_currentRoom.id, { status: 'playing' });
-  }
-  // Construire les joueurs depuis la salle
-  const players = _currentRoom.players.map(p => ({
-    pseudo: p.pseudo, color: p.color, emoji: p.emoji,
-    isHuman: p.device_id === DEVICE_ID,
-    isAI: false,         // jamais d'IA en ligne
-    device_id: p.device_id, isOnline: true,
-  }));
-  initGame(players, _currentRoom.board_theme || 0);
   sbUnsubscribe();
   clearInterval(_roomsPolling);
-  launchGame();
+
+  const roomPlayers = _currentRoom.players.map(p => ({
+    pseudo: p.pseudo, color: p.color, emoji: p.emoji,
+    isHuman: p.device_id === DEVICE_ID,
+    isAI: false, device_id: p.device_id,
+  }));
+
+  if (_isRoomHost) {
+    // HOST : initialise le jeu complet et sauvegarde
+    await sbUpdateRoom(_currentRoom.id, { status: 'playing' });
+    initGame(roomPlayers, _currentRoom.board_theme || 0);
+    await saveOnlineGameState(); // sauvegarder immédiatement
+    launchGame();
+  } else {
+    // NON-HOST : créer un état vide et attendre le premier sync
+    G = {
+      deck:[], board:{}, current:0,
+      players: roomPlayers.map(p => ({ ...p, score:0, hand:[] })),
+      myIdx: roomPlayers.findIndex(p => p.device_id === DEVICE_ID),
+      pendingTiles:[], selectedTile:null,
+      discardMode:false, toDiscard:new Set(),
+      lastPlayedTiles:[], highlightUntil:0,
+      turnStartTime:Date.now(),
+      boardTheme: _currentRoom.board_theme || 0,
+      gameOver:false,
+      camX:0, camY:0, zoom:1.0, rotation:0, dragging:false,
+    };
+    if(G.myIdx < 0) G.myIdx = 0;
+    _lastSyncTs = 0; // forcer le premier sync
+    launchGame();
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1418,24 +1459,151 @@ async function startOnlineGame() {
 // ════════════════════════════════════════════════════════════════
 let _gamePolling = null;
 
+// Calcule le meilleur premier coup possible pour une main
+function bestFirstPlay(hand) {
+  const tiles = hand.filter(Boolean);
+  let best = 1;
+  // Essayer toutes les combinaisons de tuiles de même couleur ou même forme
+  for (let s = 0; s < 6; s++) {
+    const byShape = tiles.filter(t => t.shape === s);
+    if (new Set(byShape.map(t=>t.color)).size === byShape.length) best = Math.max(best, byShape.length);
+  }
+  for (let c = 0; c < 6; c++) {
+    const byColor = tiles.filter(t => t.color === c);
+    if (new Set(byColor.map(t=>t.shape)).size === byColor.length) best = Math.max(best, byColor.length);
+  }
+  return best;
+}
+
+// Déterminer qui commence et afficher la modale
+function determineFirstPlayer(onDone) {
+  const scores = G.players.map((p, i) => ({
+    idx: i, pseudo: p.pseudo, color: p.color, emoji: p.emoji,
+    best: bestFirstPlay(p.hand),
+  }));
+  const max = Math.max(...scores.map(s => s.best));
+  const winners = scores.filter(s => s.best === max);
+
+  let firstIdx;
+  let isTie = winners.length > 1;
+
+  if (isTie) {
+    // Tirage au sort
+    firstIdx = winners[Math.floor(Math.random() * winners.length)].idx;
+  } else {
+    firstIdx = winners[0].idx;
+  }
+  G.current = firstIdx;
+
+  showFirstPlayerModal(scores, firstIdx, isTie, max, onDone);
+}
+
+function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
+  const overlay = document.createElement('div');
+  overlay.id = 'first-player-modal';
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(5,7,9,0.94);
+    z-index:600;display:flex;align-items:center;justify-content:center;
+    padding:20px;backdrop-filter:blur(12px);opacity:0;transition:opacity 0.4s;`;
+
+  const winner = G.players[firstIdx];
+  const scoresHTML = scores.map(s => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;
+      border-radius:12px;background:rgba(255,255,255,0.03);
+      border:1px solid ${s.idx===firstIdx?s.color+'55':'rgba(255,255,255,0.06)'};">
+      <span style="font-size:1.3rem;">${s.emoji}</span>
+      <span style="flex:1;font-size:13px;font-weight:800;color:${s.color}">${s.pseudo}</span>
+      <span style="font-size:11px;color:rgba(255,255,255,0.5);">${s.best} tuile${s.best>1?'s':''}</span>
+      ${s.idx===firstIdx?`<span style="font-size:10px;font-weight:900;color:${s.color};
+        background:${s.color}22;padding:3px 10px;border-radius:20px;">⭐ 1er</span>`:''}
+    </div>`).join('');
+
+  overlay.innerHTML = `
+    <div style="background:#0a0d12;border:1px solid rgba(255,255,255,0.1);
+      border-radius:24px;padding:28px 24px;max-width:380px;width:100%;
+      display:flex;flex-direction:column;gap:18px;transform:scale(0.9);transition:transform 0.4s;">
+      <div style="text-align:center;">
+        <div style="font-size:2.5rem;margin-bottom:8px;">${isTie?'🎲':'⭐'}</div>
+        <div style="font-size:17px;font-weight:900;margin-bottom:6px;">
+          ${isTie ? 'Égalité ! Tirage au sort' : `${winner.pseudo} commence !`}
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);line-height:1.6;">
+          ${isTie
+            ? `Plusieurs joueurs peuvent poser <strong style="color:#fff">${maxTiles} tuiles</strong>.<br>L'IA désigne <strong style="color:${winner.color}">${winner.pseudo}</strong> pour commencer.`
+            : `Peut poser le plus de tuiles d'entrée : <strong style="color:${winner.color}">${maxTiles} tuile${maxTiles>1?'s':''}</strong>`}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">${scoresHTML}</div>
+      <div id="fpm-countdown" style="text-align:center;font-size:11px;
+        color:rgba(255,255,255,0.3);letter-spacing:1px;">Démarrage dans 4…</div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+
+  // Animation entrée
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    overlay.querySelector('div').style.transform = 'scale(1)';
+  });
+
+  // Si tirage au sort : animation de dés
+  if (isTie) {
+    let frame = 0;
+    const diceEmojis = ['🎲','🎯','🎰','🎲','🎯'];
+    const icon = overlay.querySelector('div > div:first-child');
+    const diceAnim = setInterval(() => {
+      icon.textContent = diceEmojis[frame % diceEmojis.length];
+      frame++;
+      if (frame > 10) clearInterval(diceAnim);
+    }, 120);
+  }
+
+  // Countdown 4→1 puis lancer
+  let count = 4;
+  const cd = overlay.querySelector('#fpm-countdown');
+  const interval = setInterval(() => {
+    count--;
+    if (count > 0) {
+      cd.textContent = `Démarrage dans ${count}…`;
+    } else {
+      clearInterval(interval);
+      overlay.style.opacity = '0';
+      setTimeout(() => { overlay.remove(); onDone(); }, 400);
+    }
+  }, 1000);
+}
+
 function launchGame() {
   document.getElementById('end-overlay').classList.add('hidden');
   goTo('s-game');
   initCanvas();
-  updateHeader();
-  renderHand();
-  renderThemePanelGame();
   drawBoard();
-  startTurnTimer();
 
-  // Si partie en ligne, démarrer le polling de synchronisation
+  // Démarrer le polling en ligne
   if (_currentRoom) {
     clearInterval(_gamePolling);
     _gamePolling = setInterval(syncOnlineGame, 2000);
-    // Le host sauvegarde l'état initial (deck mélangé, mains distribuées)
-    if (_isRoomHost) saveOnlineGameState();
-    // Les non-hosts attendent la première sync pour récupérer l'état
-    // (ils ne jouent que quand c'est leur tour)
+  }
+
+  // Déterminer qui commence (host ou solo uniquement)
+  // Les non-hosts attendent le sync
+  const shouldDetermineFirst = !_currentRoom || _isRoomHost;
+  if (shouldDetermineFirst) {
+    determineFirstPlayer(() => {
+      if (_currentRoom) saveOnlineGameState(); // sauvegarder avec le bon G.current
+      updateHeader();
+      renderHand();
+      renderThemePanelGame();
+      startTurnTimer();
+      // IA en premier ?
+      const cur = G.players[G.current];
+      if (!cur.isHuman && cur.isAI) setTimeout(() => aiPlay(), 600);
+    });
+  } else {
+    // Non-host : afficher l'état vide en attendant le sync
+    updateHeader();
+    renderHand();
+    renderThemePanelGame();
+    startTurnTimer();
   }
 }
 
@@ -1800,8 +1968,11 @@ function nextTurn(){
   G.selectedTile=null;G.discardMode=false;G.toDiscard=new Set();
   updateDiscardBtn();startTurnTimer();updateHeader();renderHand();drawBoard();
   const cur = G.players[G.current];
-  if (!cur.isHuman && cur.isAI) setTimeout(()=>aiPlay(),600);
-  // Si joueur en ligne distant (!isHuman && !isAI) : attendre son coup via polling
+  if (!cur.isHuman && cur.isAI) {
+    setTimeout(()=>aiPlay(), 600);
+  } else if (_currentRoom && !cur.isHuman && !cur.isAI) {
+    // Joueur distant : il joue de son côté, on attend le sync
+  }
 }
 
 function updateHeader(){
