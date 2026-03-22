@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -406,6 +405,126 @@ body{background:var(--bg);color:#fff;min-height:100vh;overflow:hidden;}
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — TABLETTE (≥ 640px)
+══════════════════════════════════════════════════ */
+@media (min-width: 640px) {
+  /* Profil */
+  #s-profile { gap:28px; }
+  .profile-card { max-width:520px; padding:32px 28px; }
+  .avatar-circle { width:76px; height:76px; font-size:2.4rem; }
+  .profile-input { font-size:17px; padding:14px 18px; }
+  .color-dot { width:36px; height:36px; }
+  .btn-primary { max-width:520px; padding:18px; font-size:14px; }
+
+  /* Lobby */
+  .lobby-header, .lobby-title, .mode-grid,
+  .diff-row, #btn-play-solo,
+  .online-header, .section-label,
+  .create-room-btn, .rooms-list { max-width:560px; }
+  .mode-btn { padding:28px 20px; }
+  .mode-btn .icon { font-size:2.8rem; }
+  .mode-btn .title { font-size:15px; }
+  .mode-btn .desc { font-size:11px; }
+
+  /* Salle */
+  .room-waiting-card { max-width:560px; padding:28px; }
+
+  /* Jeu — tuiles plus grandes */
+  .tile { width:64px; height:64px; border-radius:12px; }
+  .tile svg { width:40px; height:40px; }
+  .hand-tiles { gap:10px; min-height:70px; }
+  .act-btn { padding:13px 10px; font-size:10px; }
+  .game-bottom { padding:14px 20px; }
+  .game-header { padding:12px 20px; }
+  .psc-name { font-size:11px; }
+  .psc-score { font-size:16px; }
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — DESKTOP (≥ 1024px)
+══════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+
+  /* Écrans non-jeu : layout centré avec sidebar OU card centrale */
+  #s-profile, #s-lobby, #s-online, #s-room {
+    background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(0,240,255,0.03), transparent),
+                var(--bg);
+  }
+
+  /* Profil — card plus large, deux colonnes */
+  .profile-card {
+    max-width:640px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    grid-template-rows:auto auto auto;
+    gap:24px 32px;
+  }
+  .profile-avatar-row { grid-column:1/-1; }
+  .profile-card > div:nth-child(2) { grid-column:1; } /* couleurs */
+  .profile-card > div:nth-child(3) { grid-column:2; align-self:start; } /* stats */
+  .btn-primary { max-width:640px; }
+
+  /* Lobby — deux colonnes : modes à gauche, infos à droite */
+  #s-lobby { flex-direction:row; flex-wrap:wrap; justify-content:center;
+    align-items:flex-start; gap:24px; padding:40px; }
+  .lobby-header { max-width:100%; flex-basis:100%; }
+  .lobby-title  { max-width:100%; flex-basis:100%; }
+  .mode-grid {
+    max-width:none; width:460px;
+    grid-template-columns:1fr 1fr;
+  }
+  .diff-row { max-width:460px; }
+  #btn-play-solo { max-width:460px; }
+
+  /* Online — deux colonnes */
+  #s-online { flex-direction:row; flex-wrap:wrap; justify-content:center;
+    align-items:flex-start; gap:20px; padding:40px; }
+  .online-header { flex-basis:100%; max-width:100%; }
+  .create-room-btn { max-width:360px; }
+  .section-label { max-width:100%; flex-basis:100%; }
+  .rooms-list {
+    max-width:none; width:100%; max-width:760px;
+    display:grid; grid-template-columns:1fr 1fr; gap:10px;
+  }
+
+  /* Salle d'attente */
+  #s-room { flex-direction:row; flex-wrap:wrap; justify-content:center;
+    align-items:flex-start; gap:24px; padding:40px; }
+  #s-room .online-header { flex-basis:100%; max-width:100%; }
+  .room-waiting-card { max-width:none; width:560px; }
+
+  /* Jeu — header et bottom plus confortables */
+  .game-header { padding:14px 32px; }
+  .game-bottom { padding:16px 32px; }
+  .tile { width:68px; height:68px; }
+  .tile svg { width:42px; height:42px; }
+  .hand-tiles { gap:12px; min-height:74px; }
+  .act-btn { padding:14px 16px; font-size:10px; }
+  .psc-score { font-size:17px; }
+  .gh-bag-num, .gh-timer-val { font-size:16px; }
+
+  /* Nav plateau — légèrement plus grands */
+  .nav-btn { width:40px; height:40px; font-size:18px; }
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — GRAND ÉCRAN (≥ 1400px)
+══════════════════════════════════════════════════ */
+@media (min-width: 1400px) {
+  .profile-card { max-width:720px; }
+  .btn-primary { max-width:720px; }
+  .rooms-list { max-width:900px; grid-template-columns:repeat(3,1fr); }
+  .mode-grid { width:520px; }
+  .diff-row { max-width:520px; }
+  #btn-play-solo { max-width:520px; }
+  .room-waiting-card { width:640px; }
+
+  /* Tuiles encore plus grandes sur grand écran */
+  .tile { width:72px; height:72px; }
+  .tile svg { width:46px; height:46px; }
+}
 </style>
 </head>
 <body>
@@ -723,8 +842,67 @@ async function sbSaveGameState(roomId, state) {
 
 async function sbGetGameState(roomId) {
   if (!sb) return null;
-  const { data } = await sb.from('qv_game_state').select('state').eq('room_id', roomId).single();
-  return data?.state || null;
+  const { data } = await sb.from('qv_game_state').select('state,updated_at').eq('room_id', roomId).single();
+  return data || null;
+}
+
+// Sauvegarder l'état du jeu sur Supabase après chaque coup
+async function saveOnlineGameState() {
+  if (!_currentRoom || !sb) return;
+  const state = {
+    board: G.board,
+    deck: G.deck,
+    current: G.current,
+    players: G.players.map(p => ({
+      pseudo: p.pseudo, color: p.color, emoji: p.emoji,
+      score: p.score, hand: p.hand,
+      device_id: p.device_id, isAI: p.isAI,
+    })),
+    turn: G.turn || 1,
+    ts: Date.now(),
+  };
+  try { await sbSaveGameState(_currentRoom.id, state); } catch(e) {}
+}
+
+let _lastSyncTs = 0;
+
+// Synchroniser l'état depuis Supabase (pour les joueurs non-host)
+async function syncOnlineGame() {
+  if (!_currentRoom || !sb || G.gameOver) return;
+  const cur = G.players[G.current];
+  // Si c'est notre tour, pas besoin de sync (on attend notre propre action)
+  if (cur.isHuman) return;
+
+  try {
+    const data = await sbGetGameState(_currentRoom.id);
+    if (!data || !data.state) return;
+    const state = data.state;
+    // Ignorer si pas de changement
+    if (state.ts <= _lastSyncTs) return;
+    _lastSyncTs = state.ts;
+
+    // Mettre à jour l'état local
+    G.board = state.board || {};
+    G.deck  = state.deck  || [];
+    G.current = state.current || 0;
+    if (state.players) {
+      state.players.forEach((sp, i) => {
+        if (G.players[i]) {
+          G.players[i].score = sp.score || 0;
+          G.players[i].hand  = sp.hand  || [];
+        }
+      });
+    }
+
+    updateHeader();
+    renderHand();
+    drawBoard();
+
+    // Si le tour est maintenant à nous, arrêter le polling temporairement
+    if (G.players[G.current].isHuman) {
+      startTurnTimer();
+    }
+  } catch(e) { console.warn('syncOnlineGame:', e); }
 }
 
 function sbSubscribeRoom(roomId, cb) {
@@ -1188,7 +1366,7 @@ function startSolo() {
     { pseudo: PROFILE.pseudo, color: PROFILE.color, emoji: PROFILE.emoji,
       isHuman: true, device_id: DEVICE_ID },
     { pseudo: aiNames[diffIdx], color: aiColors[diffIdx], emoji: aiEmojis[diffIdx],
-      isHuman: false, diff: _diff },
+      isHuman: false, isAI: true, diff: _diff },
   ];
   initGame(players, 0);
   launchGame();
@@ -1205,6 +1383,7 @@ async function startOnlineGame() {
   const players = _currentRoom.players.map(p => ({
     pseudo: p.pseudo, color: p.color, emoji: p.emoji,
     isHuman: p.device_id === DEVICE_ID,
+    isAI: false,         // jamais d'IA en ligne
     device_id: p.device_id, isOnline: true,
   }));
   initGame(players, _currentRoom.board_theme || 0);
@@ -1216,6 +1395,8 @@ async function startOnlineGame() {
 // ════════════════════════════════════════════════════════════════
 // LAUNCH GAME (commun)
 // ════════════════════════════════════════════════════════════════
+let _gamePolling = null;
+
 function launchGame() {
   document.getElementById('end-overlay').classList.add('hidden');
   goTo('s-game');
@@ -1225,6 +1406,14 @@ function launchGame() {
   renderThemePanelGame();
   drawBoard();
   startTurnTimer();
+
+  // Si partie en ligne, démarrer le polling de synchronisation
+  if (_currentRoom) {
+    clearInterval(_gamePolling);
+    _gamePolling = setInterval(syncOnlineGame, 2000);
+    // Sauvegarder l'état initial
+    if (_isRoomHost) saveOnlineGameState();
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1478,7 +1667,11 @@ function renderHand(){
   const player=G.players[G.current];
   const container=document.getElementById('hand-tiles');
   container.innerHTML='';
-  if(!player.isHuman){container.innerHTML='<div style="color:rgba(255,255,255,0.2);font-size:11px;letter-spacing:1px;">Tour adverse…</div>';return;}
+  if(!player.isHuman){
+    const msg = player.isAI ? 'L'IA réfléchit…' : `Tour de ${player.pseudo}…`;
+    container.innerHTML=`<div style="color:rgba(255,255,255,0.25);font-size:11px;letter-spacing:1px;text-align:center;">${msg}</div>`;
+    return;
+  }
   player.hand.forEach((tile,idx)=>{
     const el=document.createElement('div');
     let cls='tile';
@@ -1515,6 +1708,7 @@ function doConfirm(){
   showToast(pts>=12?`🔥 QWIRKLE +${pts}`:`+${pts} pts`,pts>=12?'pts':'ok',1800);
   document.getElementById('btn-confirm').disabled=true;
   updateHeader();renderHand();drawBoard();
+  if (_currentRoom) saveOnlineGameState();
   checkGameOver(()=>nextTurn());
 }
 
@@ -1533,7 +1727,9 @@ function confirmDiscard(){
   const newTiles=draw(G.deck,Math.min(n,G.deck.length));let ni=0;
   G.toDiscard.forEach(idx=>{player.hand[idx]=newTiles[ni++]||null;});
   showToast(`${n} tuile${n>1?'s':''} jetée${n>1?'s':''}`,  'ok',1800);
-  exitDiscardMode();updateHeader();renderHand();nextTurn();
+  exitDiscardMode();updateHeader();renderHand();
+  if (_currentRoom) saveOnlineGameState();
+  nextTurn();
 }
 function exitDiscardMode(){G.discardMode=false;G.toDiscard=new Set();G.selectedTile=null;updateDiscardBtn();renderHand();drawBoard();}
 function updateDiscardBtn(){
@@ -1559,7 +1755,9 @@ function nextTurn(){
   G.current=(G.current+1)%G.players.length;
   G.selectedTile=null;G.discardMode=false;G.toDiscard=new Set();
   updateDiscardBtn();startTurnTimer();updateHeader();renderHand();drawBoard();
-  if(!G.players[G.current].isHuman)setTimeout(()=>aiPlay(),600);
+  const cur = G.players[G.current];
+  if (!cur.isHuman && cur.isAI) setTimeout(()=>aiPlay(),600);
+  // Si joueur en ligne distant (!isHuman && !isAI) : attendre son coup via polling
 }
 
 function updateHeader(){
@@ -1643,6 +1841,7 @@ function checkGameOver(onContinue){
 function showEndScreen(){
   G.gameOver=true;
   if(_timerRaf){cancelAnimationFrame(_timerRaf);_timerRaf=null;}
+  if(_gamePolling){clearInterval(_gamePolling);_gamePolling=null;}
   const sorted=[...G.players].sort((a,b)=>b.score-a.score);
   const medals=['🥇','🥈','🥉','🏅'];
   // Mettre à jour les stats du joueur humain
@@ -1672,6 +1871,7 @@ function closeQuitModal() {
 function doQuit() {
   closeQuitModal();
   if (_timerRaf) { cancelAnimationFrame(_timerRaf); _timerRaf = null; }
+  if (_gamePolling) { clearInterval(_gamePolling); _gamePolling = null; }
   G.gameOver = true;
   sbUnsubscribe();
   if (_currentRoom) {
