@@ -414,41 +414,26 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   min-height:62px;align-items:center;}
 .tile{width:58px;height:58px;border-radius:11px;
   position:relative;user-select:none;flex-shrink:0;cursor:grab;
-  -webkit-user-drag:none;touch-action:none;
+  -webkit-user-drag:none;touch-action:none;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
-  background:
-    repeating-linear-gradient(91deg,
-      transparent 0,transparent 2px,rgba(255,255,255,.011) 2px,rgba(255,255,255,.011) 3px,
-      transparent 3px,transparent 8px,rgba(0,0,0,.12) 8px,rgba(0,0,0,.12) 9px),
-    linear-gradient(155deg,#2b1e12 0%,#1a1108 25%,#0f0b07 55%,#1a1510 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.16),
-    inset 0 -1px 0 rgba(0,0,0,.5),
-    inset 1px 0 rgba(255,255,255,.05),
-    inset -1px 0 rgba(0,0,0,.25),
-    3px 6px 0 #040200,
-    6px 12px 18px rgba(0,0,0,.8),
-    0 2px 4px rgba(0,0,0,.6);
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;}
-.tile::before{content:'';position:absolute;inset:0;border-radius:11px;pointer-events:none;z-index:1;
-  background:linear-gradient(145deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.02) 40%,transparent 70%);}
-.tile::after{content:'';position:absolute;right:-3px;top:3px;bottom:0;
-  width:3px;border-radius:0 3px 3px 0;pointer-events:none;
-  background:linear-gradient(180deg,#090600,#020100);}
+  background:transparent;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),
+             filter .18s,box-shadow .18s;}
+/* Pas de ::before/::after — le canvas gère tout le rendu 3D */
 .tile canvas{pointer-events:none;position:relative;z-index:2;border-radius:inherit;}
 .tile svg{pointer-events:none;position:relative;z-index:2;}
 .tile:active{cursor:grabbing;}
 .tile.selected{transform:translateY(-10px) scale(1.12);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.5),
-    3px 14px 0 #040200,0 24px 40px rgba(0,240,255,.35),
-    0 0 0 2px var(--accent),6px 20px 24px rgba(0,0,0,.9);}
-.tile.ghost{opacity:0.22;pointer-events:none;}
+  filter:drop-shadow(0 0 10px rgba(0,240,255,.8)) drop-shadow(0 8px 16px rgba(0,0,0,.9));
+  outline:2px solid var(--accent);outline-offset:-1px;}
+.tile.ghost{opacity:0.20;pointer-events:none;}
 .tile.to-discard{
-  box-shadow:0 0 0 2px var(--orange),3px 6px 0 #040200,0 0 20px rgba(255,159,0,.5)!important;
-  transform:translateY(-5px) scale(1.07)!important;}
-.tile.dragging-src{opacity:.25;transform:scale(.88)!important;box-shadow:none!important;}
+  transform:translateY(-5px) scale(1.07)!important;
+  filter:drop-shadow(0 0 8px rgba(255,159,0,.8))!important;
+  outline:2px solid var(--orange)!important;outline-offset:-1px;}
+.tile.dragging-src{opacity:.25;transform:scale(.88)!important;}
 .tile.drag-target{transform:scale(1.10)!important;
-  box-shadow:0 0 0 2px var(--accent),3px 6px 0 #040200,0 0 24px rgba(0,240,255,.5)!important;}
+  filter:drop-shadow(0 0 8px rgba(0,240,255,.7))!important;}
 .action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
 .act-btn{padding:11px 8px;border-radius:12px;border:1px solid var(--border);
   background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.6);
@@ -2313,38 +2298,57 @@ function drawBoard() {
 
   drawSkyAnimations();
 
-  if(G.lastPlayedTiles.length>0&&Date.now()<G.highlightUntil){
-    const remaining=(G.highlightUntil-Date.now())/5000; // 0→1 (1=début, 0=fin)
-    const pulse=0.5+0.5*Math.sin(Date.now()/180);
-    const alpha=Math.min(1,remaining*3); // fade out sur les 2 dernières secondes
+  if (G.lastPlayedTiles.length > 0 && Date.now() < G.highlightUntil) {
+    const now  = Date.now();
+    const fast = 0.5 + 0.5 * Math.sin(now / 280);       // pulsation lente
+    const fast2= 0.5 + 0.5 * Math.sin(now / 120 + 1.2); // pulsation rapide décalée
 
-    for(const t of G.lastPlayedTiles){
-      const tx=t.wx*CELL, ty=t.wy*CELL;
-      const tz=TILE_SIZE;
+    for (const t of G.lastPlayedTiles) {
+      const tx = t.wx * CELL, ty = t.wy * CELL;
+      const tz = TILE_SIZE;
+      const tc = COLORS[t.color] || '#fff';
+      const r  = Math.max(2/G.zoom, tz*0.10);
 
-      // Halo coloré autour de la tuile
-      const tileColor=COLORS[t.color]||'#fff';
-      const glowSize=(8+pulse*6)/G.zoom;
       ctx2d.save();
-      ctx2d.shadowColor=tileColor;
-      ctx2d.shadowBlur=glowSize*G.zoom*2;
-      ctx2d.strokeStyle=`rgba(255,255,255,${0.4*alpha*(0.6+0.4*pulse)})`;
-      ctx2d.lineWidth=(2+pulse*1.5)/G.zoom;
-      ctx2d.beginPath();
-      ctx2d.roundRect(tx-tz/2-2/G.zoom, ty-tz/2-2/G.zoom,
-                      tz+4/G.zoom, tz+4/G.zoom, 10/G.zoom);
-      ctx2d.stroke();
-      ctx2d.restore();
 
-      // Particule centrale pulsante
-      ctx2d.fillStyle=`rgba(255,255,255,${0.35*alpha*pulse})`;
+      // ── Aura extérieure colorée (pulsante) ──
+      const auraSize = (6 + fast*8) / G.zoom;
+      ctx2d.shadowColor = tc;
+      ctx2d.shadowBlur  = auraSize * G.zoom * 3;
+      ctx2d.strokeStyle = tc.replace(')', `,${0.55 + fast*0.35})`).replace('rgb', 'rgba');
+      ctx2d.lineWidth   = (2 + fast*2) / G.zoom;
       ctx2d.beginPath();
-      ctx2d.arc(tx,ty,(3+pulse*4)/G.zoom,0,Math.PI*2);
-      ctx2d.fill();
+      ctx2d.roundRect(tx-tz/2 - auraSize*0.4, ty-tz/2 - auraSize*0.4,
+                      tz + auraSize*0.8, tz + auraSize*0.8, r*1.3);
+      ctx2d.stroke();
+
+      // ── Anneau blanc intérieur (pulsation rapide) ──
+      ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
+      ctx2d.strokeStyle = `rgba(255,255,255,${0.18 + fast2*0.22})`;
+      ctx2d.lineWidth   = (1 + fast2*0.8) / G.zoom;
+      ctx2d.beginPath();
+      ctx2d.roundRect(tx-tz/2+1/G.zoom, ty-tz/2+1/G.zoom,
+                      tz-2/G.zoom, tz-2/G.zoom, r*0.8);
+      ctx2d.stroke();
+
+      // ── Coins lumineux (étoiles aux 4 coins) ──
+      const cSize = (2 + fast*2.5) / G.zoom;
+      const corners = [
+        [tx-tz/2, ty-tz/2], [tx+tz/2, ty-tz/2],
+        [tx-tz/2, ty+tz/2], [tx+tz/2, ty+tz/2],
+      ];
+      ctx2d.fillStyle = `rgba(255,255,255,${0.5 + fast*0.4})`;
+      corners.forEach(([cx2, cy2]) => {
+        ctx2d.beginPath();
+        ctx2d.arc(cx2, cy2, cSize, 0, Math.PI*2);
+        ctx2d.fill();
+      });
+
+      ctx2d.restore();
     }
     requestAnimationFrame(drawBoard);
-  } else if(G.lastPlayedTiles.length>0&&Date.now()>=G.highlightUntil){
-    G.lastPlayedTiles=[];
+  } else if (G.lastPlayedTiles.length > 0 && Date.now() >= G.highlightUntil) {
+    G.lastPlayedTiles = [];
   }
 
   if(G.selectedTile!==null){
@@ -2769,74 +2773,78 @@ function shapePath(ctx, shape, cx, cy, h) {
   }
 }
 
-// Gravure 3D réaliste
+// Extrusion 3D — motif gravé profondément dans le matériau
 function drawShapeEngraved(ctx, shape, color, cx, cy, size, tex) {
   const h = size/2;
   const isLight = tex?.light || false;
   const isMetal = tex?.metal || false;
   const isGlass = tex?.glass || false;
+  const depth = size * 0.055; // profondeur de l'extrusion
 
-  // ── Étape 1 : creux (ombre de gravure) ──
-  // Décaler légèrement en bas-droite = impression de profondeur
+  // ══ Étape 1 : cavité sombre (ombre portée bas-droite du creux) ══
   ctx.save();
-  ctx.beginPath(); shapePath(ctx, shape, cx+size*0.025, cy+size*0.04, h);
-  ctx.fillStyle = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.65)';
+  ctx.beginPath();
+  shapePath(ctx, shape, cx + depth*0.6, cy + depth*0.9, h);
+  ctx.fillStyle = isLight ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.75)';
+  ctx.shadowColor = 'rgba(0,0,0,0.8)';
+  ctx.shadowBlur  = depth*3;
   ctx.fill();
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0;
   ctx.restore();
 
-  // ── Étape 2 : fond de la gravure (légèrement plus sombre que la tuile) ──
+  // ══ Étape 2 : fond de la cavité ══
   ctx.save();
   ctx.beginPath(); shapePath(ctx, shape, cx, cy, h);
-  const depthColor = isLight ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.40)';
-  ctx.fillStyle = depthColor;
-  ctx.fill();
+  const dg = ctx.createRadialGradient(cx, cy, 0, cx, cy, h);
+  dg.addColorStop(0, isLight ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.55)');
+  dg.addColorStop(1, isLight ? 'rgba(0,0,0,0.12)' : 'rgba(0,0,0,0.35)');
+  ctx.fillStyle = dg; ctx.fill();
   ctx.restore();
 
-  // ── Étape 3 : couleur principale du motif ──
+  // ══ Étape 3 : face colorée du motif (légèrement remontée) ══
   ctx.save();
-  // Ombre intérieure légère
-  ctx.shadowColor = 'rgba(0,0,0,0.5)';
-  ctx.shadowBlur  = size*0.06;
-  ctx.shadowOffsetX = size*0.02;
-  ctx.shadowOffsetY = size*0.03;
-  ctx.beginPath(); shapePath(ctx, shape, cx, cy, h);
-
-  // Couleur avec léger dégradé pour simuler la profondeur
-  const gShape = ctx.createLinearGradient(cx-h,cy-h,cx+h,cy+h);
-  gShape.addColorStop(0, lightenColor(color, 0.18));
-  gShape.addColorStop(0.5, color);
-  gShape.addColorStop(1, darkenColor(color, 0.22));
+  ctx.beginPath(); shapePath(ctx, shape, cx - depth*0.15, cy - depth*0.2, h * 0.92);
+  const gShape = ctx.createLinearGradient(cx-h, cy-h, cx+h*0.6, cy+h*0.8);
+  gShape.addColorStop(0,   lightenColor(color, 0.28));
+  gShape.addColorStop(0.4, lightenColor(color, 0.10));
+  gShape.addColorStop(0.7, color);
+  gShape.addColorStop(1,   darkenColor(color, 0.30));
   ctx.fillStyle = gShape;
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur  = depth*2;
+  ctx.shadowOffsetX = depth*0.4;
+  ctx.shadowOffsetY = depth*0.6;
   ctx.fill();
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
   ctx.restore();
 
-  // ── Étape 4 : bord lumineux haut-gauche (biseautage du creux) ──
+  // ══ Étape 4 : arête lumineuse haut-gauche (bord du creux éclairé) ══
   ctx.save();
-  ctx.beginPath(); shapePath(ctx, shape, cx-size*0.018, cy-size*0.025, h*0.96);
-  const highlightAlpha = isMetal ? 0.45 : isGlass ? 0.35 : 0.22;
-  ctx.strokeStyle = `rgba(255,255,255,${highlightAlpha})`;
-  ctx.lineWidth = Math.max(0.5, size*0.022);
+  ctx.beginPath(); shapePath(ctx, shape, cx - depth*0.3, cy - depth*0.4, h * 0.94);
+  const edgeAlpha = isMetal ? 0.55 : isGlass ? 0.45 : isLight ? 0.35 : 0.28;
+  ctx.strokeStyle = `rgba(255,255,255,${edgeAlpha})`;
+  ctx.lineWidth   = Math.max(0.8, size*0.025);
   ctx.stroke();
   ctx.restore();
 
-  // ── Étape 5 : reflet interne (brillance) ──
-  if (isMetal || isGlass) {
-    ctx.save();
-    ctx.beginPath(); shapePath(ctx, shape, cx, cy, h*0.75);
-    const gInner = ctx.createLinearGradient(cx-h*.5,cy-h*.5,cx+h*.3,cy+h*.3);
-    gInner.addColorStop(0, 'rgba(255,255,255,0.28)');
-    gInner.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = gInner;
-    ctx.fill();
-    ctx.restore();
-  } else {
-    // Reflet naturel discret
-    ctx.save();
-    ctx.beginPath(); shapePath(ctx, shape, cx-h*0.15, cy-h*0.18, h*0.55);
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.fill();
-    ctx.restore();
-  }
+  // ══ Étape 5 : arête sombre bas-droite (bord inférieur du creux) ══
+  ctx.save();
+  ctx.beginPath(); shapePath(ctx, shape, cx + depth*0.3, cy + depth*0.4, h * 0.94);
+  ctx.strokeStyle = `rgba(0,0,0,${isLight?0.25:0.45})`;
+  ctx.lineWidth   = Math.max(0.6, size*0.018);
+  ctx.stroke();
+  ctx.restore();
+
+  // ══ Étape 6 : brillance du matériau sur le motif ══
+  ctx.save();
+  ctx.beginPath(); shapePath(ctx, shape, cx - depth*0.15, cy - depth*0.2, h * 0.88);
+  const gShine = ctx.createLinearGradient(cx-h*0.6, cy-h*0.8, cx+h*0.3, cy+h*0.3);
+  const shineA = isMetal ? 0.35 : isGlass ? 0.30 : 0.15;
+  gShine.addColorStop(0, `rgba(255,255,255,${shineA})`);
+  gShine.addColorStop(0.4, `rgba(255,255,255,${shineA*0.3})`);
+  gShine.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gShine; ctx.fill();
+  ctx.restore();
 }
 
 // Utilitaires couleur
@@ -2899,6 +2907,19 @@ function getValidCells(tile){
   for(const ck of cands){const[wx,wy]=ck.split(',').map(Number);if(isValidPlacement(board,pending,wx,wy,tile))cells.push([wx,wy]);}
   return cells;
 }
+function detectQwirkle(board, tiles) {
+  // Retourne true si le coup crée au moins une ligne complète de 6
+  const tmp={...board};
+  for(const t of tiles) tmp[`${t.wx},${t.wy}`]=t;
+  for(const tile of tiles){
+    for(const[dx,dy] of [[1,0],[0,1]]){
+      const line=getLine(tmp,tile.wx,tile.wy,dx,dy);
+      if(line.length===6) return true;
+    }
+  }
+  return false;
+}
+
 function calcPoints(board,tiles){
   if(!tiles.length)return 0;
   const tmp={...board};for(const t of tiles)tmp[`${t.wx},${t.wy}`]=t;
@@ -3016,21 +3037,6 @@ function renderHand(){
   // ── Appliquer texture footer + header ──
   applyFooterHeaderTexture(_footerTextureIdx);
 
-  // ── Mini infos sous le nom ──
-  const infoBar = document.getElementById('tablette-infos');
-  if (infoBar) {
-    const myScore = me.score || 0;
-    const elapsed = G.turnStartTime ? Math.floor((Date.now()-G.turnStartTime)/1000) : 0;
-    const mm = Math.floor(elapsed/60), ss = (elapsed%60).toString().padStart(2,'0');
-    const turnOf = G.players[G.current]?.pseudo || '?';
-    infoBar.innerHTML = `
-      <div class="tab-info"><span>🎯</span><span class="tab-info-val">${myScore} pts</span></div>
-      <div class="tab-info"><span>⏱</span><span class="tab-info-val" id="tab-timer">${mm}:${ss}</span></div>
-      <div class="tab-info"><span>🎲</span><span class="tab-info-val">${G.deck?.length||0}</span></div>
-      <div class="tab-info"><span>🎮</span><span class="tab-info-val" style="color:${G.players[G.current]?.color||'#fff'}">${myTurn?'Mon tour':turnOf}</span></div>
-    `;
-  }
-
   const player = me;
   let dragSrcIdx = null;
   let dragClone = null;
@@ -3123,6 +3129,9 @@ function doConfirm(){
   if(!G.pendingTiles.length) return;
   const player = G.players[myPlayerIdx()];
   const pts = calcPoints(G.board, G.pendingTiles);
+  // Détecter un vrai Qwirkle (ligne de 6 = 12 pts)
+  const isQwirkle = detectQwirkle(G.board, G.pendingTiles);
+  G._lastConfirmedIsQwirkle = isQwirkle;
 
   // Valider les tuiles sur le board
   for(const pt of G.pendingTiles) G.board[`${pt.wx},${pt.wy}`] = pt;
@@ -3144,13 +3153,20 @@ function doConfirm(){
   document.getElementById('btn-confirm').disabled = true;
   // Vibration locale
   if (navigator.vibrate) navigator.vibrate(pts >= 12 ? [100,50,100] : [50]);
-  showAnnounce(pts, pts >= 12, player.pseudo, player.score);
-  playSound(pts >= 12 ? 'qwirkle' : 'score');
+  showAnnounce(pts, isQwirkle, player.pseudo, player.score);
+  playSound(isQwirkle ? 'qwirkle' : 'score');
   animateTilesFromSky(G._lastConfirmedMoves);
   // Préparer le modal event pour la sync
+  // Compteurs Méga Qwirkle / Exploit
+  if (!G._megaQwirkleCount) G._megaQwirkleCount=0;
+  if (!G._exploitCount)     G._exploitCount=0;
+  if (pts>=12 && player.device_id===DEVICE_ID) {
+    if (pts>12) G._megaQwirkleCount++;
+    else if (!G._lastConfirmedIsQwirkle) G._exploitCount++;
+  }
   G._modalEvent = {
     type:'announce', ts:Date.now(),
-    pts, isQ: pts>=12,
+    pts, isQ: G._lastConfirmedIsQwirkle||false,
     name: player.pseudo,
     total: player.score,
     subtitle: null,
@@ -3421,8 +3437,11 @@ function showEndScreen(){
     PROFILE.games=(PROFILE.games||0)+1;
     if(winner.device_id===DEVICE_ID) PROFILE.wins=(PROFILE.wins||0)+1;
     if(me.score>(PROFILE.best_score||0)) PROFILE.best_score=me.score;
+    // Compteurs Méga Qwirkle et Exploit
+    if(G._megaQwirkleCount) PROFILE.mega_qwirkles=(PROFILE.mega_qwirkles||0)+G._megaQwirkleCount;
+    if(G._exploitCount)     PROFILE.exploits     =(PROFILE.exploits||0)+G._exploitCount;
     localStorage.setItem('qv_profile',JSON.stringify(PROFILE));
-    sbUpsertProfile(PROFILE); // async, pas besoin d'await ici
+    sbUpsertProfile(PROFILE);
   }
 
   // Afficher l'écran
