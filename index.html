@@ -448,7 +448,7 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 @keyframes qwirkleGlow{0%,100%{box-shadow:0 0 30px rgba(255,159,0,0.3),0 30px 80px rgba(0,0,0,0.9)}
   50%{box-shadow:0 0 60px rgba(255,159,0,0.6),0 30px 80px rgba(0,0,0,0.9)}}
 
-.announce-overlay{position:fixed;inset:0;z-index:9999;
+.announce-overlay{position:fixed;inset:0;z-index:10000;
   display:flex;align-items:center;justify-content:center;
   background:rgba(5,7,9,0.75);backdrop-filter:blur(12px);
   transition:opacity 0.3s;}
@@ -1158,22 +1158,25 @@ async function syncOnlineGame() {
         G.players[i].isAI      = false;
       });
     }
+    // S'assurer que toDiscard est toujours un Set (JSON ne sérialise pas les Sets)
+    if (!(G.toDiscard instanceof Set)) G.toDiscard = new Set();
 
     updateHeader();
     renderHand();
     drawBoard();
 
-    // ── Modal synchronisé ──
+    // ── Events modales synchronisés ──
     if (state.modalEvent && state.modalEvent.ts !== G._lastModalTs) {
+      G._lastModalTs = state.modalEvent.ts;
       const ev = state.modalEvent;
       if (ev.type === 'firstPlayer') {
-        handleFirstPlayerEvent(ev);
-        return; // ne pas continuer le sync normal
+        // Afficher la modale de départ avec les mains déjà reçues
+        handleFirstPlayerEvent(ev, state.players);
+        return; // la modale gère elle-même le rendu via son callback
       }
-      G._lastModalTs = state.modalEvent.ts;
       if (ev.type === 'announce') {
         showAnnounce(ev.pts, ev.isQ, ev.name, ev.total, ev.subtitle);
-        playSound(ev.isQ ? 'qwirkle' : ev.pts >= 6 ? 'score' : 'score');
+        playSound(ev.isQ ? 'qwirkle' : 'score');
         if (navigator.vibrate) navigator.vibrate(ev.isQ ? [100,50,100] : [50]);
       }
     }
@@ -1955,52 +1958,77 @@ function launchGame() {
     _gamePolling = setInterval(syncOnlineGame, 2000);
   }
 
+  // Toujours afficher l'état initial
+  updateHeader();
+  renderHand();
+  renderThemePanelGame();
+  initChat();
+
   // Solo ou host : déterminer qui commence
   if (!_currentRoom || _isRoomHost) {
     determineFirstPlayer(onFirstPlayerKnown);
   } else {
     // Non-host : attendre que le sync indique le firstIdx
-    updateHeader(); renderHand(); renderThemePanelGame(); initChat();
     showToast('En attente du lancement…', 'ok', 3000);
   }
 }
 
 function onFirstPlayerKnown() {
   if (_currentRoom) {
-    // Sauvegarder firstIdx pour que les non-hosts le reçoivent via sync
-    G._modalEvent = { type:'firstPlayer', ts:Date.now(),
-      firstIdx: G.current, scores: G.players.map((p,i)=>({
+    // Le host sauvegarde firstIdx + scores (les mains sont déjà dans state.players)
+    G._modalEvent = {
+      type:'firstPlayer',
+      ts: Date.now(),
+      firstIdx: G.current,
+      scores: G.players.map((p,i)=>({
         idx:i, pseudo:p.pseudo, color:p.color, emoji:p.emoji,
-        best:bestFirstPlay(p.hand)
+        best: bestFirstPlay(p.hand)
       }))
     };
-    saveOnlineGameState();
+    saveOnlineGameState(); // inclut state.players avec les mains distribuées
   }
   updateHeader();
   renderHand();
-  renderThemePanelGame();
   startTurnTimer();
-  initChat();
   const cur = G.players[G.current];
-  if (!_currentRoom && !cur.isHuman && cur.isAI) setTimeout(()=>aiPlay(),600);
+  if (!_currentRoom && !cur.isHuman && cur.isAI) setTimeout(()=>aiPlay(), 600);
 }
 
 // Intercepter firstPlayer dans syncOnlineGame
-function handleFirstPlayerEvent(ev) {
+function handleFirstPlayerEvent(ev, statePlayers) {
   if (!ev || ev.ts === G._lastModalTs) return;
   G._lastModalTs = ev.ts;
   G.current = ev.firstIdx;
-  const scores = ev.scores || G.players.map((p,i)=>({idx:i,pseudo:p.pseudo,color:p.color,emoji:p.emoji,best:bestFirstPlay(p.hand)}));
+
+  // Reconstruire les mains depuis le state (c'est le host qui les a distribuées)
+  if (statePlayers && statePlayers.length) {
+    statePlayers.forEach((sp, i) => {
+      if (!G.players[i]) return;
+      G.players[i].score   = sp.score || 0;
+      G.players[i].hand    = sp.hand  || [];
+      G.players[i].isHuman = (sp.device_id === DEVICE_ID);
+      G.players[i].isAI    = false;
+    });
+  }
+
+  const scores = ev.scores && ev.scores.length
+    ? ev.scores
+    : G.players.map((p,i)=>({
+        idx:i, pseudo:p.pseudo, color:p.color, emoji:p.emoji,
+        best: bestFirstPlay(p.hand)
+      }));
   const max = Math.max(...scores.map(s=>s.best));
   const winners = scores.filter(s=>s.best===max);
-  const isTie = winners.length>1;
-  showFirstPlayerModal(scores, ev.firstIdx, isTie, max, ()=>{
-    updateHeader(); renderHand(); renderThemePanelGame(); startTurnTimer();
+  const isTie = winners.length > 1;
+
+  showFirstPlayerModal(scores, ev.firstIdx, isTie, max, () => {
+    updateHeader();
+    renderHand();
+    renderThemePanelGame();
+    startTurnTimer();
   });
 }
 
-function _dummyLaunchClose() {
-}
 
 // ════════════════════════════════════════════════════════════════
 // CANVAS & RENDU
@@ -2518,7 +2546,7 @@ function renderHand(){
     const el = document.createElement('div');
     let cls = 'tile';
     if (tile === null) cls += ' ghost';
-    else if (G.discardMode && G.toDiscard.has(idx)) cls += ' to-discard';
+    else if (G.discardMode && G.toDiscard instanceof Set && G.toDiscard.has(idx)) cls += ' to-discard';
     else if (!G.discardMode && G.selectedTile === idx) cls += ' selected';
     if (_currentRoom && !myTurn) el.style.opacity = '0.5';
     el.className = cls;
