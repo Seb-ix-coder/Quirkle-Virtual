@@ -299,7 +299,7 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .ap-board-btn{border-radius:11px;overflow:hidden;cursor:pointer;
   border:2px solid rgba(255,255,255,0.07);transition:all .2s;}
 .ap-board-btn.sel{border-color:var(--accent);box-shadow:0 0 12px rgba(0,240,255,0.22);}
-.ap-board-preview{height:40px;}
+.ap-board-preview{height:40px;position:relative;}
 .ap-board-name{padding:4px 5px;background:rgba(0,0,0,0.55);
   font-size:8px;font-weight:800;text-align:center;color:rgba(255,255,255,0.4);}
 .ap-board-btn.sel .ap-board-name{color:var(--accent);}
@@ -936,20 +936,7 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
       <button class="act-btn" id="btn-undo" onclick="doUndo()">↩ Annuler</button>
       <button class="act-btn confirm" id="btn-confirm" onclick="doConfirm()" disabled>✓ Valider</button>
     </div>
-    <!-- Chat intégré (visible en partie en ligne) -->
-    <div class="chat-panel collapsed hidden" id="chat-panel">
-      <div class="chat-header" onclick="toggleChat()">
-        <span class="chat-toggle-icon">▲</span>
-        <span class="chat-label">💬 Chat</span>
-        <span class="chat-unread hidden" id="chat-unread">0</span>
-      </div>
-      <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-input-row">
-        <input class="chat-input" id="chat-input" placeholder="Message…" maxlength="120"
-          onkeydown="if(event.key==='Enter') sendChatMsg()">
-        <button class="chat-send" onclick="sendChatMsg()">➤</button>
-      </div>
-    </div>
+
   </div>
 </div>
 
@@ -972,15 +959,35 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
       <!-- Tuiles -->
       <div class="ap-section">
         <div class="ap-section-label">Matériau des tuiles</div>
-        <div id="ap-tiles" class="ap-toggle-list"></div>
+        <div id="ap-tiles" class="ap-grid4"></div>
       </div>
 
-      <!-- Footer -->
+      <!-- Footer + Header -->
       <div class="ap-section">
-        <div class="ap-section-label">Tablette (footer)</div>
-        <div id="ap-footer" class="ap-toggle-list"></div>
+        <div class="ap-section-label">Tablette &amp; Header</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:8px;">S'applique au footer et au header simultanément</div>
+        <div id="ap-footer" class="ap-grid4"></div>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- MODALE CHAT -->
+<div class="modal-overlay hidden" id="ov-chat" onclick="if(event.target===this)closeChat()">
+  <div class="modal-box" style="width:min(440px,95vw);max-width:440px;padding:0;overflow:hidden;gap:0;max-height:75vh;display:flex;flex-direction:column;">
+    <div class="modal-header" style="padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;font-weight:900">💬 Chat</span>
+        <span class="chat-unread hidden" id="chat-unread" style="background:var(--red);color:#fff;border-radius:50%;width:18px;height:18px;font-size:9px;font-weight:900;display:flex;align-items:center;justify-content:center;">0</span>
+      </div>
+      <button class="modal-close" onclick="closeChat()">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages" style="flex:1;overflow-y:auto;padding:12px 16px;min-height:200px;max-height:340px;"></div>
+    <div class="chat-input-row" style="padding:10px 14px;border-top:1px solid rgba(255,255,255,0.07);display:flex;gap:8px;">
+      <input class="chat-input" id="chat-input" placeholder="Message…" maxlength="120"
+        onkeydown="if(event.key==='Enter') sendChatMsg()">
+      <button class="chat-send" onclick="sendChatMsg()">➤</button>
     </div>
   </div>
 </div>
@@ -2945,13 +2952,8 @@ function renderHand(){
   if (handLabel) { handLabel.textContent = me.pseudo || 'Vous'; handLabel.style.color = me.color || '#fff'; }
   if (chatBtn && _currentRoom) chatBtn.style.display = 'flex';
 
-  // ── Appliquer texture footer ──
-  const footer = document.querySelector('.game-bottom');
-  if (footer) {
-    const ft = FOOTER_TEXTURES[_footerTextureIdx] || FOOTER_TEXTURES[0];
-    footer.style.cssText = ft.css + 'border-top:1px solid rgba(255,255,255,0.06);' +
-      'width:100%;backdrop-filter:blur(20px);padding:12px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;';
-  }
+  // ── Appliquer texture footer + header ──
+  applyFooterHeaderTexture(_footerTextureIdx);
 
   // ── Mini infos sous le nom ──
   const infoBar = document.getElementById('tablette-infos');
@@ -3523,48 +3525,56 @@ function renderAppearanceModal(){
       + '</div>';
   }).join('');
 
-  // ── Tuiles ──
+  // ── Tuiles (grille 4 colonnes comme plateaux) ──
   if (tilesEl) {
-    tilesEl.innerHTML = '';
-    let lastGroup = '';
-    TILE_TEXTURES.forEach((t,i) => {
-      if (t.group !== lastGroup) {
-        lastGroup = t.group;
-        tilesEl.innerHTML += '<div class="ap-toggle-grp">'+t.group+'</div>';
-      }
+    tilesEl.innerHTML = TILE_TEXTURES.map((t,i) => {
       const sel = _tileTextureIdx === i;
-      tilesEl.innerHTML += '<div class="ap-row'+(sel?' sel':'')+'" onclick="setTileTexture('+i+')">'
-        + '<div class="ap-swatch" style="background:linear-gradient(145deg,'+t.base[0]+','+t.base[1]+','+t.base[2]+')"></div>'
-        + '<span class="ap-row-name">'+t.name+'</span>'
-        + '<div class="ap-radio"></div>'
+      return '<div class="ap-board-btn'+(sel?' sel':'')+'" onclick="setTileTexture('+i+')" title="'+t.group+'">'
+        + '<div class="ap-board-preview" style="background:linear-gradient(145deg,'+t.base[0]+' 0%,'+t.base[1]+' 50%,'+t.base[2]+' 100%);">'
+        + (sel ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:14px;font-weight:900">✓</div>' : '')
+        + '</div>'
+        + '<div class="ap-board-name">'+t.name+'</div>'
         + '</div>';
-    });
+    }).join('');
   }
 
-  // ── Footer ──
+  // ── Footer + Header (grille 4 colonnes) ──
   if (footerEl) {
-    footerEl.innerHTML = '';
-    FOOTER_TEXTURES.forEach((t,i) => {
+    footerEl.innerHTML = FOOTER_TEXTURES.map((t,i) => {
       const sel = _footerTextureIdx === i;
-      footerEl.innerHTML += '<div class="ap-row'+(sel?' sel':'')+'" onclick="setFooterTexture('+i+')">'
-        + '<div class="ap-swatch-ft" style="'+t.css+'border-radius:5px;flex-shrink:0;width:46px;height:18px;"></div>'
-        + '<span class="ap-row-name">'+t.name+'</span>'
-        + '<div class="ap-radio"></div>'
+      // Extraire une couleur représentative du CSS
+      const bgMatch = t.css.match(/background[^;]+linear-gradient\([^)]+\)/)||[];
+      return '<div class="ap-board-btn'+(sel?' sel':'')+'" onclick="setFooterTexture('+i+')">'
+        + '<div class="ap-board-preview" style="'+t.css+'">'
+        + (sel ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:14px;font-weight:900">✓</div>' : '')
+        + '</div>'
+        + '<div class="ap-board-name">'+t.name+'</div>'
         + '</div>';
-    });
+    }).join('');
   }
 }
 
 function setFooterTexture(i) {
   _footerTextureIdx = i;
+  applyFooterHeaderTexture(i);
   if (!document.getElementById('ov-appearance').classList.contains('hidden'))
     renderAppearanceModal();
-  // Appliquer immédiatement
+}
+
+function applyFooterHeaderTexture(i) {
+  const ft = FOOTER_TEXTURES[i];
+  const commonStyle = ft.css + 'border-color:rgba(255,255,255,0.07);';
   const footer = document.querySelector('.game-bottom');
   if (footer) {
-    const ft = FOOTER_TEXTURES[i];
-    footer.style.cssText = ft.css + 'border-top:1px solid rgba(255,255,255,0.06);'+
-      'width:100%;backdrop-filter:blur(20px);padding:12px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;';
+    footer.style.cssText = commonStyle
+      + 'width:100%;padding:12px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;'
+      + 'border-top:1px solid rgba(255,255,255,0.07);';
+  }
+  const header = document.querySelector('.game-header');
+  if (header) {
+    header.style.cssText = commonStyle
+      + 'display:flex;align-items:center;gap:8px;padding:10px 14px;'
+      + 'border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;z-index:50;position:relative;';
   }
 }
 function showAIThinking(v){document.getElementById('ai-thinking').classList.toggle('hidden',!v);}
@@ -3685,22 +3695,25 @@ let _chatOpen = false;
 let _unreadCount = 0;
 let _chatPolling = null;
 
-function toggleChatInline() {
-  toggleChat();
-  const panel = document.getElementById('chat-panel');
-  if (panel && !panel.classList.contains('collapsed'))
-    setTimeout(() => panel.scrollIntoView({behavior:'smooth',block:'end'}), 50);
+function toggleChatInline() { openChat(); }
+function toggleChat()       { openChat(); }
+
+function openChat() {
+  const ov = document.getElementById('ov-chat');
+  if (!ov) return;
+  ov.classList.remove('hidden');
+  _chatOpen = true;
+  _unreadCount = 0;
+  updateChatBadge();
+  setTimeout(() => {
+    scrollChat();
+    document.getElementById('chat-input')?.focus();
+  }, 50);
 }
 
-function toggleChat() {
-  _chatOpen = !_chatOpen;
-  const panel = document.getElementById('chat-panel');
-  panel.classList.toggle('collapsed', !_chatOpen);
-  if (_chatOpen) {
-    _unreadCount = 0;
-    updateChatBadge();
-    document.getElementById('chat-input')?.focus();
-  }
+function closeChat() {
+  document.getElementById('ov-chat')?.classList.add('hidden');
+  _chatOpen = false;
 }
 
 function updateChatBadge() {
@@ -3759,7 +3772,11 @@ async function pollChat() {
       const isMe = m.device_id === DEVICE_ID;
       if (!isMe) {
         renderChatMsg(m, false);
-        if (!_chatOpen) { _unreadCount++; updateChatBadge(); }
+        if (!_chatOpen) {
+          _unreadCount++;
+          updateChatBadge();
+          showToast(`💬 ${m.pseudo}: ${m.text.slice(0,30)}${m.text.length>30?'…':''}`, 'ok', 3000);
+        }
       }
     });
     scrollChat();
@@ -3800,17 +3817,15 @@ function addSystemMsg(text) {
 
 // Activer le chat quand une partie en ligne commence
 function initChat() {
-  const panel = document.getElementById('chat-panel');
-  if (!panel) return;
+  const btn = document.getElementById('chat-inline-btn');
   if (_currentRoom) {
-    panel.classList.remove('hidden');
-    panel.classList.add('collapsed');
-    _lastChatTs = Date.now(); // ne pas afficher les vieux messages
+    if (btn) btn.style.display = 'flex';
+    _lastChatTs = Date.now();
     if (_chatPolling) clearInterval(_chatPolling);
     _chatPolling = setInterval(pollChat, 2500);
     addSystemMsg('Chat activé — dites bonjour !');
   } else {
-    panel.classList.add('hidden');
+    if (btn) btn.style.display = 'none';
   }
 }
 
