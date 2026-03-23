@@ -291,6 +291,40 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   font-size:11px;font-weight:800;letter-spacing:1px;cursor:pointer;transition:all 0.2s;}
 .modal-btn-quit:hover{background:rgba(255,71,87,0.25);}
 
+/* Modale Apparence */
+.ap-section{display:flex;flex-direction:column;gap:8px;}
+.ap-section-label{font-size:9px;font-weight:800;letter-spacing:3px;
+  color:rgba(0,240,255,0.5);text-transform:uppercase;}
+.ap-grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
+.ap-board-btn{border-radius:11px;overflow:hidden;cursor:pointer;
+  border:2px solid rgba(255,255,255,0.07);transition:all .2s;}
+.ap-board-btn.sel{border-color:var(--accent);box-shadow:0 0 12px rgba(0,240,255,0.22);}
+.ap-board-preview{height:40px;}
+.ap-board-name{padding:4px 5px;background:rgba(0,0,0,0.55);
+  font-size:8px;font-weight:800;text-align:center;color:rgba(255,255,255,0.4);}
+.ap-board-btn.sel .ap-board-name{color:var(--accent);}
+.ap-toggle-list{display:flex;flex-direction:column;gap:2px;}
+.ap-toggle-grp{font-size:8px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;color:rgba(255,255,255,0.2);
+  padding:7px 0 2px;}
+.ap-row{display:flex;align-items:center;gap:11px;
+  padding:8px 12px;border-radius:11px;cursor:pointer;transition:all .15s;
+  border:1px solid transparent;}
+.ap-row:hover{background:rgba(255,255,255,0.03);}
+.ap-row.sel{background:rgba(0,240,255,0.05);border-color:rgba(0,240,255,0.2);}
+.ap-swatch{width:34px;height:26px;border-radius:6px;flex-shrink:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.1),0 2px 5px rgba(0,0,0,0.5);}
+.ap-swatch-ft{width:46px;height:18px;border-radius:5px;flex-shrink:0;}
+.ap-row-name{flex:1;font-size:12px;font-weight:700;color:rgba(255,255,255,0.7);}
+.ap-row.sel .ap-row-name{font-weight:900;color:#fff;}
+.ap-radio{width:17px;height:17px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.18);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;transition:.15s;}
+.ap-row.sel .ap-radio{border-color:var(--accent);background:var(--accent);}
+.ap-radio::after{content:'';width:6px;height:6px;border-radius:50%;
+  background:#050709;display:none;}
+.ap-row.sel .ap-radio::after{display:block;}
+
 .gh-scores{display:flex;gap:8px;flex:1;overflow-x:auto;scrollbar-width:none;}
 .gh-scores::-webkit-scrollbar{display:none;}
 .player-score-chip{display:flex;align-items:center;gap:7px;padding:6px 12px;
@@ -352,16 +386,30 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .game-bottom{width:100%;background:rgba(10,13,20,0.97);backdrop-filter:blur(20px);
   border-top:1px solid var(--border);padding:12px 16px;flex-shrink:0;
   display:flex;flex-direction:column;gap:0;}
-.hand-label-wrap{display:flex;align-items:center;justify-content:center;
-  gap:8px;margin-bottom:10px;}
-.hand-label{font-size:12px;font-weight:900;letter-spacing:0.5px;color:#fff;}
-.diode{width:9px;height:9px;border-radius:50%;flex-shrink:0;
+.tablette-header{display:flex;align-items:center;justify-content:center;
+  gap:8px;margin-bottom:6px;}
+.hand-label{font-size:13px;font-weight:900;letter-spacing:0.3px;color:#fff;}
+.diode{width:8px;height:8px;border-radius:50%;flex-shrink:0;
   box-shadow:0 0 6px currentColor;transition:all .3s;}
 .diode.green{background:#00ff88;color:#00ff88;
   animation:diodePulse 1.2s ease-in-out infinite;}
 .diode.red{background:#ff4757;color:#ff4757;}
-@keyframes diodePulse{0%,100%{opacity:1;box-shadow:0 0 8px #00ff88,0 0 2px #00ff88}
-  50%{opacity:.35;box-shadow:0 0 2px #00ff88}}
+@keyframes diodePulse{0%,100%{opacity:1;box-shadow:0 0 8px #00ff88}
+  50%{opacity:.3;box-shadow:0 0 2px #00ff88}}
+.chat-inline-btn{background:none;border:none;cursor:pointer;
+  font-size:14px;padding:2px 4px;border-radius:8px;transition:.2s;
+  color:rgba(255,255,255,0.4);display:flex;align-items:center;}
+.chat-inline-btn:hover{color:var(--accent);}
+.chat-inline-btn .chat-badge-dot{width:6px;height:6px;border-radius:50%;
+  background:var(--red);margin-left:2px;display:none;}
+.chat-inline-btn .chat-badge-dot.show{display:block;}
+.tablette-infos{display:flex;align-items:center;justify-content:center;
+  gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.tab-info{display:flex;align-items:center;gap:4px;
+  font-size:9px;font-weight:700;color:rgba(255,255,255,.35);
+  letter-spacing:0.5px;}
+.tab-info-val{font-size:11px;font-weight:900;color:rgba(255,255,255,.7);
+  font-variant-numeric:tabular-nums;}
 .hand-tiles{display:flex;gap:8px;justify-content:center;margin-bottom:12px;
   min-height:62px;align-items:center;}
 .tile{width:58px;height:58px;border-radius:11px;
@@ -851,6 +899,7 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   <div class="game-header">
     <button class="gh-quit-btn" onclick="confirmQuit()" title="Quitter">←</button>
     <div class="gh-scores" id="gh-scores"></div>
+    <button class="gh-quit-btn" onclick="openAppearance()" title="Apparence" style="margin-left:4px">🎨</button>
     <div class="gh-info">
       <div class="gh-bag"><span>🎲</span><span class="gh-bag-num" id="bag-count">108</span></div>
       <div class="gh-timer"><span>⏱</span><span class="gh-timer-val" id="turn-timer">0:00</span></div>
@@ -864,20 +913,23 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
       <button class="nav-btn" onclick="zoomIn()" title="Zoom +">＋</button>
       <button class="nav-btn" onclick="zoomReset()" title="Centrer">⊙</button>
       <button class="nav-btn" onclick="resetRotation()" title="Remettre droit">↺</button>
-      <button class="nav-btn" onclick="toggleThemePanel()" id="btn-theme" title="Couleur">🎨</button>
+
       <button class="nav-btn" onclick="zoomOut()" title="Zoom −">－</button>
     </div>
-    <div class="theme-panel hidden" id="theme-panel">
-      <div class="theme-panel-lbl">Couleur du plateau</div>
-      <div id="theme-swatches-game"></div>
-    </div>
+
   </div>
 
   <div class="game-bottom">
-    <div class="hand-label-wrap">
+    <!-- Tablette : nom + diode + chat -->
+    <div class="tablette-header">
+      <div class="hand-label" id="hand-label">Tablette</div>
       <div class="diode green" id="turn-diode"></div>
-      <div class="hand-label" id="hand-label">PSEUDO</div>
+      <button class="chat-inline-btn" id="chat-inline-btn" onclick="toggleChatInline()" style="display:none;margin-left:6px">
+        💬<span class="chat-badge-dot" id="chat-badge-dot"></span>
+      </button>
     </div>
+    <!-- Mini infos : timer, score, sac -->
+    <div class="tablette-infos" id="tablette-infos"></div>
     <div class="hand-tiles" id="hand-tiles"></div>
     <div class="action-row">
       <button class="act-btn discard-btn" id="btn-discard" onclick="toggleDiscardMode()">🗑 Jeter</button>
@@ -897,6 +949,38 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
           onkeydown="if(event.key==='Enter') sendChatMsg()">
         <button class="chat-send" onclick="sendChatMsg()">➤</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALE APPARENCE -->
+<!-- MODALE APPARENCE -->
+<div class="modal-overlay hidden" id="ov-appearance" onclick="if(event.target===this)closeAppearance()">
+  <div class="modal-card" style="width:min(480px,95vw);max-height:82vh;display:flex;flex-direction:column;">
+    <div class="modal-header">
+      <div class="modal-title">🎨 Apparence</div>
+      <button class="modal-close" onclick="closeAppearance()">✕</button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto;display:flex;flex-direction:column;gap:22px;">
+
+      <!-- Plateau -->
+      <div class="ap-section">
+        <div class="ap-section-label">Plateau</div>
+        <div id="ap-boards" class="ap-grid4"></div>
+      </div>
+
+      <!-- Tuiles -->
+      <div class="ap-section">
+        <div class="ap-section-label">Matériau des tuiles</div>
+        <div id="ap-tiles" class="ap-toggle-list"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="ap-section">
+        <div class="ap-section-label">Tablette (footer)</div>
+        <div id="ap-footer" class="ap-toggle-list"></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1193,6 +1277,8 @@ async function syncOnlineGame() {
       document.getElementById('btn-discard').disabled = false;
       playSound('turn');
       showToast(`À vous de jouer !`, 'ok', 1800);
+      // Vibration : motif court-court-long
+      if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]);
     }
 
     // Animer + announce les tuiles adverses seulement si le tour a changé
@@ -1638,18 +1724,110 @@ const GAP = 4;
 const CELL = TILE_SIZE + GAP;
 
 const BOARD_THEMES = [
-  { name:'Noir',    bg:'#050709', grid:'rgba(255,255,255,0.05)', light:false },
-  { name:'Marine',  bg:'#061220', grid:'rgba(0,180,255,0.09)',   light:false },
-  { name:'Forêt',   bg:'#071510', grid:'rgba(0,180,80,0.09)',    light:false },
-  { name:'Violet',  bg:'#0d0715', grid:'rgba(160,0,255,0.09)',   light:false },
-  { name:'Ardoise', bg:'#0f1015', grid:'rgba(200,200,220,0.07)', light:false },
-  { name:'Bois',    bg:'#3d2810', grid:'rgba(220,160,80,0.15)',  light:false },
-  { name:'Blanc',   bg:'#f0f0f0', grid:'rgba(0,0,0,0.07)',       light:true  },
-  { name:'Crème',   bg:'#f5ede0', grid:'rgba(120,80,30,0.09)',   light:true  },
-  { name:'Ciel',    bg:'#deeeff', grid:'rgba(0,80,200,0.09)',    light:true  },
-  { name:'Menthe',  bg:'#d8f5e8', grid:'rgba(0,120,60,0.09)',    light:true  },
-  { name:'Lavande', bg:'#ece0f8', grid:'rgba(100,0,200,0.09)',   light:true  },
-  { name:'Marbre',  bg:'#e8e4e0', grid:'rgba(80,70,60,0.08)',    light:true, marble:true },
+  // ── Sombres ──
+  { name:'Noir',     bg:'#050709', grid:'rgba(255,255,255,0.06)', light:false,
+    texture: 'noise' },             // grain subtil
+  { name:'Ardoise',  bg:'#111418', grid:'rgba(200,220,255,0.07)', light:false,
+    texture: 'slate' },             // béton poli
+  { name:'Marine',   bg:'#050e1a', grid:'rgba(0,160,255,0.10)',   light:false,
+    texture: 'carbon' },            // carbone
+  { name:'Bois',     bg:'#2a1a0a', grid:'rgba(220,160,60,0.18)',  light:false,
+    texture: 'wood' },              // bois sombre
+  { name:'Velours',  bg:'#130820', grid:'rgba(160,80,255,0.12)',  light:false,
+    texture: 'velvet' },            // velours violet
+  // ── Clairs ──
+  { name:'Liège',    bg:'#c8a87a', grid:'rgba(80,50,20,0.15)',    light:true,
+    texture: 'cork' },              // liège naturel
+  { name:'Parquet',  bg:'#b8946a', grid:'rgba(80,50,10,0.18)',    light:true,
+    texture: 'parquet' },           // parquet clair
+  { name:'Papier',   bg:'#f2ead6', grid:'rgba(100,70,30,0.10)',   light:true,
+    texture: 'paper' },             // papier ivoire
+  { name:'Craie',    bg:'#1a2a1a', grid:'rgba(200,240,200,0.14)', light:false,
+    texture: 'chalk' },             // tableau noir
+  { name:'Ardoise☀', bg:'#d4cfc8', grid:'rgba(80,70,60,0.12)',    light:true,
+    texture: 'slate_light' },       // ardoise claire
+  { name:'Marbre',   bg:'#e8e4e0', grid:'rgba(80,70,60,0.08)',    light:true,
+    texture: 'marble' },            // marbre blanc
+  { name:'Aquarium', bg:'#061828', grid:'rgba(0,200,255,0.12)',   light:false,
+    texture: 'bubbles', animated:true }, // bulles animées !
+];
+
+// ════════════════════════════════════════════════════════════════
+// TEXTURES DES TUILES
+// ════════════════════════════════════════════════════════════════
+const TILE_TEXTURES = [
+  // ── Bois ──
+  { id:'oak',    name:'Chêne',    group:'Bois',
+    base:['#2e1e0c','#1e1208','#2a1a0a'], grain:'rgba(200,140,50,{a})',  grainA:[.06,.10], light:false },
+  { id:'birch',  name:'Bouleau',  group:'Bois',
+    base:['#c8a060','#b08040','#a07030'], grain:'rgba(80,50,15,{a})',    grainA:[.05,.09], light:true  },
+  { id:'spruce', name:'Épicéa',   group:'Bois',
+    base:['#4a3018','#362210','#3e2814'], grain:'rgba(160,100,30,{a})',  grainA:[.07,.12], light:false },
+  { id:'bamboo', name:'Bambou',   group:'Bois',
+    base:['#8a7a30','#706020','#6a5c1e'], grain:'rgba(30,20,5,{a})',     grainA:[.06,.10], light:false },
+  // ── Pierre ──
+  { id:'marble', name:'Marbre',   group:'Pierre',
+    base:['#e8e4de','#dedad4','#e4e0da'], grain:'rgba(120,110,100,{a})', grainA:[.10,.18], light:true  },
+  { id:'granite',name:'Granit',   group:'Pierre',
+    base:['#3a3836','#2e2c2a','#343230'], grain:null, grainA:[], light:false, speckle:true },
+  { id:'concrete',name:'Béton',   group:'Pierre',
+    base:['#4a4a4a','#404040','#444444'], grain:'rgba(255,255,255,{a})', grainA:[.02,.05], light:false, scratch:true },
+  { id:'slate',  name:'Ardoise',  group:'Pierre',
+    base:['#2a2e34','#222630','#262a30'], grain:'rgba(200,210,220,{a})', grainA:[.03,.07], light:false },
+  // ── Métal ──
+  { id:'inox',   name:'Inox',     group:'Métal',
+    base:['#9a9ea2','#8a8e92','#92969a'], grain:'rgba(255,255,255,{a})', grainA:[.08,.14], light:true, metal:true },
+  { id:'copper', name:'Cuivre',   group:'Métal',
+    base:['#7a4020','#6a3418','#703818'], grain:'rgba(200,120,60,{a})',  grainA:[.06,.12], light:false, metal:true },
+  { id:'carbon', name:'Carbone',  group:'Métal',
+    base:['#0e1014','#0a0c10','#10121a'], grain:null, grainA:[], light:false, carbon:true },
+  // ── Synthétique ──
+  { id:'glass',  name:'Verre',    group:'Synth.',
+    base:['#c8d8e8','#b8c8d8','#c0d0e0'], grain:null, grainA:[], light:true, glass:true },
+  { id:'plexi',  name:'Plexi',    group:'Synth.',
+    base:['#1a2840','#141e32','#182038'], grain:null, grainA:[], light:false, glass:true, tint:'rgba(0,100,255,0.08)' },
+  { id:'obsidian',name:'Obsidienne',group:'Synth.',
+    base:['#0a080c','#060408','#080608'], grain:'rgba(180,100,255,{a})', grainA:[.02,.05], light:false, metal:true },
+];
+let _tileTextureIdx  = 0; // texture des tuiles
+let _footerTextureIdx = 0; // texture du footer (tablette)
+
+// Textures footer — matériaux pour la zone de main du joueur
+const FOOTER_TEXTURES = [
+  { id:'plastic_black', name:'Plastique noir',
+    css:`background:linear-gradient(180deg,#1a1a1a 0%,#111 40%,#0a0a0a 100%);
+         box-shadow:0 -8px 30px rgba(0,0,0,0.8),0 -2px 8px rgba(0,0,0,0.6),
+                    inset 0 1px 0 rgba(255,255,255,0.08),inset 0 -1px 0 rgba(0,0,0,0.4);` },
+  { id:'oak',     name:'Chêne',
+    css:`background:linear-gradient(180deg,#2e1e0c,#1e1208 50%,#2a1a0a);
+         box-shadow:0 -8px 24px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,200,80,0.1);` },
+  { id:'birch',   name:'Bouleau',
+    css:`background:linear-gradient(180deg,#c8a060,#b08040 50%,#a07030);
+         box-shadow:0 -8px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,200,0.15);` },
+  { id:'marble',  name:'Marbre',
+    css:`background:linear-gradient(160deg,#e8e4de,#dedad4 50%,#e4e0da);
+         box-shadow:0 -8px 24px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.3);` },
+  { id:'inox',    name:'Inox',
+    css:`background:linear-gradient(180deg,#9a9ea2,#8a8e92 30%,#6a6e72 60%,#8a8e92);
+         box-shadow:0 -8px 28px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.3);` },
+  { id:'carbon',  name:'Carbone',
+    css:`background:repeating-linear-gradient(91deg,transparent 0,transparent 4px,
+           rgba(255,255,255,0.03) 4px,rgba(255,255,255,0.03) 5px),
+         linear-gradient(180deg,#10141a,#0a0c10 50%,#0e1016);
+         box-shadow:0 -8px 28px rgba(0,0,0,0.8),inset 0 1px 0 rgba(100,150,255,0.1);` },
+  { id:'glass',   name:'Verre',
+    css:`background:linear-gradient(180deg,rgba(180,200,220,0.25),rgba(140,170,200,0.15) 50%,rgba(160,190,220,0.20));
+         backdrop-filter:blur(8px);
+         box-shadow:0 -8px 30px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.3);` },
+  { id:'concrete', name:'Béton',
+    css:`background:linear-gradient(180deg,#4a4a4a,#404040 50%,#3c3c3c);
+         box-shadow:0 -8px 20px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.05);` },
+  { id:'copper',  name:'Cuivre',
+    css:`background:linear-gradient(180deg,#7a4020,#6a3418 40%,#5a2c14);
+         box-shadow:0 -8px 28px rgba(0,0,0,0.7),inset 0 1px 0 rgba(200,120,60,0.2);` },
+  { id:'velvet',  name:'Velours',
+    css:`background:radial-gradient(ellipse at 50% 0%,#1e1030,#0e0820 60%,#080610);
+         box-shadow:0 -8px 32px rgba(80,0,160,0.3),inset 0 1px 0 rgba(160,80,255,0.1);` },
 ];
 
 // ════════════════════════════════════════════════════════════════
@@ -1808,6 +1986,9 @@ function determineFirstPlayer(onDone) {
 }
 
 function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
+  // Supprimer une éventuelle modale précédente
+  document.getElementById('first-player-modal')?.remove();
+
   const overlay = document.createElement('div');
   overlay.id = 'first-player-modal';
   overlay.style.cssText = `position:fixed;inset:0;background:rgba(5,7,9,0.95);
@@ -1815,65 +1996,57 @@ function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
     padding:20px;backdrop-filter:blur(16px);opacity:0;transition:opacity 0.5s;`;
 
   const winner = G.players[firstIdx];
+
   const scoresHTML = scores.map(s => `
     <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;
       border-radius:14px;background:rgba(255,255,255,0.03);
-      border:1px solid ${s.idx===firstIdx?s.color+'66':'rgba(255,255,255,0.06)'};
-      transition:all 0.3s;">
-      <span style="font-size:1.5rem;">${s.emoji}</span>
-      <div style="flex:1;">
+      border:1px solid ${s.idx===firstIdx ? s.color+'55' : 'rgba(255,255,255,0.06)'};
+      ${s.idx===firstIdx ? 'box-shadow:0 0 20px '+s.color+'22;' : ''}">
+      <span style="font-size:1.4rem">${s.emoji}</span>
+      <div style="flex:1">
         <div style="font-size:13px;font-weight:900;color:${s.color}">${s.pseudo}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;">
-          Peut poser ${s.best} tuile${s.best>1?'s':''} d'entrée
+        <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px">
+          ${s.best} tuile${s.best>1?'s':''} d'entrée
         </div>
       </div>
-      ${s.idx===firstIdx?`<span style="font-size:11px;font-weight:900;color:${s.color};
-        background:${s.color}22;border:1px solid ${s.color}44;
-        padding:4px 12px;border-radius:20px;">⭐ Premier</span>`
-        :'<span style="font-size:10px;color:rgba(255,255,255,0.25);">En attente</span>'}
+      ${s.idx===firstIdx
+        ? `<span style="font-size:10px;font-weight:900;color:${s.color};background:${s.color}22;
+            padding:3px 10px;border-radius:20px;border:1px solid ${s.color}44">⭐ 1er</span>`
+        : ''}
     </div>`).join('');
 
   overlay.innerHTML = `
-    <div id="fpm-card" style="background:linear-gradient(145deg,#0d1018,#080b10);
-      border:1px solid rgba(255,255,255,0.1);border-top:2px solid rgba(0,240,255,0.3);
-      border-radius:28px;padding:32px 28px;max-width:400px;width:100%;
-      display:flex;flex-direction:column;gap:20px;
-      transform:scale(0.85) translateY(30px);transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
-      box-shadow:0 40px 80px rgba(0,0,0,0.9),inset 0 1px 0 rgba(255,255,255,0.06);">
-
-      <div style="text-align:center;">
-        <div id="fpm-icon" style="font-size:3.5rem;margin-bottom:14px;
-          display:block;animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;">
-          ${isTie?'🎲':'⭐'}
-        </div>
+    <div id="fpm-card" style="background:linear-gradient(155deg,#0d1018,#060810);
+      border:1px solid rgba(255,255,255,0.08);border-top:2px solid rgba(0,240,255,0.25);
+      border-radius:28px;padding:30px 26px;max-width:400px;width:100%;
+      display:flex;flex-direction:column;gap:18px;
+      transform:scale(0.88) translateY(24px);
+      transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow:0 40px 80px rgba(0,0,0,0.9);">
+      <div style="text-align:center">
         <div style="font-size:9px;font-weight:800;letter-spacing:4px;
-          color:rgba(0,240,255,0.6);text-transform:uppercase;margin-bottom:10px;">
-          ${isTie?'TIRAGE AU SORT':'QUI COMMENCE ?'}
+          color:rgba(0,240,255,0.5);text-transform:uppercase;margin-bottom:12px">
+          LA PARTIE VA COMMENCER
         </div>
-        <div id="fpm-title" style="font-size:20px;font-weight:900;letter-spacing:-0.5px;margin-bottom:8px;
-          background:linear-gradient(135deg,#fff,rgba(255,255,255,0.7));
-          -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">
-          ${isTie?'Égalité !':winner.pseudo+' commence !'}
+        <div id="fpm-icon" style="font-size:3.2rem;margin-bottom:12px;display:block;
+          animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.2s both">
+          ${isTie ? '🎲' : '⭐'}
         </div>
-        <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;">
+        <div id="fpm-title" style="font-size:19px;font-weight:900;margin-bottom:8px;
+          color:${isTie ? '#fff' : winner.color}">
+          ${isTie ? 'Égalité — tirage au sort' : winner.pseudo + ' commence !'}
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7">
           ${isTie
-            ? `Plusieurs joueurs peuvent poser <b style="color:#fff">${maxTiles} tuile${maxTiles>1?'s':''}</b>.<br>Tirage au sort en cours…`
-            : `Peut placer le plus de tuiles : <b style="color:${winner.color}">${maxTiles} tuile${maxTiles>1?'s':''}</b>`}
+            ? `Plusieurs joueurs peuvent poser <b style="color:#fff">${maxTiles} tuile${maxTiles>1?'s':''}</b>`
+            : `Peut poser le plus de tuiles : <b style="color:${winner.color}">${maxTiles} tuile${maxTiles>1?'s':''}</b>`}
         </div>
       </div>
-
-      <div style="display:flex;flex-direction:column;gap:8px;">${scoresHTML}</div>
-
-      <button id="fpm-btn" onclick="fpmConfirm()" style="
-        width:100%;padding:15px;border-radius:50px;border:none;cursor:pointer;
-        background:linear-gradient(135deg,var(--accent),#00b8cc);
-        color:#050709;font-size:12px;font-weight:900;letter-spacing:2px;
-        text-transform:uppercase;box-shadow:0 6px 24px rgba(0,240,255,0.3);
-        transition:all .2s;margin-top:4px;">
-        ▶ COMMENCER
-      </button>
-      <div id="fpm-countdown" style="text-align:center;font-size:10px;
-        color:rgba(255,255,255,0.2);letter-spacing:1px;margin-top:8px;min-height:16px;"></div>
+      <div style="display:flex;flex-direction:column;gap:7px">${scoresHTML}</div>
+      <div id="fpm-cd" style="text-align:center;font-size:11px;
+        color:rgba(255,255,255,0.25);letter-spacing:1px">
+        Démarrage dans <span id="fpm-n">5</span>…
+      </div>
     </div>`;
 
   document.body.appendChild(overlay);
@@ -1883,65 +2056,67 @@ function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
     document.getElementById('fpm-card').style.transform = 'scale(1) translateY(0)';
   });
 
-  const cd   = document.getElementById('fpm-countdown');
   const icon  = document.getElementById('fpm-icon');
   const title = document.getElementById('fpm-title');
-  const btn   = document.getElementById('fpm-btn');
+  const nEl   = document.getElementById('fpm-n');
 
-  // Exposer la fonction de confirmation globalement
-  window.fpmConfirm = () => {
-    if (btn) btn.disabled = true;
-    overlay.style.opacity = '0';
-    setTimeout(() => { overlay.remove(); onDone(); }, 400);
-  };
-
-  // Animation tirage au sort si égalité
+  // ── Tirage au sort animé ──
   if (isTie) {
-    const names = scores.map(s=>s.pseudo);
-    const colors = scores.map(s=>s.color);
+    const tieScores  = scores.filter(s => s.best === maxTiles);
+    const names  = tieScores.map(s => s.pseudo);
+    const colors = tieScores.map(s => s.color);
+    const dices  = ['🎲','🎯','🎰','🎲','🎯','🎰'];
     let frame = 0, spinIdx = 0;
-    const dices = ['🎲','🎯','🎰','🎲','🎯','🎰'];
 
+    // Phase 1 : défilement rapide (2s)
     const spinAnim = setInterval(() => {
-      // Faire tourner les noms
       spinIdx = (spinIdx + 1) % names.length;
       title.textContent = names[spinIdx] + ' ?';
       title.style.color = colors[spinIdx];
-      title.style['-webkit-text-fill-color'] = colors[spinIdx];
-      icon.textContent = dices[frame % dices.length];
+      icon.textContent  = dices[frame % dices.length];
       frame++;
-    }, 80);
+    }, 75);
 
-    // Après 2 secondes, ralentir et révéler le gagnant
+    // Phase 2 : ralentissement et révélation (après 2s)
     setTimeout(() => {
       clearInterval(spinAnim);
-      let slow = 80, si = 0;
-      const slowDown = () => {
-        if (slow > 450) {
-          // Révéler le vrai gagnant
+      let delay = 75, steps = 0;
+      const maxSteps = 14;
+      const reveal = () => {
+        steps++;
+        if (steps >= maxSteps) {
+          // Révéler le gagnant
           title.textContent = winner.pseudo + ' commence !';
           title.style.color = winner.color;
-          title.style['-webkit-text-fill-color'] = winner.color;
-          icon.textContent = '🎉';
+          icon.textContent  = '🎉';
           return;
         }
         spinIdx = (spinIdx + 1) % names.length;
         title.textContent = names[spinIdx] + ' ?';
         title.style.color = colors[spinIdx];
-        title.style['-webkit-text-fill-color'] = colors[spinIdx];
-        slow *= 1.35;
-        setTimeout(slowDown, slow);
+        delay = Math.min(delay * 1.4, 600);
+        setTimeout(reveal, delay);
       };
-      slowDown();
+      reveal();
     }, 2000);
   }
 
-  // Après l'animation de tirage au sort, signaler que c'est prêt
-  if (isTie) {
-    setTimeout(() => {
-      if (cd) cd.textContent = 'Tirage terminé — cliquez pour commencer';
-    }, 3200);
-  }
+  // ── Countdown auto 5→0 (commence après l'animation si tie) ──
+  const startCountdown = () => {
+    let n = 5;
+    const iv = setInterval(() => {
+      n--;
+      if (nEl) nEl.textContent = n;
+      if (n <= 0) {
+        clearInterval(iv);
+        overlay.style.opacity = '0';
+        setTimeout(() => { overlay.remove(); onDone(); }, 400);
+      }
+    }, 1000);
+  };
+
+  // Si tie : attendre la fin de l'animation (2s spin + ~2s ralentissement)
+  setTimeout(startCountdown, isTie ? 4200 : 400);
 }
 
 function launchGame() {
@@ -2067,12 +2242,11 @@ function drawBoard() {
   if (!ctx2d) return;
   const theme = BOARD_THEMES[G.boardTheme||0];
   ctx2d.clearRect(0,0,_W,_H);
-  if (theme.marble) {
-    ctx2d.fillStyle='#e8e4e0'; ctx2d.fillRect(0,0,_W,_H);
-    drawMarble(ctx2d,_W,_H);
-  } else {
-    ctx2d.fillStyle=theme.bg; ctx2d.fillRect(0,0,_W,_H);
-  }
+  // ── Fond avec texture ──
+  ctx2d.fillStyle = theme.bg;
+  ctx2d.fillRect(0, 0, _W, _H);
+  drawThemeTexture(ctx2d, theme, _W, _H);
+  if (theme.animated) drawBubbles();
   // Adapter UI
   const hdr=document.querySelector('.game-header'), btm=document.querySelector('.game-bottom');
   if (hdr) { hdr.style.background=theme.light?'rgba(240,240,240,0.97)':'rgba(10,13,20,0.97)'; hdr.style.color=theme.light?'#111':'#fff'; hdr.style.borderBottomColor=theme.light?'rgba(0,0,0,0.08)':'rgba(255,255,255,0.06)'; }
@@ -2157,23 +2331,142 @@ function drawBoard() {
   ctx2d.restore();
 }
 
-function drawMarble(ctx,w,h){
-  const lines=[
-    {x1:0.1,y1:0.05,x2:0.6,y2:0.3,x3:0.8,y3:0.15,x4:1.1,y4:0.4,lw:1.5,a:0.22},
-    {x1:-0.1,y1:0.35,x2:0.3,y2:0.5,x3:0.7,y3:0.42,x4:1.1,y4:0.6,lw:1.0,a:0.15},
-    {x1:0.2,y1:0.6,x2:0.5,y2:0.75,x3:0.75,y3:0.65,x4:1.0,y4:0.85,lw:0.8,a:0.12},
-    {x1:0.0,y1:0.8,x2:0.4,y2:0.88,x3:0.65,y3:0.78,x4:1.1,y4:0.95,lw:1.2,a:0.18},
-    {x1:0.3,y1:0.1,x2:0.45,y2:0.45,x3:0.5,y3:0.7,x4:0.4,y4:1.0,lw:0.6,a:0.10},
-    {x1:0.7,y1:0.0,x2:0.75,y2:0.3,x3:0.8,y3:0.6,x4:0.72,y4:1.0,lw:0.9,a:0.13},
-  ];
-  lines.forEach(l=>{
-    ctx.beginPath();ctx.moveTo(l.x1*w,l.y1*h);
-    ctx.bezierCurveTo(l.x2*w,l.y2*h,l.x3*w,l.y3*h,l.x4*w,l.y4*h);
-    ctx.strokeStyle=`rgba(160,148,136,${l.a})`;ctx.lineWidth=l.lw;ctx.stroke();
-    ctx.beginPath();ctx.moveTo(l.x1*w+4,l.y1*h+2);
-    ctx.bezierCurveTo(l.x2*w+3,l.y2*h+2,l.x3*w+3,l.y3*h+1,l.x4*w+4,l.y4*h+2);
-    ctx.strokeStyle=`rgba(200,192,184,${l.a*0.6})`;ctx.lineWidth=l.lw*0.4;ctx.stroke();
+function drawThemeTexture(ctx,theme,w,h){
+  const t=theme.texture||'none';
+  ctx.save();
+  switch(t){
+    case 'noise':
+      for(let i=0;i<200;i++){
+        ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.05})`;
+        ctx.fillRect(Math.random()*w,Math.random()*h,1,1);
+      }
+      break;
+    case 'slate':
+      for(let y=0;y<h;y+=3+Math.random()*3){
+        ctx.strokeStyle=`rgba(255,255,255,${0.02+Math.random()*0.025})`;
+        ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();
+      }
+      for(let i=0;i<5;i++){
+        ctx.strokeStyle=`rgba(255,255,255,${0.015+Math.random()*0.02})`;ctx.lineWidth=0.5;
+        ctx.beginPath();const sx=Math.random()*w,sy=Math.random()*h;
+        ctx.moveTo(sx,sy);ctx.lineTo(sx+(Math.random()-.5)*100,sy+(Math.random()-.5)*30);ctx.stroke();
+      }
+      break;
+    case 'carbon':
+      const cs=10;
+      for(let cx2=0;cx2<w;cx2+=cs)for(let cy2=0;cy2<h;cy2+=cs){
+        const ph=(Math.floor(cx2/cs)+Math.floor(cy2/cs))%2;
+        ctx.fillStyle=ph?'rgba(255,255,255,0.04)':'rgba(0,0,0,0.14)';
+        ctx.fillRect(cx2,cy2,cs/2,cs/2);ctx.fillRect(cx2+cs/2,cy2+cs/2,cs/2,cs/2);
+      }
+      break;
+    case 'wood':
+      for(let v=0;v<12;v++){
+        const yB=h*v/12;
+        ctx.strokeStyle=`rgba(180,120,40,${0.06+Math.random()*0.08})`;
+        ctx.lineWidth=0.8+Math.random()*1.5;
+        ctx.beginPath();ctx.moveTo(0,yB+Math.sin(v)*5);
+        ctx.bezierCurveTo(w*.25,yB+Math.sin(v*2.1)*8,w*.65,yB-Math.sin(v*1.3)*6,w,yB+Math.sin(v*3)*4);
+        ctx.stroke();
+      }
+      break;
+    case 'velvet':
+      const vg=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.max(w,h)/1.8);
+      vg.addColorStop(0,'rgba(100,40,180,0.14)');vg.addColorStop(1,'rgba(0,0,0,0.22)');
+      ctx.fillStyle=vg;ctx.fillRect(0,0,w,h);
+      for(let i=0;i<60;i++){
+        ctx.fillStyle=`rgba(200,150,255,${Math.random()*0.04})`;
+        ctx.fillRect(Math.random()*w,Math.random()*h,1,1);
+      }
+      break;
+    case 'cork':
+      for(let i=0;i<500;i++){
+        const x=Math.random()*w,y=Math.random()*h,r=1+Math.random()*2.5;
+        ctx.fillStyle=`rgba(60,30,5,${0.06+Math.random()*0.10})`;
+        ctx.beginPath();ctx.ellipse(x,y,r,r*.7,Math.random()*Math.PI,0,Math.PI*2);ctx.fill();
+      }
+      break;
+    case 'parquet':
+      const lH=18;
+      for(let y=0;y<h;y+=lH){
+        ctx.fillStyle=`rgba(${Math.random()>.5?'50,25,5':'70,40,10'},0.07)`;
+        ctx.fillRect(0,y,w,lH-1);
+        ctx.strokeStyle='rgba(30,15,2,0.12)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();
+        ctx.strokeStyle='rgba(30,15,2,0.05)';ctx.lineWidth=0.5;
+        ctx.beginPath();ctx.moveTo(0,y+lH*.4);ctx.lineTo(w,y+lH*.4);ctx.stroke();
+      }
+      break;
+    case 'paper':
+      ctx.fillStyle='rgba(120,90,40,0.04)';ctx.fillRect(0,0,w,h);
+      for(let i=0;i<120;i++){
+        ctx.fillStyle=`rgba(80,55,20,${Math.random()*0.04})`;
+        ctx.fillRect(Math.random()*w,Math.random()*h,Math.random()*3,Math.random()*2);
+      }
+      break;
+    case 'chalk':
+      for(let i=0;i<14;i++){
+        ctx.strokeStyle=`rgba(180,220,180,${0.02+Math.random()*0.04})`;
+        ctx.lineWidth=1+Math.random()*2;ctx.beginPath();
+        const sx=Math.random()*w,sy=Math.random()*h;
+        ctx.moveTo(sx,sy);ctx.lineTo(sx+(Math.random()-.5)*120,sy+(Math.random()-.5)*30);ctx.stroke();
+      }
+      break;
+    case 'slate_light':
+      for(let y=0;y<h;y+=2.5){
+        ctx.strokeStyle=`rgba(60,50,40,${0.03+Math.random()*0.04})`;
+        ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();
+      }
+      break;
+    case 'marble':
+      [{x1:.1,y1:.05,x2:.6,y2:.3,x3:.8,y3:.15,x4:1.1,y4:.4,lw:1.5,a:.22},
+       {x1:-.1,y1:.35,x2:.3,y2:.5,x3:.7,y3:.42,x4:1.1,y4:.6,lw:1,a:.15},
+       {x1:.2,y1:.6,x2:.5,y2:.75,x3:.75,y3:.65,x4:1,y4:.85,lw:.8,a:.12},
+       {x1:0,y1:.8,x2:.4,y2:.88,x3:.65,y3:.78,x4:1.1,y4:.95,lw:1.2,a:.18}]
+      .forEach(l=>{
+        ctx.beginPath();ctx.moveTo(l.x1*w,l.y1*h);
+        ctx.bezierCurveTo(l.x2*w,l.y2*h,l.x3*w,l.y3*h,l.x4*w,l.y4*h);
+        ctx.strokeStyle=`rgba(160,148,136,${l.a})`;ctx.lineWidth=l.lw;ctx.stroke();
+      });
+      break;
+  }
+  ctx.restore();
+}
+
+// ── Aquarium : bulles animées ──
+let _bubbles=[], _bubbleInit=false;
+function initBubbles(){
+  if(_bubbleInit)return; _bubbleInit=true;
+  for(let i=0;i<30;i++) _bubbles.push(mkBubble(true));
+}
+function mkBubble(rnd=false){
+  return{x:Math.random(),y:rnd?Math.random():1.06,
+    r:2+Math.random()*9,speed:0.00025+Math.random()*0.0007,
+    drift:(Math.random()-.5)*0.0003,alpha:0.06+Math.random()*0.20,
+    wobble:Math.random()*Math.PI*2};
+}
+function drawBubbles(){
+  initBubbles();
+  const now=performance.now();
+  const dead=[];
+  _bubbles.forEach((b,i)=>{
+    b.y-=b.speed; b.x+=b.drift+Math.sin(now*.0008+b.wobble)*.0002;
+    if(b.y<-0.07){dead.push(i);return;}
+    const bx=b.x*_W,by=b.y*_H;
+    ctx2d.save();
+    // Corps de la bulle
+    ctx2d.beginPath();ctx2d.arc(bx,by,b.r,0,Math.PI*2);
+    ctx2d.strokeStyle=`rgba(80,200,255,${b.alpha})`;ctx2d.lineWidth=0.8;ctx2d.stroke();
+    // Reflet interne
+    ctx2d.beginPath();ctx2d.arc(bx-b.r*.3,by-b.r*.3,b.r*.35,0,Math.PI*2);
+    ctx2d.fillStyle=`rgba(200,240,255,${b.alpha*.5})`;ctx2d.fill();
+    // Trainée
+    ctx2d.strokeStyle=`rgba(40,150,220,${b.alpha*.25})`;ctx2d.lineWidth=b.r*.3;
+    ctx2d.beginPath();ctx2d.moveTo(bx,by+b.r);ctx2d.lineTo(bx,by+b.r*3);ctx2d.stroke();
+    ctx2d.restore();
   });
+  for(let i=dead.length-1;i>=0;i--) _bubbles.splice(dead[i],1);
+  while(_bubbles.length<30) _bubbles.push(mkBubble(false));
 }
 
 // ── Animation tuiles : apparition avec scale + fade ──
@@ -2256,166 +2549,282 @@ function drawSkyAnimations() {
   }
 }
 
+// Dessine la texture de fond d'une tuile selon le matériau choisi
+function drawTileFace(ctx, x, y, s, r, z, tex) {
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(x-s/2, y-s/2, s, s, r); ctx.clip();
+
+  // ── Base (gradient directionnel selon le matériau) ──
+  const baseColors = tex.base;
+  const g = ctx.createLinearGradient(x-s/2, y-s/2, x+s/2, y+s/2);
+  g.addColorStop(0,   baseColors[0]);
+  g.addColorStop(0.45, baseColors[1]);
+  g.addColorStop(1,   baseColors[2]);
+  ctx.fillStyle = g; ctx.fillRect(x-s/2, y-s/2, s, s);
+
+  // ── Texture spécifique ──
+  if (tex.carbon) {
+    // Fibre carbone : motif tressé fin
+    const cs = Math.max(4, s/12);
+    for (let cx=x-s/2; cx<x+s/2; cx+=cs)
+      for (let cy=y-s/2; cy<y+s/2; cy+=cs) {
+        const ph = (Math.floor((cx-(x-s/2))/cs)+Math.floor((cy-(y-s/2))/cs))%2;
+        ctx.fillStyle = ph ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.18)';
+        ctx.fillRect(cx, cy, cs/2, cs/2);
+        ctx.fillRect(cx+cs/2, cy+cs/2, cs/2, cs/2);
+      }
+  } else if (tex.glass) {
+    // Verre/plexi : gradient translucide avec reflet oblique
+    if (tex.tint) { ctx.fillStyle = tex.tint; ctx.fillRect(x-s/2,y-s/2,s,s); }
+    const gi = ctx.createLinearGradient(x-s/2,y-s/2,x+s/2,y+s/2);
+    gi.addColorStop(0,'rgba(255,255,255,0.18)');
+    gi.addColorStop(0.3,'rgba(255,255,255,0.05)');
+    gi.addColorStop(0.7,'rgba(255,255,255,0.02)');
+    gi.addColorStop(1,'rgba(255,255,255,0.12)');
+    ctx.fillStyle=gi; ctx.fillRect(x-s/2,y-s/2,s,s);
+  } else if (tex.metal) {
+    // Métal : stries brossées horizontales
+    for (let i=0; i<8; i++) {
+      const yy = y-s/2 + (i/8)*s;
+      const a = 0.04 + Math.sin(i*1.2)*0.04;
+      ctx.fillStyle = `rgba(255,255,255,${a})`;
+      ctx.fillRect(x-s/2, yy, s, s/16);
+    }
+  } else if (tex.speckle) {
+    // Granit : points aléatoires multicolores
+    const speckles = [
+      'rgba(255,255,255,0.12)','rgba(200,190,180,0.10)',
+      'rgba(80,70,60,0.14)','rgba(180,160,140,0.08)'
+    ];
+    for (let i=0; i<60; i++) {
+      ctx.fillStyle = speckles[Math.floor(Math.random()*speckles.length)];
+      ctx.beginPath();
+      ctx.arc(x-s/2+Math.random()*s, y-s/2+Math.random()*s,
+              0.5+Math.random()*1.8, 0, Math.PI*2);
+      ctx.fill();
+    }
+  } else if (tex.scratch) {
+    // Béton : griffures et agrégats
+    for (let i=0; i<8; i++) {
+      ctx.strokeStyle = `rgba(255,255,255,${0.02+Math.random()*0.04})`;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      const sx=x-s/2+Math.random()*s, sy=y-s/2+Math.random()*s;
+      ctx.moveTo(sx,sy); ctx.lineTo(sx+(Math.random()-.5)*s*.6, sy+(Math.random()-.5)*s*.3);
+      ctx.stroke();
+    }
+  } else if (tex.grain) {
+    // Bois/pierre : veines ou grain
+    const nb = tex.id==='marble' ? 5 : tex.id==='bamboo' ? 8 : 7;
+    for (let v=0; v<nb; v++) {
+      const yv = y-s/2 + (v/nb)*s;
+      const [aMin, aMax] = tex.grainA;
+      const a = aMin + Math.random()*(aMax-aMin);
+      const col = tex.grain.replace('{a}', a);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = (tex.id==='marble') ? 0.8+Math.random()*1.2 : 0.5+Math.random()*.8;
+      ctx.beginPath();
+      if (tex.id==='bamboo') {
+        // Bambou : lignes horizontales droites avec nœuds
+        ctx.moveTo(x-s/2, yv); ctx.lineTo(x+s/2, yv);
+      } else {
+        ctx.moveTo(x-s/2, yv+Math.sin(v)*2);
+        ctx.bezierCurveTo(
+          x-s/6, yv+Math.sin(v*2.1)*3,
+          x+s/6, yv-Math.sin(v*1.4)*2,
+          x+s/2, yv+Math.sin(v*3)*2
+        );
+      }
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
 function drawTileWorld(wx,wy,tile,pending){
-  const x=wx*CELL,y=wy*CELL,s=TILE_SIZE;
-  const r=Math.max(2/G.zoom,s*0.12);
-  const dep=Math.max(1.5/G.zoom,s*0.07);
+  const x=wx*CELL, y=wy*CELL, s=TILE_SIZE;
+  const r=Math.max(2/G.zoom, s*0.12);
+  const dep=Math.max(1.5/G.zoom, s*0.07);
   const z=G.zoom;
+  const tex = TILE_TEXTURES[_tileTextureIdx] || TILE_TEXTURES[0];
 
   if(pending){
-    // Tuile en cours : halo cyan
-    ctx2d.shadowColor='rgba(0,240,255,0.6)';ctx2d.shadowBlur=s*0.25*z;
-    ctx2d.beginPath();ctx2d.roundRect(x-s/2,y-s/2,s,s,r);ctx2d.fillStyle='#0d1e30';ctx2d.fill();
-    ctx2d.strokeStyle='rgba(0,240,255,0.9)';ctx2d.lineWidth=Math.max(1/z,s*0.035);ctx2d.stroke();
-    ctx2d.shadowColor='transparent';ctx2d.shadowBlur=0;
-    drawShape(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.58);
+    ctx2d.shadowColor='rgba(0,240,255,0.6)'; ctx2d.shadowBlur=s*0.25*z;
+    ctx2d.beginPath(); ctx2d.roundRect(x-s/2,y-s/2,s,s,r);
+    ctx2d.fillStyle='#0d1e30'; ctx2d.fill();
+    ctx2d.strokeStyle='rgba(0,240,255,0.9)';
+    ctx2d.lineWidth=Math.max(1/z,s*0.035); ctx2d.stroke();
+    ctx2d.shadowColor='transparent'; ctx2d.shadowBlur=0;
+    drawShapeEngraved(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.58,tex);
     return;
   }
 
-  // ── Ombre portée profonde ──
-  ctx2d.shadowColor='rgba(0,0,0,0.85)';
-  ctx2d.shadowBlur=s*0.18*z;
-  ctx2d.shadowOffsetX=dep*0.6*z;
+  // ── Ombre portée ──
+  ctx2d.shadowColor='rgba(0,0,0,0.88)';
+  ctx2d.shadowBlur=s*0.20*z;
+  ctx2d.shadowOffsetX=dep*0.5*z;
   ctx2d.shadowOffsetY=dep*1.8*z;
-  ctx2d.beginPath();
-  ctx2d.roundRect(x-s/2+dep,y-s/2+dep*1.8,s,s,r);
-  ctx2d.fillStyle='#020100';ctx2d.fill();
-  ctx2d.shadowColor='transparent';ctx2d.shadowBlur=0;
-  ctx2d.shadowOffsetX=0;ctx2d.shadowOffsetY=0;
+  ctx2d.beginPath(); ctx2d.roundRect(x-s/2+dep,y-s/2+dep*1.6,s,s,r);
+  ctx2d.fillStyle='#010100'; ctx2d.fill();
+  ctx2d.shadowColor='transparent'; ctx2d.shadowBlur=0;
+  ctx2d.shadowOffsetX=0; ctx2d.shadowOffsetY=0;
 
-  // ── Face principale : bois noir avec veinage ──
+  // ── Face avec texture matériau ──
+  drawTileFace(ctx2d, x, y, s, r, z, tex);
+
+  // ── Biseau haut-gauche (lumière) ──
   ctx2d.save();
-  ctx2d.beginPath();ctx2d.roundRect(x-s/2,y-s/2,s,s,r);ctx2d.clip();
-
-  // Base bois sombre
-  const gWood=ctx2d.createLinearGradient(x-s/2,y-s/2,x+s/2,y+s/2);
-  gWood.addColorStop(0,'#2a1e12');
-  gWood.addColorStop(0.3,'#1a1108');
-  gWood.addColorStop(0.65,'#0f0b07');
-  gWood.addColorStop(1,'#1e1810');
-  ctx2d.fillStyle=gWood;ctx2d.fillRect(x-s/2,y-s/2,s,s);
-
-  // Veines de bois (lignes quasi horizontales légèrement ondulées)
-  const nbVeines=6;
-  for(let v=0;v<nbVeines;v++){
-    const yv=y-s/2+(v/nbVeines)*s;
-    const alpha=0.04+Math.random()*0.04;
-    ctx2d.beginPath();
-    ctx2d.moveTo(x-s/2,yv+Math.sin(v)*1.5);
-    ctx2d.bezierCurveTo(
-      x-s/6,yv+Math.sin(v*2)*1.2,
-      x+s/6,yv-Math.sin(v*1.5)*1.2,
-      x+s/2,yv+Math.sin(v*3)*1.5
-    );
-    ctx2d.strokeStyle=`rgba(255,200,100,${alpha})`;
-    ctx2d.lineWidth=0.6/z;ctx2d.stroke();
-  }
-
+  ctx2d.beginPath(); ctx2d.roundRect(x-s/2,y-s/2,s,s,r); ctx2d.clip();
+  const gBevel = ctx2d.createLinearGradient(x-s/2,y-s/2,x+s/2,y+s/2);
+  gBevel.addColorStop(0, 'rgba(255,255,255,0.14)');
+  gBevel.addColorStop(0.3, 'rgba(255,255,255,0.03)');
+  gBevel.addColorStop(1, 'rgba(0,0,0,0.20)');
+  ctx2d.fillStyle=gBevel; ctx2d.fillRect(x-s/2,y-s/2,s,s);
   ctx2d.restore();
 
-  // ── Bordure fine ──
-  ctx2d.beginPath();ctx2d.roundRect(x-s/2,y-s/2,s,s,r);
-  ctx2d.strokeStyle='rgba(255,255,255,0.10)';
-  ctx2d.lineWidth=Math.max(0.4/z,0.5);ctx2d.stroke();
+  // ── Bordure ──
+  ctx2d.beginPath(); ctx2d.roundRect(x-s/2,y-s/2,s,s,r);
+  const borderColor = tex.light ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)';
+  ctx2d.strokeStyle=borderColor;
+  ctx2d.lineWidth=Math.max(0.5/z,0.6); ctx2d.stroke();
 
-  // ── Tranche droite (profondeur) ──
-  ctx2d.beginPath();
-  ctx2d.roundRect(x+s/2-dep*0.8,y-s/2+dep*0.5,dep*0.8,s-dep*0.3,r*0.3);
+  // ── Tranche bas-droite ──
   const gSide=ctx2d.createLinearGradient(x+s/2-dep,0,x+s/2,0);
-  gSide.addColorStop(0,'rgba(0,0,0,0.2)');gSide.addColorStop(1,'rgba(0,0,0,0.7)');
-  ctx2d.fillStyle=gSide;ctx2d.fill();
+  gSide.addColorStop(0,'rgba(0,0,0,0.15)'); gSide.addColorStop(1,'rgba(0,0,0,0.65)');
+  ctx2d.fillStyle=gSide;
+  ctx2d.beginPath(); ctx2d.roundRect(x+s/2-dep*.9,y-s/2+dep*.4,dep*.9,s-dep*.2,r*.3);
+  ctx2d.fill();
 
-  // ── Reflet de surface (laque) ──
-  ctx2d.beginPath();
-  ctx2d.roundRect(x-s/2+s*0.08,y-s/2+s*0.06,s*0.55,s*0.12,r*0.3);
-  const gRef=ctx2d.createLinearGradient(0,y-s/2,0,y-s/2+s*0.18);
-  gRef.addColorStop(0,'rgba(255,255,255,0.10)');
+  // ── Reflet de surface ──
+  const gRef=ctx2d.createLinearGradient(0,y-s/2,0,y-s/2+s*.18);
+  const refAlpha = tex.glass ? 0.22 : tex.metal ? 0.18 : 0.08;
+  gRef.addColorStop(0,`rgba(255,255,255,${refAlpha})`);
   gRef.addColorStop(1,'rgba(255,255,255,0)');
-  ctx2d.fillStyle=gRef;ctx2d.fill();
+  ctx2d.fillStyle=gRef;
+  ctx2d.beginPath(); ctx2d.roundRect(x-s/2+s*.07,y-s/2+s*.05,s*.56,s*.11,r*.3);
+  ctx2d.fill();
 
-  // ── Motif gravé ──
-  drawShape(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.60);
+  // ── Motif gravé en 3D ──
+  drawShapeEngraved(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.60,tex);
 }
 
-function drawShape(ctx,shape,color,cx,cy,size){
-  const h=size/2;
-  // Effet gravure : décalage ombre portée pour simuler le creux dans le bois
-  ctx.shadowColor='rgba(0,0,0,0.6)';
-  ctx.shadowBlur=size*0.08;
-  ctx.shadowOffsetY=size*0.06;
-  ctx.shadowOffsetX=size*0.02;
-
+// Dessine un chemin selon la forme (utilisé pour la gravure)
+function shapePath(ctx, shape, cx, cy, h) {
   switch(shape){
-
-    // ── Cercle plein avec effet gravure ──
-    case 'circle':{
-      // Ombre de gravure (creux dans le bois)
-      ctx.beginPath();ctx.arc(cx+0.5,cy+1,h*0.82,0,Math.PI*2);
-      ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fill();
-      // Cercle plein coloré
-      ctx.beginPath();ctx.arc(cx,cy,h*0.80,0,Math.PI*2);
-      ctx.fillStyle=color;ctx.fill();
-      // Reflet interne
-      ctx.beginPath();ctx.arc(cx-h*0.22,cy-h*0.22,h*0.28,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,0.18)';ctx.fill();
-      break;}
-
-    // ── Trèfle : 4 lobes disposés en croix ──
+    case 'circle':
+      ctx.arc(cx,cy,h*0.80,0,Math.PI*2); break;
     case 'clover':{
       const lr=h*0.36,off=h*0.30;
-      ctx.fillStyle=color;
-      // 4 lobes (haut, bas, gauche, droite)
       [[0,-off],[0,off],[-off,0],[off,0]].forEach(([dx,dy])=>{
-        ctx.beginPath();ctx.arc(cx+dx,cy+dy,lr,0,Math.PI*2);ctx.fill();
+        ctx.moveTo(cx+dx+lr,cy+dy); ctx.arc(cx+dx,cy+dy,lr,0,Math.PI*2);
       });
-      // Centre
-      const cw=h*0.28;
-      ctx.beginPath();ctx.arc(cx,cy,cw,0,Math.PI*2);ctx.fill();
+      ctx.moveTo(cx+h*0.28,cy); ctx.arc(cx,cy,h*0.28,0,Math.PI*2);
       break;}
-
-    // ── Losange : bien pointu, légèrement allongé verticalement ──
-    case 'diamond':{
-      ctx.fillStyle=color;ctx.beginPath();
-      ctx.moveTo(cx,       cy-h*0.95);
-      ctx.lineTo(cx+h*0.60,cy);
-      ctx.lineTo(cx,       cy+h*0.95);
-      ctx.lineTo(cx-h*0.60,cy);
-      ctx.closePath();ctx.fill();break;}
-
-    // ── Carré : bords franchement arrondis ──
+    case 'diamond':
+      ctx.moveTo(cx,cy-h*0.95); ctx.lineTo(cx+h*0.60,cy);
+      ctx.lineTo(cx,cy+h*0.95); ctx.lineTo(cx-h*0.60,cy); ctx.closePath(); break;
     case 'square':{
       const sq=h*0.78,rd=sq*0.20;
-      ctx.fillStyle=color;ctx.beginPath();
-      ctx.roundRect(cx-sq,cy-sq,sq*2,sq*2,rd);
-      ctx.fill();break;}
-
-    // ── Croix : 4 branches courtes et larges (style +) ──
+      ctx.roundRect(cx-sq,cy-sq,sq*2,sq*2,rd); break;}
     case 'cross':{
       const arm=h*0.34,tip=h*0.82,rd=h*0.12;
-      ctx.fillStyle=color;ctx.beginPath();
-      // Branche horizontale
       ctx.roundRect(cx-tip,cy-arm,tip*2,arm*2,rd);
-      ctx.fill();
-      // Branche verticale
-      ctx.beginPath();
-      ctx.roundRect(cx-arm,cy-tip,arm*2,tip*2,rd);
-      ctx.fill();
-      break;}
-
-    // ── Étoile : 4 pointes (comme le vrai Qwirkle) ──
+      ctx.moveTo(cx-arm,cy-tip); ctx.roundRect(cx-arm,cy-tip,arm*2,tip*2,rd); break;}
     case 'star':{
-      ctx.fillStyle=color;ctx.beginPath();
-      // 8 points = 4 pointes grandes + 4 creux
       const r1=h*0.88,r2=h*0.34;
       for(let i=0;i<8;i++){
-        const a=(i*Math.PI/4)-Math.PI/4;
-        const r=i%2===0?r1:r2;
+        const a=(i*Math.PI/4)-Math.PI/4,r=i%2===0?r1:r2;
         i===0?ctx.moveTo(cx+r*Math.cos(a),cy+r*Math.sin(a))
              :ctx.lineTo(cx+r*Math.cos(a),cy+r*Math.sin(a));
       }
-      ctx.closePath();ctx.fill();break;}
+      ctx.closePath(); break;}
   }
-  ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+}
+
+// Gravure 3D réaliste
+function drawShapeEngraved(ctx, shape, color, cx, cy, size, tex) {
+  const h = size/2;
+  const isLight = tex?.light || false;
+  const isMetal = tex?.metal || false;
+  const isGlass = tex?.glass || false;
+
+  // ── Étape 1 : creux (ombre de gravure) ──
+  // Décaler légèrement en bas-droite = impression de profondeur
+  ctx.save();
+  ctx.beginPath(); shapePath(ctx, shape, cx+size*0.025, cy+size*0.04, h);
+  ctx.fillStyle = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.65)';
+  ctx.fill();
+  ctx.restore();
+
+  // ── Étape 2 : fond de la gravure (légèrement plus sombre que la tuile) ──
+  ctx.save();
+  ctx.beginPath(); shapePath(ctx, shape, cx, cy, h);
+  const depthColor = isLight ? 'rgba(0,0,0,0.18)' : 'rgba(0,0,0,0.40)';
+  ctx.fillStyle = depthColor;
+  ctx.fill();
+  ctx.restore();
+
+  // ── Étape 3 : couleur principale du motif ──
+  ctx.save();
+  // Ombre intérieure légère
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur  = size*0.06;
+  ctx.shadowOffsetX = size*0.02;
+  ctx.shadowOffsetY = size*0.03;
+  ctx.beginPath(); shapePath(ctx, shape, cx, cy, h);
+
+  // Couleur avec léger dégradé pour simuler la profondeur
+  const gShape = ctx.createLinearGradient(cx-h,cy-h,cx+h,cy+h);
+  gShape.addColorStop(0, lightenColor(color, 0.18));
+  gShape.addColorStop(0.5, color);
+  gShape.addColorStop(1, darkenColor(color, 0.22));
+  ctx.fillStyle = gShape;
+  ctx.fill();
+  ctx.restore();
+
+  // ── Étape 4 : bord lumineux haut-gauche (biseautage du creux) ──
+  ctx.save();
+  ctx.beginPath(); shapePath(ctx, shape, cx-size*0.018, cy-size*0.025, h*0.96);
+  const highlightAlpha = isMetal ? 0.45 : isGlass ? 0.35 : 0.22;
+  ctx.strokeStyle = `rgba(255,255,255,${highlightAlpha})`;
+  ctx.lineWidth = Math.max(0.5, size*0.022);
+  ctx.stroke();
+  ctx.restore();
+
+  // ── Étape 5 : reflet interne (brillance) ──
+  if (isMetal || isGlass) {
+    ctx.save();
+    ctx.beginPath(); shapePath(ctx, shape, cx, cy, h*0.75);
+    const gInner = ctx.createLinearGradient(cx-h*.5,cy-h*.5,cx+h*.3,cy+h*.3);
+    gInner.addColorStop(0, 'rgba(255,255,255,0.28)');
+    gInner.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gInner;
+    ctx.fill();
+    ctx.restore();
+  } else {
+    // Reflet naturel discret
+    ctx.save();
+    ctx.beginPath(); shapePath(ctx, shape, cx-h*0.15, cy-h*0.18, h*0.55);
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// Utilitaires couleur
+function lightenColor(hex, amount) {
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.min(255,Math.round(r+(255-r)*amount))},${Math.min(255,Math.round(g+(255-g)*amount))},${Math.min(255,Math.round(b+(255-b)*amount))})`;
+}
+function darkenColor(hex, amount) {
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgb(${Math.round(r*(1-amount))},${Math.round(g*(1-amount))},${Math.round(b*(1-amount))})`;
+}
+
+// Compatibilité : drawShape appelle drawShapeEngraved
+function drawShape(ctx,shape,color,cx,cy,size){
+  drawShapeEngraved(ctx,shape,color,cx,cy,size,TILE_TEXTURES[_tileTextureIdx]);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2527,15 +2936,36 @@ function renderHand(){
   if (!me) return;
 
   const myTurn = isMyTurn();
-  // ── Diode + label ──
-  const diode = document.getElementById('turn-diode');
+
+  // ── Tablette header ──
+  const diode     = document.getElementById('turn-diode');
   const handLabel = document.getElementById('hand-label');
-  if (diode) {
-    diode.className = 'diode ' + (myTurn ? 'green' : 'red');
+  const chatBtn   = document.getElementById('chat-inline-btn');
+  if (diode)     diode.className = 'diode ' + (myTurn ? 'green' : 'red');
+  if (handLabel) { handLabel.textContent = me.pseudo || 'Vous'; handLabel.style.color = me.color || '#fff'; }
+  if (chatBtn && _currentRoom) chatBtn.style.display = 'flex';
+
+  // ── Appliquer texture footer ──
+  const footer = document.querySelector('.game-bottom');
+  if (footer) {
+    const ft = FOOTER_TEXTURES[_footerTextureIdx] || FOOTER_TEXTURES[0];
+    footer.style.cssText = ft.css + 'border-top:1px solid rgba(255,255,255,0.06);' +
+      'width:100%;backdrop-filter:blur(20px);padding:12px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;';
   }
-  if (handLabel) {
-    handLabel.textContent = me.pseudo || 'Vous';
-    handLabel.style.color = me.color || '#fff';
+
+  // ── Mini infos sous le nom ──
+  const infoBar = document.getElementById('tablette-infos');
+  if (infoBar) {
+    const myScore = me.score || 0;
+    const elapsed = G.turnStartTime ? Math.floor((Date.now()-G.turnStartTime)/1000) : 0;
+    const mm = Math.floor(elapsed/60), ss = (elapsed%60).toString().padStart(2,'0');
+    const turnOf = G.players[G.current]?.pseudo || '?';
+    infoBar.innerHTML = `
+      <div class="tab-info"><span>🎯</span><span class="tab-info-val">${myScore} pts</span></div>
+      <div class="tab-info"><span>⏱</span><span class="tab-info-val" id="tab-timer">${mm}:${ss}</span></div>
+      <div class="tab-info"><span>🎲</span><span class="tab-info-val">${G.deck?.length||0}</span></div>
+      <div class="tab-info"><span>🎮</span><span class="tab-info-val" style="color:${G.players[G.current]?.color||'#fff'}">${myTurn?'Mon tour':turnOf}</span></div>
+    `;
   }
 
   const player = me;
@@ -2725,13 +3155,13 @@ function nextTurn(){
   G.selectedTile=null;G.discardMode=false;G.toDiscard=new Set();
   updateDiscardBtn();startTurnTimer();
   const cur = G.players[G.current];
-  // Solo : déclencher l'IA si besoin
   if (!_currentRoom && !cur.isHuman && cur.isAI) {
     updateHeader();renderHand();drawBoard();
     setTimeout(()=>aiPlay(), 600);
+  } else if (!_currentRoom && cur.isHuman) {
+    // Solo : vibrer quand c'est au joueur humain
+    if (navigator.vibrate) navigator.vibrate([80, 60, 80, 60, 200]);
   }
-  // En ligne : le rendu est géré par l'appelant (doConfirm/confirmDiscard)
-  // ou par syncOnlineGame pour les autres joueurs
 }
 
 function updateHeader(){
@@ -2923,10 +3353,18 @@ let _timerRaf=null;
 function startTurnTimer(){G.turnStartTime=Date.now();if(_timerRaf)cancelAnimationFrame(_timerRaf);tickTimer();}
 function tickTimer(){
   if(G.gameOver)return;
-  const el=document.getElementById('turn-timer');if(!el)return;
-  const e=Math.floor((Date.now()-G.turnStartTime)/1000);
-  el.textContent=`${Math.floor(e/60)}:${(e%60).toString().padStart(2,'0')}`;
-  el.className='gh-timer-val'+(e>=60?' danger':e>=40?' warn':'');
+  const elapsed=Math.floor((Date.now()-G.turnStartTime)/1000);
+  const txt=`${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}`;
+  // Mettre à jour tous les éléments timer
+  ['turn-timer','tab-timer'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.textContent=txt;
+    if(id==='turn-timer') el.className='gh-timer-val'+(elapsed>=60?' danger':elapsed>=40?' warn':'');
+    if(id==='tab-timer'){
+      el.style.color=elapsed>=60?'var(--red)':elapsed>=40?'var(--orange)':'';
+    }
+  });
   _timerRaf=requestAnimationFrame(tickTimer);
 }
 
@@ -3042,29 +3480,92 @@ function focusOnTiles(tiles){
 }
 
 // ════════════════════════════════════════════════════════════════
-// THEME PANEL
+// MODALE APPARENCE — Plateau + Tuile
 // ════════════════════════════════════════════════════════════════
-let _currentTheme = 0;
-function toggleThemePanel(){
-  const p=document.getElementById('theme-panel');if(!p)return;
-  const hidden=p.classList.contains('hidden');p.classList.toggle('hidden');
-  if(hidden)renderThemePanelGame();
-}
-function renderThemePanelGame(){
-  const el=document.getElementById('theme-swatches-game');if(!el)return;
-  const cur=G.boardTheme||0;let html='';
-  BOARD_THEMES.forEach((t,i)=>{
-    if(i===6)html+=`<div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0;"></div>`;
-    const shadow=t.light?'inset 0 0 0 1px rgba(0,0,0,0.15)':'inset 0 0 0 1px rgba(255,255,255,0.15)';
-    html+=`<div class="theme-swatch-row${i===cur?' active':''}" onclick="setTheme(${i})">
-      <div class="theme-swatch-dot" style="background:${t.bg};box-shadow:${shadow};"></div>
-      <span class="theme-swatch-name">${t.name}</span></div>`;
-  });
-  el.innerHTML=html;
-}
+function toggleThemePanel(){ openAppearance(); }
+function renderThemePanelGame(){ /* modale gérée via openAppearance() */ }
+
 function setTheme(i){
-  G.boardTheme=i;_currentTheme=i;
-  renderThemePanelGame();drawBoard();
+  G.boardTheme = i;
+  drawBoard();
+  // Rafraîchir la modale si elle est ouverte
+  if (!document.getElementById('ov-appearance').classList.contains('hidden'))
+    renderAppearanceModal();
+}
+function setTileTexture(i){
+  _tileTextureIdx = i;
+  drawBoard();
+  if (!document.getElementById('ov-appearance').classList.contains('hidden'))
+    renderAppearanceModal();
+}
+
+function openAppearance(){
+  document.getElementById('ov-appearance').classList.remove('hidden');
+  renderAppearanceModal();
+}
+function closeAppearance(){
+  document.getElementById('ov-appearance').classList.add('hidden');
+}
+
+function renderAppearanceModal(){
+  const boardsEl = document.getElementById('ap-boards');
+  const tilesEl  = document.getElementById('ap-tiles');
+  const footerEl = document.getElementById('ap-footer');
+  if (!boardsEl) return;
+
+  // ── Grille plateaux (4 colonnes) ──
+  boardsEl.innerHTML = BOARD_THEMES.map((t,i) => {
+    const sel = (G.boardTheme||0) === i;
+    const badge = t.animated ? '<div style="position:absolute;top:3px;right:4px;font-size:9px;color:var(--accent)">✦</div>' : '';
+    return '<div class="ap-board-btn'+(sel?' sel':'')+'" onclick="setTheme('+i+')">'
+      + '<div class="ap-board-preview" style="background:'+t.bg+';position:relative;">'+badge+'</div>'
+      + '<div class="ap-board-name">'+t.name+'</div>'
+      + '</div>';
+  }).join('');
+
+  // ── Tuiles ──
+  if (tilesEl) {
+    tilesEl.innerHTML = '';
+    let lastGroup = '';
+    TILE_TEXTURES.forEach((t,i) => {
+      if (t.group !== lastGroup) {
+        lastGroup = t.group;
+        tilesEl.innerHTML += '<div class="ap-toggle-grp">'+t.group+'</div>';
+      }
+      const sel = _tileTextureIdx === i;
+      tilesEl.innerHTML += '<div class="ap-row'+(sel?' sel':'')+'" onclick="setTileTexture('+i+')">'
+        + '<div class="ap-swatch" style="background:linear-gradient(145deg,'+t.base[0]+','+t.base[1]+','+t.base[2]+')"></div>'
+        + '<span class="ap-row-name">'+t.name+'</span>'
+        + '<div class="ap-radio"></div>'
+        + '</div>';
+    });
+  }
+
+  // ── Footer ──
+  if (footerEl) {
+    footerEl.innerHTML = '';
+    FOOTER_TEXTURES.forEach((t,i) => {
+      const sel = _footerTextureIdx === i;
+      footerEl.innerHTML += '<div class="ap-row'+(sel?' sel':'')+'" onclick="setFooterTexture('+i+')">'
+        + '<div class="ap-swatch-ft" style="'+t.css+'border-radius:5px;flex-shrink:0;width:46px;height:18px;"></div>'
+        + '<span class="ap-row-name">'+t.name+'</span>'
+        + '<div class="ap-radio"></div>'
+        + '</div>';
+    });
+  }
+}
+
+function setFooterTexture(i) {
+  _footerTextureIdx = i;
+  if (!document.getElementById('ov-appearance').classList.contains('hidden'))
+    renderAppearanceModal();
+  // Appliquer immédiatement
+  const footer = document.querySelector('.game-bottom');
+  if (footer) {
+    const ft = FOOTER_TEXTURES[i];
+    footer.style.cssText = ft.css + 'border-top:1px solid rgba(255,255,255,0.06);'+
+      'width:100%;backdrop-filter:blur(20px);padding:12px 14px;flex-shrink:0;display:flex;flex-direction:column;gap:10px;';
+  }
 }
 function showAIThinking(v){document.getElementById('ai-thinking').classList.toggle('hidden',!v);}
 
@@ -3184,6 +3685,13 @@ let _chatOpen = false;
 let _unreadCount = 0;
 let _chatPolling = null;
 
+function toggleChatInline() {
+  toggleChat();
+  const panel = document.getElementById('chat-panel');
+  if (panel && !panel.classList.contains('collapsed'))
+    setTimeout(() => panel.scrollIntoView({behavior:'smooth',block:'end'}), 50);
+}
+
 function toggleChat() {
   _chatOpen = !_chatOpen;
   const panel = document.getElementById('chat-panel');
@@ -3197,13 +3705,12 @@ function toggleChat() {
 
 function updateChatBadge() {
   const badge = document.getElementById('chat-unread');
-  if (!badge) return;
-  if (_unreadCount > 0) {
-    badge.textContent = _unreadCount;
-    badge.classList.remove('hidden');
-  } else {
-    badge.classList.add('hidden');
+  if (badge) {
+    if (_unreadCount > 0) { badge.textContent = _unreadCount; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
   }
+  const dot = document.getElementById('chat-badge-dot');
+  if (dot) dot.classList.toggle('show', _unreadCount > 0);
 }
 
 async function sendChatMsg() {
