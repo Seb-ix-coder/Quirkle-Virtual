@@ -352,32 +352,54 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .game-bottom{width:100%;background:rgba(10,13,20,0.97);backdrop-filter:blur(20px);
   border-top:1px solid var(--border);padding:12px 16px;flex-shrink:0;
   display:flex;flex-direction:column;gap:0;}
-.hand-label{font-size:9px;font-weight:800;letter-spacing:2.5px;
-  color:rgba(255,255,255,0.25);text-transform:uppercase;margin-bottom:8px;}
+.hand-label-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.hand-label{font-size:12px;font-weight:900;letter-spacing:0.5px;color:#fff;}
+.diode{width:9px;height:9px;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 6px currentColor;transition:all .3s;}
+.diode.green{background:#00ff88;color:#00ff88;
+  animation:diodePulse 1.2s ease-in-out infinite;}
+.diode.red{background:#ff4757;color:#ff4757;}
+@keyframes diodePulse{0%,100%{opacity:1;box-shadow:0 0 8px #00ff88,0 0 2px #00ff88}
+  50%{opacity:.35;box-shadow:0 0 2px #00ff88}}
 .hand-tiles{display:flex;gap:8px;justify-content:center;margin-bottom:12px;
   min-height:62px;align-items:center;}
-.tile{width:58px;height:58px;border-radius:10px;
-  -webkit-user-drag:none;
-  background:linear-gradient(145deg,#2c3044 0%,#181c28 40%,#0d1018 100%);
+.tile{width:58px;height:58px;border-radius:11px;
+  position:relative;user-select:none;flex-shrink:0;cursor:grab;
+  -webkit-user-drag:none;touch-action:none;
   display:flex;align-items:center;justify-content:center;
-  cursor:grab;transition:transform 0.15s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.15s;
-  position:relative;user-select:none;flex-shrink:0;
-  box-shadow:3px 5px 0 #02030a,0 8px 20px rgba(0,0,0,0.75),inset 0 1px 0 rgba(255,255,255,0.07);}
-.tile::before{content:'';position:absolute;top:7%;left:7%;width:86%;height:11%;
-  border-radius:4px;background:linear-gradient(180deg,rgba(255,255,255,0.07),transparent);
-  pointer-events:none;}
-.tile:active{cursor:grabbing;transform:translateY(2px) scale(0.97);}
-.tile.selected{transform:translateY(-8px) scale(1.10);
-  box-shadow:3px 12px 0 #02030a,0 18px 36px rgba(0,240,255,0.4),
-             0 0 0 2px var(--accent),inset 0 1px 0 rgba(255,255,255,0.12);}
-.tile.ghost{opacity:0.28;pointer-events:none;}
-.tile.drag-over{border:2px solid var(--accent)!important;
-  box-shadow:0 0 16px rgba(0,240,255,0.4)!important;transform:scale(1.05)!important;}
-.tile.dragging{opacity:0.4;transform:scale(0.92);}
-.tile.to-discard{border:2px solid var(--orange) !important;
-  box-shadow:2px 4px 0 #03040a,0 0 16px rgba(255,159,0,0.4),0 0 0 2px var(--orange) !important;
-  transform:translateY(-4px) scale(1.06) !important;filter:brightness(0.7) sepia(0.3);}
-.tile svg{pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.65));}
+  background:
+    repeating-linear-gradient(91deg,
+      transparent 0,transparent 2px,rgba(255,255,255,.011) 2px,rgba(255,255,255,.011) 3px,
+      transparent 3px,transparent 8px,rgba(0,0,0,.12) 8px,rgba(0,0,0,.12) 9px),
+    linear-gradient(155deg,#2b1e12 0%,#1a1108 25%,#0f0b07 55%,#1a1510 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 -1px 0 rgba(0,0,0,.5),
+    inset 1px 0 rgba(255,255,255,.05),
+    inset -1px 0 rgba(0,0,0,.25),
+    3px 6px 0 #040200,
+    6px 12px 18px rgba(0,0,0,.8),
+    0 2px 4px rgba(0,0,0,.6);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;}
+.tile::before{content:'';position:absolute;inset:0;border-radius:11px;pointer-events:none;z-index:1;
+  background:linear-gradient(145deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.02) 40%,transparent 70%);}
+.tile::after{content:'';position:absolute;right:-3px;top:3px;bottom:0;
+  width:3px;border-radius:0 3px 3px 0;pointer-events:none;
+  background:linear-gradient(180deg,#090600,#020100);}
+.tile svg{pointer-events:none;position:relative;z-index:2;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));}
+.tile:active{cursor:grabbing;}
+.tile.selected{transform:translateY(-10px) scale(1.12);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.5),
+    3px 14px 0 #040200,0 24px 40px rgba(0,240,255,.35),
+    0 0 0 2px var(--accent),6px 20px 24px rgba(0,0,0,.9);}
+.tile.ghost{opacity:0.22;pointer-events:none;}
+.tile.to-discard{
+  box-shadow:0 0 0 2px var(--orange),3px 6px 0 #040200,0 0 20px rgba(255,159,0,.5)!important;
+  transform:translateY(-5px) scale(1.07)!important;}
+.tile.dragging-src{opacity:.25;transform:scale(.88)!important;box-shadow:none!important;}
+.tile.drag-target{transform:scale(1.10)!important;
+  box-shadow:0 0 0 2px var(--accent),3px 6px 0 #040200,0 0 24px rgba(0,240,255,.5)!important;}
 .action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
 .act-btn{padding:11px 8px;border-radius:12px;border:1px solid var(--border);
   background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.6);
@@ -851,7 +873,10 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   </div>
 
   <div class="game-bottom">
-    <div class="hand-label" id="hand-label">Votre main</div>
+    <div class="hand-label-wrap">
+      <div class="diode green" id="turn-diode"></div>
+      <div class="hand-label" id="hand-label">PSEUDO</div>
+    </div>
     <div class="hand-tiles" id="hand-tiles"></div>
     <div class="action-row">
       <button class="act-btn discard-btn" id="btn-discard" onclick="toggleDiscardMode()">🗑 Jeter</button>
@@ -1078,10 +1103,11 @@ async function saveOnlineGameState() {
     board:       G.board,
     deck:        G.deck,
     current:     G.current,
-    livePending: G.pendingTiles, // tuiles en cours de placement (temps réel)
-    lastMoves: G._lastConfirmedMoves || [],
-    lastPts:   G._lastConfirmedPts  || 0,
-    players:   G.players.map(p => ({
+    livePending: G.pendingTiles,
+    lastMoves:   G._lastConfirmedMoves || [],
+    lastPts:     G._lastConfirmedPts   || 0,
+    modalEvent:  G._modalEvent || null,  // event à afficher sur tous les écrans
+    players:     G.players.map(p => ({
       pseudo: p.pseudo, color: p.color, emoji: p.emoji,
       score:  p.score,  hand:  p.hand,
       device_id: p.device_id,
@@ -1135,6 +1161,21 @@ async function syncOnlineGame() {
     updateHeader();
     renderHand();
     drawBoard();
+
+    // ── Modal synchronisé ──
+    if (state.modalEvent && state.modalEvent.ts !== G._lastModalTs) {
+      const ev = state.modalEvent;
+      if (ev.type === 'firstPlayer') {
+        handleFirstPlayerEvent(ev);
+        return; // ne pas continuer le sync normal
+      }
+      G._lastModalTs = state.modalEvent.ts;
+      if (ev.type === 'announce') {
+        showAnnounce(ev.pts, ev.isQ, ev.name, ev.total, ev.subtitle);
+        playSound(ev.isQ ? 'qwirkle' : ev.pts >= 6 ? 'score' : 'score');
+        if (navigator.vibrate) navigator.vibrate(ev.isQ ? [100,50,100] : [50]);
+      }
+    }
 
     const myTurn = isMyTurn();
     // "À vous de jouer" uniquement si G.current vient de CHANGER vers moi
@@ -1819,10 +1860,16 @@ function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
 
       <div style="display:flex;flex-direction:column;gap:8px;">${scoresHTML}</div>
 
-      <div id="fpm-countdown" style="text-align:center;font-size:11px;
-        color:rgba(255,255,255,0.25);letter-spacing:2px;text-transform:uppercase;">
-        Démarrage dans 5…
-      </div>
+      <button id="fpm-btn" onclick="fpmConfirm()" style="
+        width:100%;padding:15px;border-radius:50px;border:none;cursor:pointer;
+        background:linear-gradient(135deg,var(--accent),#00b8cc);
+        color:#050709;font-size:12px;font-weight:900;letter-spacing:2px;
+        text-transform:uppercase;box-shadow:0 6px 24px rgba(0,240,255,0.3);
+        transition:all .2s;margin-top:4px;">
+        ▶ COMMENCER
+      </button>
+      <div id="fpm-countdown" style="text-align:center;font-size:10px;
+        color:rgba(255,255,255,0.2);letter-spacing:1px;margin-top:8px;min-height:16px;"></div>
     </div>`;
 
   document.body.appendChild(overlay);
@@ -1832,10 +1879,17 @@ function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
     document.getElementById('fpm-card').style.transform = 'scale(1) translateY(0)';
   });
 
-  let count = 5;
-  const cd = document.getElementById('fpm-countdown');
-  const icon = document.getElementById('fpm-icon');
+  const cd   = document.getElementById('fpm-countdown');
+  const icon  = document.getElementById('fpm-icon');
   const title = document.getElementById('fpm-title');
+  const btn   = document.getElementById('fpm-btn');
+
+  // Exposer la fonction de confirmation globalement
+  window.fpmConfirm = () => {
+    if (btn) btn.disabled = true;
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.remove(); onDone(); }, 400);
+  };
 
   // Animation tirage au sort si égalité
   if (isTie) {
@@ -1878,18 +1932,12 @@ function showFirstPlayerModal(scores, firstIdx, isTie, maxTiles, onDone) {
     }, 2000);
   }
 
-  // Countdown
-  const interval = setInterval(() => {
-    count--;
-    if (count > 0) {
-      cd.textContent = `Démarrage dans ${count}…`;
-    } else {
-      clearInterval(interval);
-      overlay.style.opacity = '0';
-      overlay.style.transition = 'opacity 0.4s';
-      setTimeout(() => { overlay.remove(); onDone(); }, 400);
-    }
-  }, 1000);
+  // Après l'animation de tirage au sort, signaler que c'est prêt
+  if (isTie) {
+    setTimeout(() => {
+      if (cd) cd.textContent = 'Tirage terminé — cliquez pour commencer';
+    }, 3200);
+  }
 }
 
 function launchGame() {
@@ -1906,29 +1954,51 @@ function launchGame() {
     _gamePolling = setInterval(syncOnlineGame, 2000);
   }
 
-  // Déterminer qui commence (host ou solo uniquement)
-  // Les non-hosts attendent le sync
-  const shouldDetermineFirst = !_currentRoom || _isRoomHost;
-  if (shouldDetermineFirst) {
-    determineFirstPlayer(() => {
-      if (_currentRoom) saveOnlineGameState(); // sauvegarder avec le bon G.current
-      updateHeader();
-      renderHand();
-      renderThemePanelGame();
-      startTurnTimer();
-      initChat();
-      // IA en premier ?
-      const cur = G.players[G.current];
-      if (!cur.isHuman && cur.isAI) setTimeout(() => aiPlay(), 600);
-    });
+  // Solo ou host : déterminer qui commence
+  if (!_currentRoom || _isRoomHost) {
+    determineFirstPlayer(onFirstPlayerKnown);
   } else {
-    // Non-host : afficher l'état vide en attendant le sync
-    updateHeader();
-    renderHand();
-    renderThemePanelGame();
-    startTurnTimer();
-    initChat();
+    // Non-host : attendre que le sync indique le firstIdx
+    updateHeader(); renderHand(); renderThemePanelGame(); initChat();
+    showToast('En attente du lancement…', 'ok', 3000);
   }
+}
+
+function onFirstPlayerKnown() {
+  if (_currentRoom) {
+    // Sauvegarder firstIdx pour que les non-hosts le reçoivent via sync
+    G._modalEvent = { type:'firstPlayer', ts:Date.now(),
+      firstIdx: G.current, scores: G.players.map((p,i)=>({
+        idx:i, pseudo:p.pseudo, color:p.color, emoji:p.emoji,
+        best:bestFirstPlay(p.hand)
+      }))
+    };
+    saveOnlineGameState();
+  }
+  updateHeader();
+  renderHand();
+  renderThemePanelGame();
+  startTurnTimer();
+  initChat();
+  const cur = G.players[G.current];
+  if (!_currentRoom && !cur.isHuman && cur.isAI) setTimeout(()=>aiPlay(),600);
+}
+
+// Intercepter firstPlayer dans syncOnlineGame
+function handleFirstPlayerEvent(ev) {
+  if (!ev || ev.ts === G._lastModalTs) return;
+  G._lastModalTs = ev.ts;
+  G.current = ev.firstIdx;
+  const scores = ev.scores || G.players.map((p,i)=>({idx:i,pseudo:p.pseudo,color:p.color,emoji:p.emoji,best:bestFirstPlay(p.hand)}));
+  const max = Math.max(...scores.map(s=>s.best));
+  const winners = scores.filter(s=>s.best===max);
+  const isTie = winners.length>1;
+  showFirstPlayerModal(scores, ev.firstIdx, isTie, max, ()=>{
+    updateHeader(); renderHand(); renderThemePanelGame(); startTurnTimer();
+  });
+}
+
+function _dummyLaunchClose() {
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2158,45 +2228,107 @@ function drawSkyAnimations() {
 }
 
 function drawTileWorld(wx,wy,tile,pending){
-  const x=wx*CELL,y=wy*CELL,s=TILE_SIZE,r=Math.max(2/G.zoom,s*0.10),dep=Math.max(1/G.zoom,s*0.06);
+  const x=wx*CELL,y=wy*CELL,s=TILE_SIZE;
+  const r=Math.max(2/G.zoom,s*0.12);
+  const dep=Math.max(1.5/G.zoom,s*0.07);
+  const z=G.zoom;
+
   if(pending){
-    ctx2d.shadowColor='rgba(0,240,255,0.5)';ctx2d.shadowBlur=s*0.2;
-    ctx2d.beginPath();ctx2d.roundRect(x-s/2,y-s/2,s,s,r);ctx2d.fillStyle='#1a2535';ctx2d.fill();
-    ctx2d.strokeStyle='#00f0ff';ctx2d.lineWidth=Math.max(0.8/G.zoom,s*0.03);ctx2d.stroke();
+    // Tuile en cours : halo cyan
+    ctx2d.shadowColor='rgba(0,240,255,0.6)';ctx2d.shadowBlur=s*0.25*z;
+    ctx2d.beginPath();ctx2d.roundRect(x-s/2,y-s/2,s,s,r);ctx2d.fillStyle='#0d1e30';ctx2d.fill();
+    ctx2d.strokeStyle='rgba(0,240,255,0.9)';ctx2d.lineWidth=Math.max(1/z,s*0.035);ctx2d.stroke();
     ctx2d.shadowColor='transparent';ctx2d.shadowBlur=0;
-    drawShape(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.58);return;
+    drawShape(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.58);
+    return;
   }
-  ctx2d.shadowColor='rgba(0,0,0,0.7)';ctx2d.shadowBlur=s*0.15*G.zoom;
-  ctx2d.shadowOffsetX=dep*0.5*G.zoom;ctx2d.shadowOffsetY=dep*1.2*G.zoom;
-  ctx2d.beginPath();ctx2d.roundRect(x-s/2+dep*0.8,y-s/2+dep*1.5,s,s,r);ctx2d.fillStyle='#05060a';ctx2d.fill();
-  ctx2d.shadowColor='transparent';ctx2d.shadowBlur=0;ctx2d.shadowOffsetX=0;ctx2d.shadowOffsetY=0;
+
+  // ── Ombre portée profonde ──
+  ctx2d.shadowColor='rgba(0,0,0,0.85)';
+  ctx2d.shadowBlur=s*0.18*z;
+  ctx2d.shadowOffsetX=dep*0.6*z;
+  ctx2d.shadowOffsetY=dep*1.8*z;
+  ctx2d.beginPath();
+  ctx2d.roundRect(x-s/2+dep,y-s/2+dep*1.8,s,s,r);
+  ctx2d.fillStyle='#020100';ctx2d.fill();
+  ctx2d.shadowColor='transparent';ctx2d.shadowBlur=0;
+  ctx2d.shadowOffsetX=0;ctx2d.shadowOffsetY=0;
+
+  // ── Face principale : bois noir avec veinage ──
+  ctx2d.save();
+  ctx2d.beginPath();ctx2d.roundRect(x-s/2,y-s/2,s,s,r);ctx2d.clip();
+
+  // Base bois sombre
+  const gWood=ctx2d.createLinearGradient(x-s/2,y-s/2,x+s/2,y+s/2);
+  gWood.addColorStop(0,'#2a1e12');
+  gWood.addColorStop(0.3,'#1a1108');
+  gWood.addColorStop(0.65,'#0f0b07');
+  gWood.addColorStop(1,'#1e1810');
+  ctx2d.fillStyle=gWood;ctx2d.fillRect(x-s/2,y-s/2,s,s);
+
+  // Veines de bois (lignes quasi horizontales légèrement ondulées)
+  const nbVeines=6;
+  for(let v=0;v<nbVeines;v++){
+    const yv=y-s/2+(v/nbVeines)*s;
+    const alpha=0.04+Math.random()*0.04;
+    ctx2d.beginPath();
+    ctx2d.moveTo(x-s/2,yv+Math.sin(v)*1.5);
+    ctx2d.bezierCurveTo(
+      x-s/6,yv+Math.sin(v*2)*1.2,
+      x+s/6,yv-Math.sin(v*1.5)*1.2,
+      x+s/2,yv+Math.sin(v*3)*1.5
+    );
+    ctx2d.strokeStyle=`rgba(255,200,100,${alpha})`;
+    ctx2d.lineWidth=0.6/z;ctx2d.stroke();
+  }
+
+  ctx2d.restore();
+
+  // ── Bordure fine ──
   ctx2d.beginPath();ctx2d.roundRect(x-s/2,y-s/2,s,s,r);
-  const g=ctx2d.createLinearGradient(x-s/2,y-s/2,x-s/2,y+s/2);
-  g.addColorStop(0,'#2a2d38');g.addColorStop(0.15,'#1a1d28');g.addColorStop(0.85,'#111318');g.addColorStop(1,'#0c0e14');
-  ctx2d.fillStyle=g;ctx2d.fill();
-  ctx2d.strokeStyle='rgba(255,255,255,0.08)';ctx2d.lineWidth=Math.max(0.3/G.zoom,s*0.012);ctx2d.stroke();
-  ctx2d.beginPath();ctx2d.roundRect(x-s/2+s*0.06,y-s/2+s*0.05,s*0.88,s*0.15,r*0.4);
-  const rf=ctx2d.createLinearGradient(0,y-s/2,0,y-s/2+s*0.15);
-  rf.addColorStop(0,'rgba(255,255,255,0.06)');rf.addColorStop(1,'rgba(255,255,255,0)');
-  ctx2d.fillStyle=rf;ctx2d.fill();
+  ctx2d.strokeStyle='rgba(255,255,255,0.10)';
+  ctx2d.lineWidth=Math.max(0.4/z,0.5);ctx2d.stroke();
+
+  // ── Tranche droite (profondeur) ──
+  ctx2d.beginPath();
+  ctx2d.roundRect(x+s/2-dep*0.8,y-s/2+dep*0.5,dep*0.8,s-dep*0.3,r*0.3);
+  const gSide=ctx2d.createLinearGradient(x+s/2-dep,0,x+s/2,0);
+  gSide.addColorStop(0,'rgba(0,0,0,0.2)');gSide.addColorStop(1,'rgba(0,0,0,0.7)');
+  ctx2d.fillStyle=gSide;ctx2d.fill();
+
+  // ── Reflet de surface (laque) ──
+  ctx2d.beginPath();
+  ctx2d.roundRect(x-s/2+s*0.08,y-s/2+s*0.06,s*0.55,s*0.12,r*0.3);
+  const gRef=ctx2d.createLinearGradient(0,y-s/2,0,y-s/2+s*0.18);
+  gRef.addColorStop(0,'rgba(255,255,255,0.10)');
+  gRef.addColorStop(1,'rgba(255,255,255,0)');
+  ctx2d.fillStyle=gRef;ctx2d.fill();
+
+  // ── Motif gravé ──
   drawShape(ctx2d,SHAPES[tile.shape],COLORS[tile.color],x,y,s*0.60);
 }
 
 function drawShape(ctx,shape,color,cx,cy,size){
   const h=size/2;
-  ctx.shadowColor='rgba(0,0,0,0.55)';
-  ctx.shadowBlur=size*0.12;
-  ctx.shadowOffsetY=size*0.05;
-  ctx.shadowOffsetX=0;
+  // Effet gravure : décalage ombre portée pour simuler le creux dans le bois
+  ctx.shadowColor='rgba(0,0,0,0.6)';
+  ctx.shadowBlur=size*0.08;
+  ctx.shadowOffsetY=size*0.06;
+  ctx.shadowOffsetX=size*0.02;
 
   switch(shape){
 
-    // ── Cercle : anneau épais (comme le vrai Qwirkle) ──
+    // ── Cercle plein avec effet gravure ──
     case 'circle':{
-      const ro=h*0.84, ri=h*0.46;
-      ctx.beginPath();ctx.arc(cx,cy,ro,0,Math.PI*2);
-      ctx.arc(cx,cy,ri,0,Math.PI*2,true);
-      ctx.fillStyle=color;ctx.fill('evenodd');
+      // Ombre de gravure (creux dans le bois)
+      ctx.beginPath();ctx.arc(cx+0.5,cy+1,h*0.82,0,Math.PI*2);
+      ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fill();
+      // Cercle plein coloré
+      ctx.beginPath();ctx.arc(cx,cy,h*0.80,0,Math.PI*2);
+      ctx.fillStyle=color;ctx.fill();
+      // Reflet interne
+      ctx.beginPath();ctx.arc(cx-h*0.22,cy-h*0.22,h*0.28,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.18)';ctx.fill();
       break;}
 
     // ── Trèfle : 4 lobes disposés en croix ──
@@ -2362,28 +2494,26 @@ function makeTileSVG(tile){
 function renderHand(){
   const container=document.getElementById('hand-tiles');
   container.innerHTML='';
-  // Toujours afficher SA propre main
   const me = G.players[myPlayerIdx()];
   if (!me) return;
 
-  // Indiquer si c'est notre tour ou non
+  const myTurn = isMyTurn();
+  const PROFILE = window._PROFILE || {};
+
+  // ── Diode + label ──
+  const diode = document.getElementById('turn-diode');
   const handLabel = document.getElementById('hand-label');
+  if (diode) {
+    diode.className = 'diode ' + (myTurn ? 'green' : 'red');
+  }
   if (handLabel) {
-    const myTurn = isMyTurn();
-    if (myTurn) {
-      handLabel.textContent = 'Votre main';
-      handLabel.style.color = '';
-    } else {
-      const active = G.players[G.current];
-      handLabel.textContent = `Tour de ${active ? active.pseudo : '…'}`;
-      handLabel.style.color = active ? active.color : 'rgba(255,255,255,0.4)';
-    }
+    handLabel.textContent = me.pseudo || 'Vous';
+    handLabel.style.color = me.color || '#fff';
   }
 
-  // Afficher les tuiles même si ce n'est pas notre tour (grises)
   const player = me;
-  const myTurnNow = isMyTurn();
-  let _dragSrc = null;
+  let dragSrcIdx = null;
+  let dragClone = null;
 
   player.hand.forEach((tile, idx) => {
     const el = document.createElement('div');
@@ -2401,63 +2531,50 @@ function renderHand(){
       // Sélection au tap
       el.addEventListener('click', () => selectTile(idx));
 
-      // Drag & drop pour réorganiser (toujours disponible)
-      el.draggable = true;
-      el.addEventListener('dragstart', e => {
-        _dragSrc = idx;
-        el.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', idx);
-      });
-      el.addEventListener('dragend', () => {
-        el.classList.remove('dragging');
-        container.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-over'));
-      });
-      el.addEventListener('dragover', e => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        if (_dragSrc !== null && _dragSrc !== idx)
-          el.classList.add('drag-over');
-      });
-      el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
-      el.addEventListener('drop', e => {
-        e.preventDefault();
-        el.classList.remove('drag-over');
-        if (_dragSrc === null || _dragSrc === idx) return;
-        // Échanger les deux tuiles dans la main
-        const hand = G.players[myPlayerIdx()].hand;
-        [hand[_dragSrc], hand[idx]] = [hand[idx], hand[_dragSrc]];
-        // Ajuster selectedTile si besoin
-        if (G.selectedTile === _dragSrc) G.selectedTile = idx;
-        else if (G.selectedTile === idx) G.selectedTile = _dragSrc;
-        _dragSrc = null;
-        renderHand();
-      });
+      // ── Drag & drop fluide (souris + tactile) ──
+      let touchStartX, touchStartY, hasDragged = false;
 
-      // Touch drag (mobile/tablette)
-      let touchStartX, touchStartY, touchStartIdx;
+      // Drag tactile
       el.addEventListener('touchstart', e => {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
-        touchStartIdx = idx;
+        hasDragged = false;
+        dragSrcIdx = idx;
       }, {passive:true});
-      el.addEventListener('touchend', e => {
-        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
-        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
-        if (dx < 8 && dy < 8) return; // c'était un tap, pas un drag
-        // Trouver la tuile cible
-        const ex = e.changedTouches[0].clientX;
-        const tiles = [...container.querySelectorAll('.tile')];
-        let targetIdx = null;
-        tiles.forEach((t, i) => {
-          const r = t.getBoundingClientRect();
-          if (ex >= r.left && ex <= r.right) targetIdx = parseInt(t.dataset.idx);
+
+      el.addEventListener('touchmove', e => {
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        if (!hasDragged && Math.hypot(dx,dy) > 10) {
+          hasDragged = true;
+          el.classList.add('dragging-src');
+        }
+        if (!hasDragged) return;
+        e.preventDefault();
+        // Indiquer la cible
+        const tx = e.touches[0].clientX;
+        container.querySelectorAll('.tile').forEach(t => {
+          const rb = t.getBoundingClientRect();
+          const ti = parseInt(t.dataset.idx);
+          t.classList.toggle('drag-target', tx >= rb.left && tx <= rb.right && ti !== idx);
         });
-        if (targetIdx !== null && targetIdx !== touchStartIdx) {
+      }, {passive:false});
+
+      el.addEventListener('touchend', e => {
+        el.classList.remove('dragging-src');
+        container.querySelectorAll('.tile').forEach(t => t.classList.remove('drag-target'));
+        if (!hasDragged) { dragSrcIdx = null; return; } // c'était un tap
+        const tx = e.changedTouches[0].clientX;
+        let targetIdx = null;
+        container.querySelectorAll('.tile').forEach(t => {
+          const rb = t.getBoundingClientRect();
+          if (tx >= rb.left && tx <= rb.right) targetIdx = parseInt(t.dataset.idx);
+        });
+        if (targetIdx !== null && targetIdx !== idx) {
           const hand = G.players[myPlayerIdx()].hand;
-          [hand[touchStartIdx], hand[targetIdx]] = [hand[targetIdx], hand[touchStartIdx]];
-          if (G.selectedTile === touchStartIdx) G.selectedTile = targetIdx;
-          else if (G.selectedTile === targetIdx) G.selectedTile = touchStartIdx;
+          [hand[idx], hand[targetIdx]] = [hand[targetIdx], hand[idx]];
+          if (G.selectedTile === idx) G.selectedTile = targetIdx;
+          else if (G.selectedTile === targetIdx) G.selectedTile = idx;
           renderHand();
         }
       }, {passive:true});
@@ -2505,9 +2622,19 @@ function doConfirm(){
 
   // UI
   document.getElementById('btn-confirm').disabled = true;
+  // Vibration locale
+  if (navigator.vibrate) navigator.vibrate(pts >= 12 ? [100,50,100] : [50]);
   showAnnounce(pts, pts >= 12, player.pseudo, player.score);
   playSound(pts >= 12 ? 'qwirkle' : 'score');
   animateTilesFromSky(G._lastConfirmedMoves);
+  // Préparer le modal event pour la sync
+  G._modalEvent = {
+    type:'announce', ts:Date.now(),
+    pts, isQ: pts>=12,
+    name: player.pseudo,
+    total: player.score,
+    subtitle: null,
+  };
 
   // Passer au tour suivant
   nextTurn();
@@ -3187,3 +3314,4 @@ function initChat() {
 </script>
 </body>
 </html>
+
