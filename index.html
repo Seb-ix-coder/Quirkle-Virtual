@@ -435,8 +435,8 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .tile::after{content:'';position:absolute;right:-3px;top:3px;bottom:0;
   width:3px;border-radius:0 3px 3px 0;pointer-events:none;
   background:linear-gradient(180deg,#090600,#020100);}
-.tile svg{pointer-events:none;position:relative;z-index:2;
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,.7));}
+.tile canvas{pointer-events:none;position:relative;z-index:2;border-radius:inherit;}
+.tile svg{pointer-events:none;position:relative;z-index:2;}
 .tile:active{cursor:grabbing;}
 .tile.selected{transform:translateY(-10px) scale(1.12);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.5),
@@ -513,6 +513,14 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .announce-card.hide{animation:announceOut 0.3s ease-in forwards;}
 .announce-card.is-qwirkle{animation:announceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards,
   qwirkleGlow 1.5s ease-in-out 0.5s infinite;}
+.announce-card.is-mega{animation:announceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards,
+  megaGlow 1s ease-in-out 0.3s infinite;}
+.announce-card.is-exploit{animation:announceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards,
+  exploitGlow 2s ease-in-out 0.5s infinite;}
+@keyframes megaGlow{0%,100%{box-shadow:0 0 40px rgba(255,45,120,0.5),0 30px 80px rgba(0,0,0,0.9)}
+  50%{box-shadow:0 0 70px rgba(255,45,120,0.8),0 30px 80px rgba(0,0,0,0.9)}}
+@keyframes exploitGlow{0%,100%{box-shadow:0 0 30px rgba(255,215,0,0.3),0 30px 80px rgba(0,0,0,0.9)}
+  50%{box-shadow:0 0 50px rgba(255,215,0,0.6),0 30px 80px rgba(0,0,0,0.9)}}
 .announce-icon{font-size:4.5rem;margin-bottom:12px;
   animation:iconPop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;display:block;}
 .announce-type{font-size:11px;font-weight:800;letter-spacing:4px;
@@ -646,14 +654,18 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   .tile { width:72px; height:72px; border-radius:13px; }
   .tile svg { width:46px; height:46px; }
   .hand-tiles { gap:12px; min-height:84px; margin-bottom:14px; }
-  .act-btn { padding:15px 12px; font-size:12px; border-radius:14px; }
+  .act-btn { padding:15px 12px; font-size:13px; border-radius:14px; letter-spacing:.5px; }
   .game-header { padding:12px 20px; }
   .game-bottom { padding:14px 20px; }
-  .hand-label { font-size:11px; margin-bottom:10px; }
+  .hand-label { font-size:13px; font-weight:900; }
+  .tablette-infos { font-size:11px; }
+  .tab-info-val { font-size:13px; }
   .psc-score { font-size:18px; }
-  .psc-name { font-size:12px; }
+  .psc-name { font-size:13px; }
   .gh-bag-num, .gh-timer-val { font-size:18px; }
   .nav-btn { width:44px; height:44px; font-size:20px; }
+  .modal-box { padding:24px 20px; }
+  .modal-title { font-size:16px; }
 }
 
 /* Tablette paysage / petit desktop (≥ 768px) */
@@ -901,8 +913,10 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
     <div class="gh-scores" id="gh-scores"></div>
     <button class="gh-quit-btn" onclick="openAppearance()" title="Apparence" style="margin-left:4px">🎨</button>
     <div class="gh-info">
-      <div class="gh-bag"><span>🎲</span><span class="gh-bag-num" id="bag-count">108</span></div>
-      <div class="gh-timer"><span>⏱</span><span class="gh-timer-val" id="turn-timer">0:00</span></div>
+      <!-- Sac de tuiles animé (comme index.html) -->
+      <div id="bag-container" onclick="animateBox()" style="width:44px;height:44px;cursor:pointer;flex-shrink:0"></div>
+      <!-- Timer global partie -->
+      <div class="gh-timer"><span>⏱</span><span class="gh-timer-val" id="game-timer">0:00</span></div>
     </div>
   </div>
 
@@ -928,8 +942,12 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
         💬<span class="chat-badge-dot" id="chat-badge-dot"></span>
       </button>
     </div>
-    <!-- Mini infos : timer, score, sac -->
-    <div class="tablette-infos" id="tablette-infos"></div>
+    <!-- Mini infos tablette -->
+    <div class="tablette-infos">
+      <div class="tab-info"><span>🏆</span><span class="tab-info-val" id="tab-score">0 pts</span></div>
+      <div class="tab-info" title="Timer du tour (sec:ms)"><span>⚡</span><span class="tab-info-val" id="tab-timer">0:00</span></div>
+      <div class="tab-info" title="Temps total de mes tours"><span>⏱</span><span class="tab-info-val" id="tab-cumul">0:00</span></div>
+    </div>
     <div class="hand-tiles" id="hand-tiles"></div>
     <div class="action-row">
       <button class="act-btn discard-btn" id="btn-discard" onclick="toggleDiscardMode()">🗑 Jeter</button>
@@ -1002,7 +1020,7 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 <div class="toast hidden" id="toast"></div>
 
 <!-- Modale announce points (style Qwirkle Pro) -->
-<div class="announce-overlay hidden" id="announce-overlay">
+<div class="announce-overlay hidden" id="announce-overlay" onclick="dismissAnnounce()" style="cursor:pointer">
   <div class="announce-card" id="announce-card">
     <span class="announce-icon" id="announce-icon">⭐</span>
     <div class="announce-type" id="announce-type">POINTS</div>
@@ -1294,7 +1312,7 @@ async function syncOnlineGame() {
       if (state.lastMoves && state.lastMoves.length) {
         animateTilesFromSky(state.lastMoves);
         G.lastPlayedTiles = state.lastMoves;
-        G.highlightUntil  = Date.now() + 5000;
+        G.highlightUntil  = Date.now() + 999999; // persistant tout le tour
       }
       if (state.lastPts > 0 && !myTurn) {
         const prevIdx = (G.current + G.players.length - 1) % G.players.length;
@@ -2131,6 +2149,8 @@ function launchGame() {
   goTo('s-game');
   initCanvas();
   drawBoard();
+  _gameStartTime = 0; _myCumulMs = 0; _myCumulStart = 0;
+  startGameTimer();
 
   // Démarrer le polling en ligne
   if (_currentRoom) {
@@ -2927,10 +2947,51 @@ function shapeInner(shape, color) {
   return '';
 }
 function makeTileSVG(tile){
-  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.setAttribute('viewBox','0 0 40 40');svg.setAttribute('width','36');svg.setAttribute('height','36');
-  svg.innerHTML=shapeInner(SHAPES[tile.shape],COLORS[tile.color]);
-  return svg;
+  // Canvas identique au plateau pour cohérence visuelle
+  const sz = 56;
+  const cv = document.createElement('canvas');
+  cv.width = sz; cv.height = sz;
+  cv.style.cssText = 'width:100%;height:100%;display:block;border-radius:inherit;';
+  const ctx = cv.getContext('2d');
+  const tex = TILE_TEXTURES[_tileTextureIdx] || TILE_TEXTURES[0];
+  const r = sz * 0.12;
+  const dep = sz * 0.06;
+
+  // Ombre portée
+  ctx.shadowColor='rgba(0,0,0,0.88)'; ctx.shadowBlur=sz*0.18;
+  ctx.shadowOffsetX=dep*0.5; ctx.shadowOffsetY=dep*1.6;
+  ctx.beginPath(); ctx.roundRect(dep*0.8,dep*1.4,sz-dep,sz-dep*0.6,r);
+  ctx.fillStyle='#010100'; ctx.fill();
+  ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
+
+  // Face texture
+  drawTileFace(ctx, sz/2, sz/2, sz, r, 1, tex);
+
+  // Biseau
+  ctx.save();
+  ctx.beginPath(); ctx.roundRect(0,0,sz,sz,r); ctx.clip();
+  const gb=ctx.createLinearGradient(0,0,sz,sz);
+  gb.addColorStop(0,'rgba(255,255,255,0.14)'); gb.addColorStop(0.3,'rgba(255,255,255,0.03)');
+  gb.addColorStop(1,'rgba(0,0,0,0.20)');
+  ctx.fillStyle=gb; ctx.fillRect(0,0,sz,sz);
+  ctx.restore();
+
+  // Bordure
+  ctx.beginPath(); ctx.roundRect(0,0,sz,sz,r);
+  ctx.strokeStyle=tex.light?'rgba(0,0,0,0.15)':'rgba(255,255,255,0.12)';
+  ctx.lineWidth=0.7; ctx.stroke();
+
+  // Reflet surface
+  const gRef=ctx.createLinearGradient(0,0,0,sz*0.18);
+  gRef.addColorStop(0,`rgba(255,255,255,${tex.glass?0.22:tex.metal?0.18:0.08})`);
+  gRef.addColorStop(1,'rgba(255,255,255,0)');
+  ctx.fillStyle=gRef;
+  ctx.beginPath(); ctx.roundRect(sz*0.07,sz*0.05,sz*0.55,sz*0.11,r*0.3); ctx.fill();
+
+  // Motif gravé
+  drawShapeEngraved(ctx, SHAPES[tile.shape], COLORS[tile.color], sz/2, sz/2, sz*0.60, tex);
+
+  return cv;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3067,9 +3128,9 @@ function doConfirm(){
   for(const pt of G.pendingTiles) G.board[`${pt.wx},${pt.wy}`] = pt;
   G._lastConfirmedMoves = [...G.pendingTiles];
   G._lastConfirmedPts   = pts;
-  // Lueur 5 secondes sur les tuiles posées
+  // Surbrillance persistante jusqu'à la fin du prochain tour
   G.lastPlayedTiles  = G._lastConfirmedMoves.map(t=>({...t}));
-  G.highlightUntil   = Date.now() + 5000;
+  G.highlightUntil   = Date.now() + 999999; // persistant, réinitialisé au nextTurn suivant
 
   // Mettre à jour le joueur
   player.score += pts;
@@ -3145,7 +3206,8 @@ function cancelPending(){
   const player=G.players[myPlayerIdx()];
   for(const pt of G.pendingTiles){const ei=player.hand.findIndex(t=>t===null);if(ei>=0)player.hand[ei]={shape:pt.shape,color:pt.color,id:pt.id};}
   G.pendingTiles=[];G.selectedTile=null;
-  document.getElementById('btn-confirm').disabled=true;
+  const bc=document.getElementById('btn-confirm');
+  bc.disabled=true; bc.innerHTML='✓ Valider';
   renderHand();drawBoard();
 }
 
@@ -3153,6 +3215,8 @@ function cancelPending(){
 // TOUR SUIVANT & IA
 // ════════════════════════════════════════════════════════════════
 function nextTurn(){
+  stopMyTurnCumul(); // stopper cumul si c'était mon tour
+  G.lastPlayedTiles = []; G.highlightUntil = 0; // effacer surbrillance tour précédent
   G.current=(G.current+1)%G.players.length;
   G.selectedTile=null;G.discardMode=false;G.toDiscard=new Set();
   updateDiscardBtn();startTurnTimer();
@@ -3173,7 +3237,59 @@ function updateHeader(){
       <span class="psc-name">${p.pseudo}</span>
       <span class="psc-score">${p.score}</span>
     </div>`).join('');
-  document.getElementById('bag-count').textContent=G.deck.length;
+  renderBag();
+}
+
+function renderBag() {
+  const container = document.getElementById('bag-container');
+  if (!container || !G.deck) return;
+  const total = 108, n = G.deck.length;
+  const pct = Math.max(0, n / total);
+  const h = Math.round(52 * pct); // hauteur du liquide dans viewBox 0-60
+  let liqColor, glowColor;
+  if (pct > 0.6)      { liqColor='#00d2ff'; glowColor='rgba(0,210,255,0.5)'; }
+  else if (pct > 0.25){ liqColor='#ff9f00'; glowColor='rgba(255,159,0,0.5)'; }
+  else                { liqColor='#ff2e2e'; glowColor='rgba(255,46,46,0.5)'; }
+  const y0 = 62 - h;
+  const wp1=`M 8 ${y0} Q 22 ${y0-4} 38 ${y0} Q 54 ${y0+4} 68 ${y0} L 68 70 L 8 70 Z`;
+  const wp2=`M 8 ${y0} Q 22 ${y0+4} 38 ${y0} Q 54 ${y0-4} 68 ${y0} L 68 70 L 8 70 Z`;
+  let bubbles='';
+  for(let i=0;i<6;i++){
+    const bx=15+Math.random()*46, by=y0+4+Math.random()*Math.max(1,h-8);
+    const br=1.5+Math.random()*2.5, delay=Math.random()*2;
+    bubbles+=`<circle cx="${bx}" cy="${by}" r="${br}" fill="rgba(255,255,255,0.5)">
+      <animate attributeName="cy" values="${by};${by-10};${by}" dur="${1.5+Math.random()}s" repeatCount="indefinite" begin="${delay}s"/>
+      <animate attributeName="opacity" values="0.5;0;0.5" dur="${1.5+Math.random()}s" repeatCount="indefinite" begin="${delay}s"/>
+    </circle>`;
+  }
+  container.innerHTML=`<svg viewBox="0 0 76 76" width="44" height="44" style="overflow:visible">
+    <defs>
+      <linearGradient id="liqG" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" style="stop-color:${liqColor};stop-opacity:0.9"/>
+        <stop offset="100%" style="stop-color:${liqColor};stop-opacity:0.4"/>
+      </linearGradient>
+      <filter id="glow2"><feGaussianBlur stdDeviation="2" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <clipPath id="bagClip"><rect x="8" y="8" width="60" height="62" rx="6"/></clipPath>
+    </defs>
+    <rect x="8" y="8" width="60" height="62" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+    <g clip-path="url(#bagClip)">
+      <path d="${wp1}" fill="url(#liqG)" filter="url(#glow2)">
+        <animate attributeName="d" values="${wp1};${wp2};${wp1}" dur="3s" repeatCount="indefinite"/>
+      </path>
+      ${h > 6 ? bubbles : ''}
+    </g>
+    <text x="38" y="42" text-anchor="middle" font-family="Inter,sans-serif" font-weight="900" font-size="18" fill="#fff" filter="url(#glow2)">${n}</text>
+    <text x="38" y="56" text-anchor="middle" font-family="Inter,sans-serif" font-weight="700" font-size="9" fill="rgba(255,255,255,0.7)" letter-spacing="1">TLS</text>
+  </svg>`;
+}
+
+function animateBox() {
+  const c = document.getElementById('bag-container');
+  if (!c) return;
+  c.style.transform='scale(0.92)';
+  setTimeout(()=>{c.style.transform='scale(1.08)';setTimeout(()=>{c.style.transform='scale(1)';},120);},80);
 }
 
 function aiPlay(){
@@ -3212,9 +3328,9 @@ function aiPlay(){
             player.score+=best.pts;
             G._lastConfirmedMoves=[...staged];
             G._lastConfirmedPts=best.pts;
-            // Lueur 5s
+            // Surbrillance persistante
             G.lastPlayedTiles=[...staged];
-            G.highlightUntil=Date.now()+5000;
+            G.highlightUntil=Date.now()+999999;
             animateTilesFromSky(staged);
             showAnnounce(best.pts,best.pts>=12,player.pseudo,player.score);
             playSound(best.pts>=12?'qwirkle':'score');
@@ -3290,6 +3406,8 @@ function showEndScreen(){
   if(G.gameOver) return; // éviter double appel
   G.gameOver=true;
   if(_timerRaf){cancelAnimationFrame(_timerRaf);_timerRaf=null;}
+  if(_timerGameRaf){cancelAnimationFrame(_timerGameRaf);_timerGameRaf=null;}
+  stopMyTurnCumul();
   if(_gamePolling){clearInterval(_gamePolling);_gamePolling=null;}
   if(typeof _chatPolling!=='undefined'&&_chatPolling){clearInterval(_chatPolling);_chatPolling=null;}
 
@@ -3352,22 +3470,75 @@ function replayGame(){
 // TIMER
 // ════════════════════════════════════════════════════════════════
 let _timerRaf=null;
-function startTurnTimer(){G.turnStartTime=Date.now();if(_timerRaf)cancelAnimationFrame(_timerRaf);tickTimer();}
-function tickTimer(){
-  if(G.gameOver)return;
-  const elapsed=Math.floor((Date.now()-G.turnStartTime)/1000);
-  const txt=`${Math.floor(elapsed/60)}:${(elapsed%60).toString().padStart(2,'0')}`;
-  // Mettre à jour tous les éléments timer
-  ['turn-timer','tab-timer'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el)return;
-    el.textContent=txt;
-    if(id==='turn-timer') el.className='gh-timer-val'+(elapsed>=60?' danger':elapsed>=40?' warn':'');
-    if(id==='tab-timer'){
-      el.style.color=elapsed>=60?'var(--red)':elapsed>=40?'var(--orange)':'';
-    }
-  });
-  _timerRaf=requestAnimationFrame(tickTimer);
+// Variables timers
+let _gameStartTime = 0;   // début de la partie
+let _turnStartTime  = 0;  // début du tour courant
+let _myCumulMs      = 0;  // ms cumulées de mes propres tours
+let _myCumulStart   = 0;  // si c'est mon tour, quand il a commencé
+let _timerGameRaf   = null;
+
+function startGameTimer() {
+  _gameStartTime = Date.now();
+  if (_timerGameRaf) cancelAnimationFrame(_timerGameRaf);
+  tickGameTimer();
+}
+
+function tickGameTimer() {
+  if (G.gameOver) return;
+  const e = Math.floor((Date.now() - _gameStartTime) / 1000);
+  const el = document.getElementById('game-timer');
+  if (el) {
+    el.textContent = `${Math.floor(e/60)}:${(e%60).toString().padStart(2,'0')}`;
+    el.className = 'gh-timer-val' + (e >= 1800 ? ' warn' : '');
+  }
+  _timerGameRaf = requestAnimationFrame(tickGameTimer);
+}
+
+function startTurnTimer() {
+  _turnStartTime = Date.now();
+  // Si c'est mon tour, démarrer le cumul
+  if (isMyTurn()) _myCumulStart = Date.now();
+  else _myCumulStart = 0;
+  if (_timerRaf) cancelAnimationFrame(_timerRaf);
+  tickTimer();
+}
+
+function stopMyTurnCumul() {
+  if (_myCumulStart > 0) {
+    _myCumulMs += Date.now() - _myCumulStart;
+    _myCumulStart = 0;
+  }
+}
+
+function tickTimer() {
+  if (G.gameOver) return;
+  const now = Date.now();
+
+  // Timer du tour (sec:centièmes) — format mm:ss ou ss:cc selon durée
+  const turnMs = now - _turnStartTime;
+  const turnSec = Math.floor(turnMs / 1000);
+  const turnCenti = Math.floor((turnMs % 1000) / 10);
+  const tabEl = document.getElementById('tab-timer');
+  if (tabEl) {
+    tabEl.textContent = `${turnSec}:${turnCenti.toString().padStart(2,'0')}`;
+    tabEl.style.color = turnSec >= 60 ? 'var(--red)' : turnSec >= 40 ? 'var(--orange)' : '';
+  }
+
+  // Cumul de mes tours (min:sec)
+  const totalMs = _myCumulMs + (_myCumulStart > 0 ? now - _myCumulStart : 0);
+  const totalSec = Math.floor(totalMs / 1000);
+  const cumulEl = document.getElementById('tab-cumul');
+  if (cumulEl) cumulEl.textContent = `${Math.floor(totalSec/60)}:${(totalSec%60).toString().padStart(2,'0')}`;
+
+  // Score du joueur
+  const me = G.players && G.players[myPlayerIdx()];
+  const scoreEl = document.getElementById('tab-score');
+  if (scoreEl && me) scoreEl.textContent = me.score + ' pts';
+
+  // Sac
+  renderBag();
+
+  _timerRaf = requestAnimationFrame(tickTimer);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3442,9 +3613,13 @@ function onBoardTap(sx,sy){
     G.players[myPlayerIdx()].hand[G.selectedTile]=null;
     G.selectedTile=null;
     playSound('place');
-    document.getElementById('btn-confirm').disabled=false;
+    // Mettre à jour le bouton Valider avec le nb de pts
+    const previewPts=calcPoints(G.board,G.pendingTiles);
+    const btnC=document.getElementById('btn-confirm');
+    btnC.disabled=false;
+    btnC.innerHTML=`✓ Valider <span style="font-size:10px;opacity:.75;font-weight:700">${previewPts} pt${previewPts>1?'s':''}</span>`;
     renderHand();drawBoard();
-    if (_currentRoom) saveOnlineGameState(); // sync temps réel des pending
+    if (_currentRoom) saveOnlineGameState();
   } else {
     showToast('Position invalide','err',1200);
     canvas.style.transform='translateX(-4px)';setTimeout(()=>canvas.style.transform='',150);
@@ -3585,37 +3760,58 @@ function showAIThinking(v){document.getElementById('ai-thinking').classList.togg
 
 // ── Modale announce ──
 let _announceTimer = null;
+function dismissAnnounce() {
+  const overlay = document.getElementById('announce-overlay');
+  const card    = document.getElementById('announce-card');
+  if (!overlay || !card) return;
+  clearTimeout(_announceTimer);
+  card.classList.add('hide');
+  setTimeout(()=>overlay.classList.add('hidden'), 300);
+}
+
 function showAnnounce(pts, isQwirkle, playerName, newTotal, subtitle) {
   const overlay = document.getElementById('announce-overlay');
   const card    = document.getElementById('announce-card');
   if (!overlay || !card) return;
 
-  // Contenu
-  document.getElementById('announce-icon').textContent =
-    isQwirkle ? '🔥' : pts >= 6 ? '⚡' : pts >= 3 ? '✨' : '⭐';
-  document.getElementById('announce-type').textContent =
-    isQwirkle ? 'QWIRKLE !' : 'POINTS';
+  // Classifier le coup
+  const isMegaQwirkle = isQwirkle && pts > 12;
+  const isExploit     = !isQwirkle && pts >= 12;
+  const isQwirkleBase = isQwirkle && pts <= 12;
+
+  let icon, type, color;
+  if (isMegaQwirkle)  { icon='💥'; type='MÉGA QWIRKLE !'; color='#ff2d78'; }
+  else if (isQwirkleBase){ icon='🔥'; type='QWIRKLE !';    color='var(--orange)'; }
+  else if (isExploit) { icon='🌟'; type='EXPLOIT !';       color='var(--gold)'; }
+  else if (pts >= 6)  { icon='⚡'; type='POINTS';          color='var(--accent)'; }
+  else if (pts >= 3)  { icon='✨'; type='POINTS';          color='var(--gold)'; }
+  else                { icon='⭐'; type='POINTS';          color='var(--gold)'; }
+
+  document.getElementById('announce-icon').textContent = icon;
+  document.getElementById('announce-type').textContent = type;
   document.getElementById('announce-pts').textContent  = `+${pts}`;
-  document.getElementById('announce-pts').style.color  =
-    isQwirkle ? 'var(--orange)' : pts >= 6 ? 'var(--accent)' : 'var(--gold)';
+  document.getElementById('announce-pts').style.color  = color;
   document.getElementById('announce-text').textContent =
-    subtitle || (isQwirkle ? `${playerName} réalise un Qwirkle !` : `${playerName} marque ${pts} point${pts>1?'s':''}`);
+    subtitle || (
+      isMegaQwirkle  ? `${playerName} enchaîne un Méga Qwirkle !` :
+      isQwirkleBase  ? `${playerName} réalise un Qwirkle !` :
+      isExploit      ? `${playerName} fait un exploit !` :
+                       `${playerName} marque ${pts} point${pts>1?'s':''}`
+    );
   document.getElementById('announce-total').textContent =
     newTotal !== undefined ? `Total : ${newTotal} pts` : '';
 
-  // Afficher
   overlay.classList.remove('hidden');
-  card.classList.remove('show','hide','is-qwirkle');
-  void card.offsetWidth; // reflow
+  card.classList.remove('show','hide','is-qwirkle','is-mega','is-exploit');
+  void card.offsetWidth;
   card.classList.add('show');
-  if (isQwirkle) card.classList.add('is-qwirkle');
+  if (isQwirkle)     card.classList.add('is-qwirkle');
+  if (isMegaQwirkle) card.classList.add('is-mega');
+  if (isExploit)     card.classList.add('is-exploit');
 
   clearTimeout(_announceTimer);
-  const dur = isQwirkle ? 2800 : pts >= 6 ? 2200 : 1800;
-  _announceTimer = setTimeout(() => {
-    card.classList.add('hide');
-    setTimeout(() => overlay.classList.add('hidden'), 320);
-  }, dur);
+  const dur = isMegaQwirkle ? 2200 : isQwirkleBase ? 2000 : isExploit ? 2000 : pts >= 6 ? 1600 : 1300;
+  _announceTimer = setTimeout(dismissAnnounce, dur);
 }
 
 // ── Toast (erreurs/infos) ──
