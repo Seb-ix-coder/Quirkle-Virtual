@@ -384,33 +384,34 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .theme-swatch-row.active .theme-swatch-name{color:#fff;}
 
 .game-bottom{width:100%;background:rgba(10,13,20,0.97);backdrop-filter:blur(20px);
-  border-top:1px solid var(--border);padding:12px 16px;flex-shrink:0;
+  border-top:1px solid var(--border);padding:8px 16px 10px;flex-shrink:0;
   display:flex;flex-direction:column;gap:0;}
-.tablette-header{display:flex;align-items:center;justify-content:center;
-  gap:8px;margin-bottom:6px;}
-.hand-label{font-size:13px;font-weight:900;letter-spacing:0.3px;color:#fff;}
-.diode{width:8px;height:8px;border-radius:50%;flex-shrink:0;
-  box-shadow:0 0 6px currentColor;transition:all .3s;}
+/* ── Barre joueur compacte: nom + diode + infos sur une seule ligne ── */
+.tablette-topbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;
+  padding:0 2px;}
+.hand-label{font-size:13px;font-weight:900;letter-spacing:0.3px;color:#fff;flex-shrink:0;}
+.diode{width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  box-shadow:0 0 5px currentColor;transition:all .3s;}
 .diode.green{background:#00ff88;color:#00ff88;
   animation:diodePulse 1.2s ease-in-out infinite;}
 .diode.red{background:#ff4757;color:#ff4757;}
 @keyframes diodePulse{0%,100%{opacity:1;box-shadow:0 0 8px #00ff88}
   50%{opacity:.3;box-shadow:0 0 2px #00ff88}}
+.topbar-sep{width:1px;height:12px;background:rgba(255,255,255,0.1);flex-shrink:0;}
+.topbar-infos{display:flex;align-items:center;gap:10px;flex:1;}
 .chat-inline-btn{background:none;border:none;cursor:pointer;
-  font-size:14px;padding:2px 4px;border-radius:8px;transition:.2s;
-  color:rgba(255,255,255,0.4);display:flex;align-items:center;}
+  font-size:13px;padding:2px 3px;border-radius:8px;transition:.2s;
+  color:rgba(255,255,255,0.4);display:flex;align-items:center;flex-shrink:0;}
 .chat-inline-btn:hover{color:var(--accent);}
-.chat-inline-btn .chat-badge-dot{width:6px;height:6px;border-radius:50%;
+.chat-inline-btn .chat-badge-dot{width:5px;height:5px;border-radius:50%;
   background:var(--red);margin-left:2px;display:none;}
 .chat-inline-btn .chat-badge-dot.show{display:block;}
-.tablette-infos{display:flex;align-items:center;justify-content:center;
-  gap:12px;margin-bottom:8px;flex-wrap:wrap;}
-.tab-info{display:flex;align-items:center;gap:4px;
+.tab-info{display:flex;align-items:center;gap:3px;
   font-size:9px;font-weight:700;color:rgba(255,255,255,.35);
-  letter-spacing:0.5px;}
-.tab-info-val{font-size:11px;font-weight:900;color:rgba(255,255,255,.7);
+  letter-spacing:0.3px;}
+.tab-info-val{font-size:10px;font-weight:900;color:rgba(255,255,255,.7);
   font-variant-numeric:tabular-nums;}
-.hand-tiles{display:flex;gap:8px;justify-content:center;margin-bottom:12px;
+.hand-tiles{display:flex;gap:8px;justify-content:center;margin-bottom:10px;
   min-height:62px;align-items:center;}
 .tile{width:58px;height:58px;border-radius:11px;
   position:relative;user-select:none;flex-shrink:0;cursor:grab;
@@ -434,7 +435,7 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .tile.dragging-src{opacity:.25;transform:scale(.88)!important;}
 .tile.drag-target{transform:scale(1.10)!important;
   filter:drop-shadow(0 0 8px rgba(0,240,255,.7))!important;}
-.action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;}
 .act-btn{padding:11px 8px;border-radius:12px;border:1px solid var(--border);
   background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.6);
   font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
@@ -442,10 +443,54 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   justify-content:center;gap:5px;}
 .act-btn:hover{background:rgba(255,255,255,0.07);color:#fff;}
 .act-btn:disabled{opacity:0.2;cursor:not-allowed;}
-.act-btn.confirm{background:linear-gradient(135deg,var(--accent),#00b8cc);
-  color:#050709;border-color:transparent;box-shadow:0 4px 14px rgba(0,240,255,0.25);}
-.act-btn.confirm:hover:not(:disabled){box-shadow:0 6px 20px rgba(0,240,255,0.4);}
 .act-btn.discard-btn{color:var(--orange);border-color:rgba(255,159,0,0.2);}
+/* ── Bouton Valider — aspect tuile 3D ── */
+.confirm-tile-btn{
+  position:relative;overflow:hidden;
+  height:58px;min-width:90px;
+  border-radius:11px;border:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:1px;
+  background:linear-gradient(160deg,#1a2a2a 0%,#0a1818 60%,#050e0e 100%);
+  box-shadow:0 6px 0 #033,0 8px 18px rgba(0,240,255,0.18),
+             inset 0 1px 0 rgba(0,240,255,0.35),inset 0 -1px 0 rgba(0,0,0,0.4);
+  transition:transform .12s,box-shadow .12s,filter .12s;
+}
+.confirm-tile-btn::before{
+  content:'';position:absolute;inset:0;border-radius:11px;
+  background:linear-gradient(135deg,rgba(0,240,255,0.18) 0%,rgba(0,240,255,0.04) 40%,transparent 70%);
+  pointer-events:none;
+}
+.confirm-tile-btn::after{
+  content:'';position:absolute;top:0;left:8%;width:56%;height:32%;
+  border-radius:50%;background:rgba(0,240,255,0.12);
+  filter:blur(4px);pointer-events:none;
+}
+.confirm-tile-btn:not(:disabled):hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 0 #033,0 12px 28px rgba(0,240,255,0.30),
+             inset 0 1px 0 rgba(0,240,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.4);
+  filter:brightness(1.12);
+}
+.confirm-tile-btn:not(:disabled):active{
+  transform:translateY(4px);
+  box-shadow:0 2px 0 #033,0 4px 8px rgba(0,240,255,0.10),
+             inset 0 1px 0 rgba(0,240,255,0.25);
+}
+.confirm-tile-btn:disabled{opacity:0.28;cursor:not-allowed;}
+.confirm-tile-pts{
+  font-size:22px;font-weight:900;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;
+  color:var(--accent);
+  text-shadow:0 0 12px rgba(0,240,255,0.7);
+  line-height:1;
+  font-family:'Inter','Arial Black',sans-serif;
+}
+.confirm-tile-btn:disabled .confirm-tile-pts{color:rgba(255,255,255,0.3);text-shadow:none;}
+.confirm-tile-lbl{
+  font-size:7px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(0,240,255,0.55);
+}
 
 /* AI thinking */
 .ai-thinking{position:fixed;bottom:180px;left:50%;transform:translateX(-50%);
@@ -919,25 +964,30 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   </div>
 
   <div class="game-bottom">
-    <!-- Tablette : nom + diode + chat -->
-    <div class="tablette-header">
+    <!-- Barre compacte : nom + diode + infos sur une ligne -->
+    <div class="tablette-topbar">
       <div class="hand-label" id="hand-label">Tablette</div>
       <div class="diode green" id="turn-diode"></div>
-      <button class="chat-inline-btn" id="chat-inline-btn" onclick="toggleChatInline()" style="display:none;margin-left:6px">
+      <div class="topbar-sep"></div>
+      <div class="topbar-infos">
+        <div class="tab-info"><span>🏆</span><span class="tab-info-val" id="tab-score">0 pts</span></div>
+        <div class="tab-info" title="Timer du tour"><span>⚡</span><span class="tab-info-val" id="tab-timer">0:00</span></div>
+        <div class="tab-info" title="Temps total mes tours"><span>⏱</span><span class="tab-info-val" id="tab-cumul">0:00</span></div>
+      </div>
+      <button class="chat-inline-btn" id="chat-inline-btn" onclick="toggleChatInline()" style="display:none">
         💬<span class="chat-badge-dot" id="chat-badge-dot"></span>
       </button>
-    </div>
-    <!-- Mini infos tablette -->
-    <div class="tablette-infos">
-      <div class="tab-info"><span>🏆</span><span class="tab-info-val" id="tab-score">0 pts</span></div>
-      <div class="tab-info" title="Timer du tour (sec:ms)"><span>⚡</span><span class="tab-info-val" id="tab-timer">0:00</span></div>
-      <div class="tab-info" title="Temps total de mes tours"><span>⏱</span><span class="tab-info-val" id="tab-cumul">0:00</span></div>
     </div>
     <div class="hand-tiles" id="hand-tiles"></div>
     <div class="action-row">
       <button class="act-btn discard-btn" id="btn-discard" onclick="toggleDiscardMode()">🗑 Jeter</button>
-      <button class="act-btn" id="btn-undo" onclick="doUndo()">↩ Annuler</button>
-      <button class="act-btn confirm" id="btn-confirm" onclick="doConfirm()" disabled>✓ Valider</button>
+      <div style="display:flex;gap:8px;">
+        <button class="act-btn" id="btn-undo" onclick="doUndo()" style="flex:1">↩ Annuler</button>
+        <button class="confirm-tile-btn" id="btn-confirm" onclick="doConfirm()" disabled>
+          <span class="confirm-tile-pts" id="confirm-pts">0</span>
+          <span class="confirm-tile-lbl">pts</span>
+        </button>
+      </div>
     </div>
 
   </div>
@@ -1040,6 +1090,124 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 </div>
 
 <script>
+// ════════════════════════════════════════════════════════════════
+// POLYFILL — ctx.roundRect (Safari < 15.4, Chrome < 99)
+// ════════════════════════════════════════════════════════════════
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+    const R = typeof r === 'number' ? r : (Array.isArray(r) ? r[0] : 0);
+    const rc = Math.min(R, w/2, h/2);
+    this.moveTo(x + rc, y);
+    this.arcTo(x+w, y,   x+w, y+h, rc);
+    this.arcTo(x+w, y+h, x,   y+h, rc);
+    this.arcTo(x,   y+h, x,   y,   rc);
+    this.arcTo(x,   y,   x+w, y,   rc);
+    this.closePath();
+    return this;
+  };
+}
+
+// ════════════════════════════════════════════════════════════════
+// RESOURCE MANAGER — nettoie timers & listeners au changement d'écran
+// ════════════════════════════════════════════════════════════════
+const ResourceManager = {
+  _intervals: new Map(),
+  _timeouts:  new Map(),
+  _listeners: [],
+  _rafId: null,
+
+  setInterval(fn, ms, key) {
+    const existing = this._intervals.get(key);
+    if (existing) clearInterval(existing);
+    const id = setInterval(fn, ms);
+    this._intervals.set(key, id);
+    return id;
+  },
+  clearInterval(key) {
+    const id = this._intervals.get(key);
+    if (id) { clearInterval(id); this._intervals.delete(key); }
+  },
+  setTimeout(fn, ms, key) {
+    if (key) {
+      const existing = this._timeouts.get(key);
+      if (existing) clearTimeout(existing);
+    }
+    const id = setTimeout(() => {
+      fn();
+      if (key) this._timeouts.delete(key);
+    }, ms);
+    if (key) this._timeouts.set(key, id);
+    return id;
+  },
+  clearAll() {
+    this._intervals.forEach(id => clearInterval(id));
+    this._intervals.clear();
+    this._timeouts.forEach(id => clearTimeout(id));
+    this._timeouts.clear();
+    this._listeners.forEach(([el,ev,fn,opt]) => el.removeEventListener(ev,fn,opt));
+    this._listeners = [];
+  },
+  addListener(el, event, fn, opts) {
+    el.addEventListener(event, fn, opts);
+    this._listeners.push([el, event, fn, opts]);
+  },
+};
+
+// ════════════════════════════════════════════════════════════════
+// CACHE — évite les recalculs coûteux par frame
+// ════════════════════════════════════════════════════════════════
+const Cache = {
+  _myIdx: -1,
+  _myIdxTurn: -1,
+  _validCells: null,
+  _validCellsKey: '',
+
+  myIdx() {
+    // Invalider si le tour a changé
+    if (!G || this._myIdxTurn !== (G.current || 0)) {
+      this._myIdx = -1;
+      this._myIdxTurn = G ? (G.current || 0) : 0;
+    }
+    if (this._myIdx >= 0) return this._myIdx;
+    this._myIdx = _resolveMyIdx();
+    return this._myIdx;
+  },
+  invalidate() {
+    this._myIdx = -1;
+    this._validCells = null;
+    this._validCellsKey = '';
+  },
+  getValidCells(tile) {
+    const key = `${JSON.stringify(tile)}|${Object.keys(G.board).length}|${G.pendingTiles.length}`;
+    if (this._validCells && this._validCellsKey === key) return this._validCells;
+    this._validCells = getValidCells(tile);
+    this._validCellsKey = key;
+    return this._validCells;
+  },
+};
+
+// ════════════════════════════════════════════════════════════════
+// OFFSCREEN CANVAS — cache du fond (texture) pour éviter de la
+// redessiner à chaque frame
+// ════════════════════════════════════════════════════════════════
+let _bgCanvas = null, _bgCtx = null, _bgTheme = -1, _bgW = 0, _bgH = 0;
+function getBackgroundCanvas(theme, w, h) {
+  if (_bgCanvas && _bgTheme === theme && _bgW === w && _bgH === h) return _bgCanvas;
+  if (!_bgCanvas) { _bgCanvas = document.createElement('canvas'); _bgCtx = _bgCanvas.getContext('2d'); }
+  _bgCanvas.width = w; _bgCanvas.height = h;
+  _bgTheme = theme; _bgW = w; _bgH = h;
+  _bgCtx.fillStyle = BOARD_THEMES[theme].bg;
+  _bgCtx.fillRect(0, 0, w, h);
+  drawThemeTexture(_bgCtx, BOARD_THEMES[theme], w, h);
+  return _bgCanvas;
+}
+
+// ════════════════════════════════════════════════════════════════
+// DIRTY FLAG — ne redessine que si nécessaire
+// ════════════════════════════════════════════════════════════════
+// G._dirty est mis à true avant chaque appel à drawBoard()
+// drawBoard() le remet à false après le rendu
+
 // ════════════════════════════════════════════════════════════════
 // SUPABASE
 // ════════════════════════════════════════════════════════════════
@@ -1283,7 +1451,7 @@ async function syncOnlineGame() {
     if (turnJustChangedToMe) {
       _lastSyncCurrent = G.current;
       startTurnTimer();
-      document.getElementById('btn-confirm').disabled = true;
+      updateConfirmBtn();
       document.getElementById('btn-discard').disabled = false;
       playSound('turn');
       showToast(`À vous de jouer !`, 'ok', 1800);
@@ -1445,10 +1613,29 @@ function updateProfileStats() {
 // ════════════════════════════════════════════════════════════════
 let _currentScreen = 's-profile';
 
+// Visibilité — ralentir le polling quand l'onglet est en arrière-plan
+document.addEventListener('visibilitychange', () => {
+  const hidden = document.hidden;
+  if (hidden) {
+    // Onglet caché : polling moins fréquent (économie batterie/réseau)
+    if (_gamePolling)  { clearInterval(_gamePolling);  _gamePolling  = setInterval(syncOnlineGame, 8000); }
+    if (_roomPolling)  { clearInterval(_roomPolling);  _roomPolling  = setInterval(pollRoom, 8000); }
+    if (_roomsPolling) { clearInterval(_roomsPolling); _roomsPolling = setInterval(refreshRooms, 10000); }
+    if (_chatPolling)  { clearInterval(_chatPolling);  _chatPolling  = setInterval(pollChat, 8000); }
+  } else {
+    // Onglet visible : restaurer le polling normal
+    if (_gamePolling)  { clearInterval(_gamePolling);  _gamePolling  = setInterval(syncOnlineGame, 3000); }
+    if (_roomPolling)  { clearInterval(_roomPolling);  _roomPolling  = setInterval(pollRoom, 3000); }
+    if (_roomsPolling) { clearInterval(_roomsPolling); _roomsPolling = setInterval(refreshRooms, 5000); }
+    if (_chatPolling)  { clearInterval(_chatPolling);  _chatPolling  = setInterval(pollChat, 3000); }
+  }
+});
+
 function goTo(id) {
   document.getElementById(_currentScreen).classList.add('hidden');
   document.getElementById(id).classList.remove('hidden');
   _currentScreen = id;
+  Cache.invalidate();
   if (id === 's-profile') initProfileScreen();
   if (id === 's-lobby')   initLobby();
   if (id === 's-online')  initOnlineScreen();
@@ -1492,7 +1679,7 @@ let _roomsPolling = null;
 async function initOnlineScreen() {
   await refreshRooms();
   clearInterval(_roomsPolling);
-  _roomsPolling = setInterval(refreshRooms, 4000);
+  _roomsPolling = setInterval(refreshRooms, 5000);
 }
 
 async function refreshRooms() {
@@ -1587,13 +1774,13 @@ function enterRoom() {
 
   // Polling de secours toutes les 2s
   clearInterval(_roomPolling);
-  _roomPolling = setInterval(pollRoom, 2000);
+  _roomPolling = setInterval(pollRoom, 3000);
 }
 
 async function pollRoom() {
   if (!_currentRoom) return;
   try {
-    const { data } = await sb.from('qv_rooms').select('*').eq('id', _currentRoom.id).single();
+    const { data } = await sb.from('qv_rooms').select('id,players,status,host_device_id,board_theme,theme_name,chat').eq('id', _currentRoom.id).single();
     if (!data) {
       clearInterval(_roomPolling);
       showToast('La salle a été fermée', 'err', 2000);
@@ -1855,8 +2042,10 @@ function isMyTurn() {
   return cur.isHuman === true;
 }
 
-// Index du joueur humain local dans le tableau
-function myPlayerIdx() {
+// Index du joueur humain local dans le tableau (résultat mis en cache)
+function myPlayerIdx() { return Cache.myIdx(); }
+function _resolveMyIdx() {
+  if (!G || !G.players) return 0;
   if (_currentRoom) {
     const idx = G.players.findIndex(p => p.device_id === DEVICE_ID);
     return idx >= 0 ? idx : 0;
@@ -2142,7 +2331,7 @@ function launchGame() {
     clearInterval(_gamePolling);
     _lastSyncAt = null;       // forcer resync au lancement
     _lastSyncCurrent = -1;    // forcer notification au premier tour
-    _gamePolling = setInterval(syncOnlineGame, 2000);
+    _gamePolling = setInterval(syncOnlineGame, 3000);
   }
 
   // Toujours afficher l'état initial
@@ -2235,6 +2424,7 @@ function resizeCanvas() {
   _W = wrap.clientWidth; _H = wrap.clientHeight;
   canvas.width=_W; canvas.height=_H;
   canvas.style.width=_W+'px'; canvas.style.height=_H+'px';
+  _bgTheme = -1; // invalider le cache du fond
   drawBoard();
 }
 
@@ -2252,115 +2442,123 @@ function screenToWorld(sx, sy) {
 
 function drawBoard() {
   if (!ctx2d) return;
-  const theme = BOARD_THEMES[G.boardTheme||0];
-  ctx2d.clearRect(0,0,_W,_H);
-  // ── Fond avec texture ──
-  ctx2d.fillStyle = theme.bg;
-  ctx2d.fillRect(0, 0, _W, _H);
-  drawThemeTexture(ctx2d, theme, _W, _H);
-  if (theme.animated) drawBubbles();
-  // Adapter UI
-  const hdr=document.querySelector('.game-header'), btm=document.querySelector('.game-bottom');
-  if (hdr) { hdr.style.background=theme.light?'rgba(240,240,240,0.97)':'rgba(10,13,20,0.97)'; hdr.style.color=theme.light?'#111':'#fff'; hdr.style.borderBottomColor=theme.light?'rgba(0,0,0,0.08)':'rgba(255,255,255,0.06)'; }
-  if (btm) { btm.style.background=theme.light?'rgba(240,240,240,0.97)':'rgba(10,13,20,0.97)'; btm.style.borderTopColor=theme.light?'rgba(0,0,0,0.08)':'rgba(255,255,255,0.06)'; }
+  const themeIdx = G.boardTheme || 0;
+  const theme = BOARD_THEMES[themeIdx];
+
+  // ── Fond : utiliser le canvas offscreen caché (texture pré-rendue) ──
+  if (!theme.animated) {
+    const bg = getBackgroundCanvas(themeIdx, _W, _H);
+    ctx2d.drawImage(bg, 0, 0);
+  } else {
+    ctx2d.clearRect(0, 0, _W, _H);
+    ctx2d.fillStyle = theme.bg;
+    ctx2d.fillRect(0, 0, _W, _H);
+    drawBubbles();
+  }
+
+  // Adapter UI (header/footer couleurs) — une seule fois si thème change
+  if (drawBoard._lastTheme !== themeIdx) {
+    drawBoard._lastTheme = themeIdx;
+    const hdr = document.querySelector('.game-header');
+    const btm = document.querySelector('.game-bottom');
+    if (hdr) { hdr.style.background=theme.light?'rgba(240,240,240,0.97)':'rgba(10,13,20,0.97)'; hdr.style.color=theme.light?'#111':'#fff'; hdr.style.borderBottomColor=theme.light?'rgba(0,0,0,0.08)':'rgba(255,255,255,0.06)'; }
+    if (btm) { btm.style.background=theme.light?'rgba(240,240,240,0.97)':'rgba(10,13,20,0.97)'; btm.style.borderTopColor=theme.light?'rgba(0,0,0,0.08)':'rgba(255,255,255,0.06)'; }
+  }
 
   ctx2d.save();
-  ctx2d.translate(_W/2+G.camX, _H/2+G.camY);
+  ctx2d.translate(_W/2 + G.camX, _H/2 + G.camY);
   ctx2d.rotate(G.rotation);
   ctx2d.scale(G.zoom, G.zoom);
 
-  // Grille
-  const gridR=Math.ceil(Math.max(_W,_H)/(CELL*G.zoom)/2)+2;
-  ctx2d.strokeStyle=theme.grid; ctx2d.lineWidth=1/G.zoom;
-  if (CELL>8) {
-    for(let i=-gridR;i<=gridR;i++){
-      ctx2d.beginPath();ctx2d.moveTo(i*CELL,-gridR*CELL);ctx2d.lineTo(i*CELL,gridR*CELL);ctx2d.stroke();
-      ctx2d.beginPath();ctx2d.moveTo(-gridR*CELL,i*CELL);ctx2d.lineTo(gridR*CELL,i*CELL);ctx2d.stroke();
-    }
+  // ── Calcul de la zone visible (culling) ──
+  // On ne dessine que les tuiles dans le viewport + marge
+  const margin = 2; // cellules de marge
+  const invZ   = 1 / G.zoom;
+  const hw     = (_W / 2 + Math.abs(G.camX)) * invZ;
+  const hh     = (_H / 2 + Math.abs(G.camY)) * invZ;
+  const cellPx = CELL;
+  const minX   = Math.floor(-hw / cellPx) - margin;
+  const maxX   = Math.ceil(hw  / cellPx) + margin;
+  const minY   = Math.floor(-hh / cellPx) - margin;
+  const maxY   = Math.ceil(hh  / cellPx) + margin;
+
+  function isVisible(wx, wy) {
+    return wx >= minX && wx <= maxX && wy >= minY && wy <= maxY;
   }
 
-  for(const [key,tile] of Object.entries(G.board)){const[wx,wy]=key.split(',').map(Number);drawTileWorld(wx,wy,tile,false);}
-  for(const pt of G.pendingTiles) drawTileWorld(pt.wx,pt.wy,pt,true);
+  // ── Tuiles du plateau (avec culling) ──
+  for (const [key, tile] of Object.entries(G.board)) {
+    const [wx, wy] = key.split(',').map(Number);
+    if (isVisible(wx, wy)) drawTileWorld(wx, wy, tile, false);
+  }
+  // ── Tuiles pending du joueur ──
+  for (const pt of G.pendingTiles) drawTileWorld(pt.wx, pt.wy, pt, true);
 
-  // Tuiles adverses en cours (temps réel)
+  // ── Tuiles adverses en cours (temps réel) ──
   if (G._opponentPending && G._opponentPending.length) {
     ctx2d.globalAlpha = 0.45;
     for (const pt of G._opponentPending) {
-      drawTileWorld(pt.wx, pt.wy, pt, false);
-      ctx2d.fillStyle = 'rgba(255,159,0,0.7)';
-      ctx2d.beginPath();
-      ctx2d.arc(pt.wx*CELL + TILE_SIZE*0.3, pt.wy*CELL - TILE_SIZE*0.3,
-                Math.max(3, 5/G.zoom), 0, Math.PI*2);
-      ctx2d.fill();
+      if (isVisible(pt.wx, pt.wy)) {
+        drawTileWorld(pt.wx, pt.wy, pt, false);
+        ctx2d.fillStyle = 'rgba(255,159,0,0.7)';
+        ctx2d.beginPath();
+        ctx2d.arc(pt.wx*CELL + TILE_SIZE*0.3, pt.wy*CELL - TILE_SIZE*0.3,
+                  Math.max(3, 5/G.zoom), 0, Math.PI*2);
+        ctx2d.fill();
+      }
     }
     ctx2d.globalAlpha = 1;
   }
 
   drawSkyAnimations();
 
+  // ── Surbrillance des tuiles du tour précédent (halo simple, statique) ──
   if (G.lastPlayedTiles.length > 0 && Date.now() < G.highlightUntil) {
-    const now  = Date.now();
-    const fast = 0.5 + 0.5 * Math.sin(now / 280);       // pulsation lente
-    const fast2= 0.5 + 0.5 * Math.sin(now / 120 + 1.2); // pulsation rapide décalée
-
     for (const t of G.lastPlayedTiles) {
+      if (!isVisible(t.wx, t.wy)) continue;
       const tx = t.wx * CELL, ty = t.wy * CELL;
       const tz = TILE_SIZE;
       const tc = COLORS[t.color] || '#fff';
-      const r  = Math.max(2/G.zoom, tz*0.10);
+      const r  = Math.max(2/G.zoom, tz * 0.10);
 
       ctx2d.save();
-
-      // ── Aura extérieure colorée (pulsante) ──
-      const auraSize = (6 + fast*8) / G.zoom;
+      // Halo coloré simple — pas d'animation, pas de rAF infini
       ctx2d.shadowColor = tc;
-      ctx2d.shadowBlur  = auraSize * G.zoom * 3;
-      ctx2d.strokeStyle = tc.replace(')', `,${0.55 + fast*0.35})`).replace('rgb', 'rgba');
-      ctx2d.lineWidth   = (2 + fast*2) / G.zoom;
+      ctx2d.shadowBlur  = 14 / G.zoom;
+      ctx2d.strokeStyle = tc.replace('rgb(', 'rgba(').replace(')', ',0.75)');
+      ctx2d.lineWidth   = 2.5 / G.zoom;
       ctx2d.beginPath();
-      ctx2d.roundRect(tx-tz/2 - auraSize*0.4, ty-tz/2 - auraSize*0.4,
-                      tz + auraSize*0.8, tz + auraSize*0.8, r*1.3);
+      ctx2d.roundRect(tx - tz/2 - 3/G.zoom, ty - tz/2 - 3/G.zoom,
+                      tz + 6/G.zoom, tz + 6/G.zoom, r * 1.4);
       ctx2d.stroke();
-
-      // ── Anneau blanc intérieur (pulsation rapide) ──
       ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
-      ctx2d.strokeStyle = `rgba(255,255,255,${0.18 + fast2*0.22})`;
-      ctx2d.lineWidth   = (1 + fast2*0.8) / G.zoom;
-      ctx2d.beginPath();
-      ctx2d.roundRect(tx-tz/2+1/G.zoom, ty-tz/2+1/G.zoom,
-                      tz-2/G.zoom, tz-2/G.zoom, r*0.8);
-      ctx2d.stroke();
-
-      // ── Coins lumineux (étoiles aux 4 coins) ──
-      const cSize = (2 + fast*2.5) / G.zoom;
-      const corners = [
-        [tx-tz/2, ty-tz/2], [tx+tz/2, ty-tz/2],
-        [tx-tz/2, ty+tz/2], [tx+tz/2, ty+tz/2],
-      ];
-      ctx2d.fillStyle = `rgba(255,255,255,${0.5 + fast*0.4})`;
-      corners.forEach(([cx2, cy2]) => {
-        ctx2d.beginPath();
-        ctx2d.arc(cx2, cy2, cSize, 0, Math.PI*2);
-        ctx2d.fill();
-      });
-
       ctx2d.restore();
     }
-    requestAnimationFrame(drawBoard);
   } else if (G.lastPlayedTiles.length > 0 && Date.now() >= G.highlightUntil) {
     G.lastPlayedTiles = [];
   }
 
-  if(G.selectedTile!==null){
-    const tile=G.players[myPlayerIdx()].hand[G.selectedTile];
-    if(tile){
-      const cells=getValidCells(tile);
-      ctx2d.fillStyle='rgba(0,240,255,0.08)';ctx2d.strokeStyle='rgba(0,240,255,0.4)';ctx2d.lineWidth=1.5/G.zoom;
-      for(const[wx,wy] of cells){ctx2d.beginPath();ctx2d.roundRect(wx*CELL-TILE_SIZE/2,wy*CELL-TILE_SIZE/2,TILE_SIZE,TILE_SIZE,Math.max(2/G.zoom,8));ctx2d.fill();ctx2d.stroke();}
+  // ── Cellules valides ──
+  if (G.selectedTile !== null) {
+    const tile = G.players[myPlayerIdx()].hand[G.selectedTile];
+    if (tile) {
+      const cells = Cache.getValidCells(tile);
+      ctx2d.fillStyle = 'rgba(0,240,255,0.08)';
+      ctx2d.strokeStyle = 'rgba(0,240,255,0.4)';
+      ctx2d.lineWidth = 1.5 / G.zoom;
+      for (const [wx, wy] of cells) {
+        if (!isVisible(wx, wy)) continue;
+        ctx2d.beginPath();
+        ctx2d.roundRect(wx*CELL - TILE_SIZE/2, wy*CELL - TILE_SIZE/2,
+                        TILE_SIZE, TILE_SIZE, Math.max(2/G.zoom, 8));
+        ctx2d.fill();
+        ctx2d.stroke();
+      }
     }
   }
   ctx2d.restore();
 }
+drawBoard._lastTheme = -1;
 
 function drawThemeTexture(ctx,theme,w,h){
   const t=theme.texture||'none';
@@ -3020,7 +3218,6 @@ function makeTileSVG(tile){
 // ════════════════════════════════════════════════════════════════
 function renderHand(){
   const container=document.getElementById('hand-tiles');
-  container.innerHTML='';
   const me = G.players[myPlayerIdx()];
   if (!me) return;
 
@@ -3037,12 +3234,18 @@ function renderHand(){
   // ── Appliquer texture footer + header ──
   applyFooterHeaderTexture(_footerTextureIdx);
 
+  // HandManager: vider uniquement si nombre de tuiles a changé (évite re-layout complet)
+  const handLen = me ? me.hand.length : 0;
+  if (container.children.length !== handLen) container.innerHTML = '';
+
   const player = me;
   let dragSrcIdx = null;
   let dragClone = null;
 
   player.hand.forEach((tile, idx) => {
-    const el = document.createElement('div');
+    let el = container.children[idx];
+    const needCreate = !el;
+    if (needCreate) { el = document.createElement('div'); }
     let cls = 'tile';
     if (tile === null) cls += ' ghost';
     else if (G.discardMode && G.toDiscard instanceof Set && G.toDiscard.has(idx)) cls += ' to-discard';
@@ -3052,6 +3255,15 @@ function renderHand(){
     el.dataset.idx = idx;
 
     if (tile) {
+      // Reuse DOM: clear previous canvas children and clone without listeners
+      if (!needCreate) {
+        // Remove old canvas children (tile graphics)
+        while (el.firstChild) el.removeChild(el.firstChild);
+        // Clone to strip old event listeners, then replace
+        const fresh = el.cloneNode(false);
+        el.parentNode.replaceChild(fresh, el);
+        el = fresh;
+      }
       el.appendChild(makeTileSVG(tile));
 
       // Sélection au tap
@@ -3105,8 +3317,18 @@ function renderHand(){
         }
       }, {passive:true});
     }
-    container.appendChild(el);
+    if (needCreate) container.appendChild(el);
+    else {
+      // If element was replaced via cloneNode, re-insert at correct position
+      if (el !== container.children[idx]) {
+        const ref = container.children[idx];
+        if (ref) container.insertBefore(el, ref);
+        else container.appendChild(el);
+      }
+    }
   });
+  // Mettre à jour le bouton Valider en temps réel
+  updateConfirmBtn();
 }
 
 function selectTile(idx){
@@ -3124,6 +3346,21 @@ function selectTile(idx){
 // ════════════════════════════════════════════════════════════════
 // ACTIONS JEU
 // ════════════════════════════════════════════════════════════════
+// Met à jour le bouton Valider avec les points en temps réel
+function updateConfirmBtn() {
+  const btn = document.getElementById('btn-confirm');
+  const ptsEl = document.getElementById('confirm-pts');
+  if (!btn || !ptsEl) return;
+  if (G.pendingTiles.length === 0) {
+    btn.disabled = true;
+    ptsEl.textContent = '0';
+  } else {
+    btn.disabled = false;
+    const pts = calcPoints(G.board, G.pendingTiles);
+    ptsEl.textContent = pts;
+  }
+}
+
 function doConfirm(){
   if(!isMyTurn()) return;
   if(!G.pendingTiles.length) return;
@@ -3150,7 +3387,8 @@ function doConfirm(){
   G.toDiscard    = new Set();
 
   // UI
-  document.getElementById('btn-confirm').disabled = true;
+  Cache.invalidate();
+  updateConfirmBtn();
   // Vibration locale
   if (navigator.vibrate) navigator.vibrate(pts >= 12 ? [100,50,100] : [50]);
   showAnnounce(pts, isQwirkle, player.pseudo, player.score);
@@ -3222,8 +3460,8 @@ function cancelPending(){
   const player=G.players[myPlayerIdx()];
   for(const pt of G.pendingTiles){const ei=player.hand.findIndex(t=>t===null);if(ei>=0)player.hand[ei]={shape:pt.shape,color:pt.color,id:pt.id};}
   G.pendingTiles=[];G.selectedTile=null;
-  const bc=document.getElementById('btn-confirm');
-  bc.disabled=true; bc.innerHTML='✓ Valider';
+  Cache.invalidate();
+  updateConfirmBtn();
   renderHand();drawBoard();
 }
 
@@ -3232,6 +3470,7 @@ function cancelPending(){
 // ════════════════════════════════════════════════════════════════
 function nextTurn(){
   stopMyTurnCumul(); // stopper cumul si c'était mon tour
+  Cache.invalidate(); // invalider le cache index joueur
   G.lastPlayedTiles = []; G.highlightUntil = 0; // effacer surbrillance tour précédent
   G.current=(G.current+1)%G.players.length;
   G.selectedTile=null;G.discardMode=false;G.toDiscard=new Set();
@@ -3554,9 +3793,6 @@ function tickTimer() {
   const scoreEl = document.getElementById('tab-score');
   if (scoreEl && me) scoreEl.textContent = me.score + ' pts';
 
-  // Sac
-  renderBag();
-
   _timerRaf = requestAnimationFrame(tickTimer);
 }
 
@@ -3632,11 +3868,8 @@ function onBoardTap(sx,sy){
     G.players[myPlayerIdx()].hand[G.selectedTile]=null;
     G.selectedTile=null;
     playSound('place');
-    // Mettre à jour le bouton Valider avec le nb de pts
-    const previewPts=calcPoints(G.board,G.pendingTiles);
-    const btnC=document.getElementById('btn-confirm');
-    btnC.disabled=false;
-    btnC.innerHTML=`✓ Valider <span style="font-size:10px;opacity:.75;font-weight:700">${previewPts} pt${previewPts>1?'s':''}</span>`;
+    Cache.invalidate();
+    updateConfirmBtn();
     renderHand();drawBoard();
     if (_currentRoom) saveOnlineGameState();
   } else {
@@ -4037,7 +4270,7 @@ function initChat() {
     if (btn) btn.style.display = 'flex';
     _lastChatTs = Date.now();
     if (_chatPolling) clearInterval(_chatPolling);
-    _chatPolling = setInterval(pollChat, 2500);
+    _chatPolling = setInterval(pollChat, 3000);
     addSystemMsg('Chat activé — dites bonjour !');
   } else {
     if (btn) btn.style.display = 'none';
