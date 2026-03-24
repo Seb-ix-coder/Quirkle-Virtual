@@ -154,6 +154,17 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   background:var(--card);color:rgba(255,255,255,0.45);font-size:10px;font-weight:800;
   letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
 .diff-btn.sel{border-color:var(--accent);color:var(--accent);background:rgba(0,240,255,0.06);}
+/* Sélecteur nombre d'IA */
+.ai-count-row{display:flex;gap:8px;width:100%;max-width:460px;justify-content:center;}
+.ai-count-btn{flex:1;padding:12px 8px;border-radius:12px;
+  border:1px solid var(--border);background:rgba(255,255,255,0.03);
+  color:rgba(255,255,255,0.4);font-size:11px;font-weight:800;letter-spacing:1px;
+  text-transform:uppercase;cursor:pointer;transition:all 0.2s;
+  display:flex;flex-direction:column;align-items:center;gap:4px;}
+.ai-count-btn .ai-count-num{font-size:22px;font-weight:900;color:rgba(255,255,255,0.3);}
+.ai-count-btn .ai-count-lbl{font-size:8px;letter-spacing:1.5px;}
+.ai-count-btn.sel{border-color:rgba(0,240,255,0.4);background:rgba(0,240,255,0.06);color:var(--accent);}
+.ai-count-btn.sel .ai-count-num{color:var(--accent);}
 
 /* ══ SCREEN ONLINE LOBBY ══ */
 #s-online{gap:14px;background:var(--bg);justify-content:flex-start;padding-top:16px;}
@@ -387,18 +398,18 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   border-top:1px solid var(--border);padding:8px 16px 10px;flex-shrink:0;
   display:flex;flex-direction:column;gap:0;}
 /* ── Barre joueur compacte: nom + diode + infos sur une seule ligne ── */
-.tablette-topbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;
-  padding:0 2px;}
-.hand-label{font-size:13px;font-weight:900;letter-spacing:0.3px;color:#fff;flex-shrink:0;}
-.diode{width:7px;height:7px;border-radius:50%;flex-shrink:0;
+.tablette-topbar{display:flex;align-items:center;gap:10px;margin-bottom:6px;
+  padding:0 4px;}
+.hand-label{font-size:14px;font-weight:900;letter-spacing:0.3px;color:#fff;flex-shrink:0;}
+.diode{width:8px;height:8px;border-radius:50%;flex-shrink:0;
   box-shadow:0 0 5px currentColor;transition:all .3s;}
 .diode.green{background:#00ff88;color:#00ff88;
   animation:diodePulse 1.2s ease-in-out infinite;}
 .diode.red{background:#ff4757;color:#ff4757;}
 @keyframes diodePulse{0%,100%{opacity:1;box-shadow:0 0 8px #00ff88}
   50%{opacity:.3;box-shadow:0 0 2px #00ff88}}
-.topbar-sep{width:1px;height:12px;background:rgba(255,255,255,0.1);flex-shrink:0;}
-.topbar-infos{display:flex;align-items:center;gap:10px;flex:1;}
+.topbar-sep{width:1px;height:14px;background:rgba(255,255,255,0.1);flex-shrink:0;}
+.topbar-infos{display:flex;align-items:center;gap:12px;flex:1;}
 .chat-inline-btn{background:none;border:none;cursor:pointer;
   font-size:13px;padding:2px 3px;border-radius:8px;transition:.2s;
   color:rgba(255,255,255,0.4);display:flex;align-items:center;flex-shrink:0;}
@@ -406,13 +417,17 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .chat-inline-btn .chat-badge-dot{width:5px;height:5px;border-radius:50%;
   background:var(--red);margin-left:2px;display:none;}
 .chat-inline-btn .chat-badge-dot.show{display:block;}
-.tab-info{display:flex;align-items:center;gap:3px;
-  font-size:9px;font-weight:700;color:rgba(255,255,255,.35);
-  letter-spacing:0.3px;}
-.tab-info-val{font-size:10px;font-weight:900;color:rgba(255,255,255,.7);
+.tab-info{display:flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.4);
+  letter-spacing:0.2px;}
+.tab-info-val{font-size:13px;font-weight:900;color:rgba(255,255,255,.85);
   font-variant-numeric:tabular-nums;}
 .hand-tiles{display:flex;gap:8px;justify-content:center;margin-bottom:10px;
-  min-height:62px;align-items:center;}
+  min-height:62px;align-items:center;
+  padding:0 12px;  /* espace des bords gauche et droit */
+  overflow-x:auto; /* scroll si trop de tuiles */
+  scrollbar-width:none;} /* masquer scrollbar firefox */
+.hand-tiles::-webkit-scrollbar{display:none;}
 .tile{width:58px;height:58px;border-radius:11px;
   position:relative;user-select:none;flex-shrink:0;cursor:grab;
   -webkit-user-drag:none;touch-action:none;overflow:hidden;
@@ -491,6 +506,64 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   font-size:7px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
   color:rgba(0,240,255,0.55);
 }
+/* ── Bouton Jeter — tuile 3D orange ── */
+.discard-tile-btn{
+  position:relative;overflow:hidden;
+  height:58px;flex:1;
+  border-radius:11px;border:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  background:linear-gradient(160deg,#2a1800 0%,#180e00 60%,#0e0800 100%);
+  box-shadow:0 6px 0 #3d1800,0 8px 18px rgba(255,159,0,0.15),
+             inset 0 1px 0 rgba(255,159,0,0.35),inset 0 -1px 0 rgba(0,0,0,0.4);
+  transition:transform .12s,box-shadow .12s,filter .12s;
+}
+.discard-tile-btn::before{content:'';position:absolute;inset:0;border-radius:11px;
+  background:linear-gradient(135deg,rgba(255,159,0,0.18) 0%,rgba(255,159,0,0.04) 40%,transparent 70%);
+  pointer-events:none;}
+.discard-tile-btn::after{content:'';position:absolute;top:0;left:8%;width:56%;height:32%;
+  border-radius:50%;background:rgba(255,159,0,0.10);filter:blur(4px);pointer-events:none;}
+.discard-tile-btn:not(:disabled):hover{transform:translateY(-2px);
+  box-shadow:0 8px 0 #3d1800,0 12px 24px rgba(255,159,0,0.25),
+             inset 0 1px 0 rgba(255,159,0,0.45);}
+.discard-tile-btn:not(:disabled):active{transform:translateY(4px);
+  box-shadow:0 2px 0 #3d1800,0 4px 8px rgba(255,159,0,0.10);}
+.discard-tile-btn:disabled{opacity:0.28;cursor:not-allowed;}
+.discard-tile-icon{font-size:20px;line-height:1;}
+.discard-tile-lbl{font-size:7px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,159,0,0.7);}
+/* Mode actif discard : surbrillance */
+.discard-tile-btn.active-discard{
+  background:linear-gradient(160deg,#3a2000 0%,#281500 60%,#1e1000 100%);
+  box-shadow:0 6px 0 #5a2500,0 8px 18px rgba(255,159,0,0.30),
+             inset 0 1px 0 rgba(255,159,0,0.55),inset 0 -1px 0 rgba(0,0,0,0.4);
+}
+.discard-tile-btn.active-discard .discard-tile-icon{filter:drop-shadow(0 0 6px #ff9f00);}
+.discard-tile-btn.active-discard .discard-tile-lbl{color:var(--orange);}
+/* ── Bouton Annuler — tuile 3D gris ── */
+.undo-tile-btn{
+  position:relative;overflow:hidden;
+  height:58px;flex:1;
+  border-radius:11px;border:none;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  background:linear-gradient(160deg,#1a1c20 0%,#101214 60%,#0c0e12 100%);
+  box-shadow:0 6px 0 #06080c,0 8px 18px rgba(255,255,255,0.04),
+             inset 0 1px 0 rgba(255,255,255,0.18),inset 0 -1px 0 rgba(0,0,0,0.4);
+  transition:transform .12s,box-shadow .12s,filter .12s;
+}
+.undo-tile-btn::before{content:'';position:absolute;inset:0;border-radius:11px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.10) 0%,rgba(255,255,255,0.02) 40%,transparent 70%);
+  pointer-events:none;}
+.undo-tile-btn::after{content:'';position:absolute;top:0;left:8%;width:56%;height:32%;
+  border-radius:50%;background:rgba(255,255,255,0.05);filter:blur(4px);pointer-events:none;}
+.undo-tile-btn:not(:disabled):hover{transform:translateY(-2px);
+  box-shadow:0 8px 0 #06080c,0 12px 24px rgba(255,255,255,0.08),
+             inset 0 1px 0 rgba(255,255,255,0.24);}
+.undo-tile-btn:not(:disabled):active{transform:translateY(4px);
+  box-shadow:0 2px 0 #06080c,0 4px 8px rgba(0,0,0,0.20);}
+.undo-tile-btn:disabled{opacity:0.20;cursor:not-allowed;}
+.undo-tile-icon{font-size:20px;line-height:1;}
+.undo-tile-lbl{font-size:7px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,0.35);}
 
 /* AI thinking */
 .ai-thinking{position:fixed;bottom:180px;left:50%;transform:translateX(-50%);
@@ -561,6 +634,43 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 .announce-text{font-size:13px;font-weight:600;line-height:1.5;color:rgba(255,255,255,0.8);}
 .announce-total{font-size:11px;color:rgba(255,255,255,0.35);margin-top:8px;
   letter-spacing:0.5px;display:block;}
+
+/* ── Mini modale adversaire — plateau reste visible ── */
+@keyframes miniSlideIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.7)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes miniSlideOut{from{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  to{opacity:0;transform:translate(-50%,-50%) scale(0.7)}}
+.opp-announce{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:9999;
+  pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  background:rgba(10,13,20,0.82);
+  backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  padding:16px 28px;
+  min-width:120px;
+  text-align:center;
+  box-shadow:0 8px 32px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.06);
+  animation:miniSlideIn 0.25s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.opp-announce.hide{animation:miniSlideOut 0.2s ease-in forwards;}
+.opp-announce-pts{
+  font-size:2.8rem;font-weight:900;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;line-height:1;
+  font-family:'Inter','Arial Black',sans-serif;
+}
+.opp-announce-label{
+  font-size:9px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;
+  color:rgba(255,255,255,0.4);
+}
+.opp-announce-name{
+  font-size:10px;font-weight:700;margin-top:2px;
+  color:rgba(255,255,255,0.5);
+}
 
 /* ── Chat ── */
 .chat-panel{
@@ -876,6 +986,21 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
     <button class="diff-btn" onclick="selectDiff('hard')"   data-d="hard">💀 Difficile</button>
   </div>
 
+  <div class="ai-count-row" id="ai-count-row" style="display:none">
+    <button class="ai-count-btn sel" id="ai-cnt-1" onclick="selectAICount(1)">
+      <span class="ai-count-num">1</span>
+      <span class="ai-count-lbl">🤖 IA</span>
+    </button>
+    <button class="ai-count-btn" id="ai-cnt-2" onclick="selectAICount(2)">
+      <span class="ai-count-num">2</span>
+      <span class="ai-count-lbl">🤖🤖 IA</span>
+    </button>
+    <button class="ai-count-btn" id="ai-cnt-3" onclick="selectAICount(3)">
+      <span class="ai-count-num">3</span>
+      <span class="ai-count-lbl">🤖🤖🤖 IA</span>
+    </button>
+  </div>
+
   <button class="btn-primary" id="btn-play-solo" onclick="startSolo()" style="display:none">
     JOUER →
   </button>
@@ -979,15 +1104,19 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
       </button>
     </div>
     <div class="hand-tiles" id="hand-tiles"></div>
-    <div class="action-row">
-      <button class="act-btn discard-btn" id="btn-discard" onclick="toggleDiscardMode()">🗑 Jeter</button>
-      <div style="display:flex;gap:8px;">
-        <button class="act-btn" id="btn-undo" onclick="doUndo()" style="flex:1">↩ Annuler</button>
-        <button class="confirm-tile-btn" id="btn-confirm" onclick="doConfirm()" disabled>
-          <span class="confirm-tile-pts" id="confirm-pts">0</span>
-          <span class="confirm-tile-lbl">pts</span>
-        </button>
-      </div>
+    <div class="action-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;">
+      <button class="discard-tile-btn" id="btn-discard" onclick="toggleDiscardMode()">
+        <span class="discard-tile-icon" id="discard-icon">🗑</span>
+        <span class="discard-tile-lbl" id="discard-lbl">Jeter</span>
+      </button>
+      <button class="undo-tile-btn" id="btn-undo" onclick="doUndo()" disabled>
+        <span class="undo-tile-icon">↩</span>
+        <span class="undo-tile-lbl">Annuler</span>
+      </button>
+      <button class="confirm-tile-btn" id="btn-confirm" onclick="doConfirm()" disabled>
+        <span class="confirm-tile-pts" id="confirm-pts">0</span>
+        <span class="confirm-tile-lbl">pts</span>
+      </button>
     </div>
 
   </div>
@@ -1053,6 +1182,9 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 
 <!-- Toast (erreurs seulement) -->
 <div class="toast hidden" id="toast"></div>
+
+<!-- Mini modale adversaire (flottante, plateau visible) -->
+<div id="opp-announce-container" style="position:fixed;inset:0;z-index:9998;pointer-events:none;"></div>
 
 <!-- Modale announce points (style Qwirkle Pro) -->
 <div class="announce-overlay hidden" id="announce-overlay" onclick="dismissAnnounce()" style="cursor:pointer">
@@ -1470,7 +1602,7 @@ async function syncOnlineGame() {
       if (state.lastPts > 0 && !myTurn) {
         const prevIdx = (G.current + G.players.length - 1) % G.players.length;
         const adv = G.players[prevIdx];
-        showAnnounce(state.lastPts, state.lastPts >= 12, adv?.pseudo || '?', adv?.score);
+        showOppAnnounce(state.lastPts, state.lastPts >= 12, adv?.pseudo || '?', adv?.color);
         playSound(state.lastPts >= 12 ? 'qwirkle' : 'score');
       }
     }
@@ -1645,24 +1777,31 @@ function initLobby() {
   updateLobbyChip();
   const syncDot = document.getElementById('sync-dot');
   if (syncDot) syncDot.className = 'sync-dot' + (isOnline ? '' : ' offline');
-  // Montrer diff row seulement si mode solo
-  document.getElementById('diff-row').style.display = _mode === 'solo' ? 'flex' : 'none';
-  document.getElementById('btn-play-solo').style.display = _mode === 'solo' ? 'block' : 'none';
   selectMode(_mode);
 }
 
 // ════════════════════════════════════════════════════════════════
 // LOBBY — MODE & DIFFICULTÉ
 // ════════════════════════════════════════════════════════════════
-let _mode = 'solo', _diff = 'medium';
+let _mode = 'solo', _diff = 'medium', _aiCount = 1;
 
 function selectMode(m) {
   _mode = m;
-  document.getElementById('diff-row').style.display = m === 'solo' ? 'flex' : 'none';
-  document.getElementById('btn-play-solo').style.display = m === 'solo' ? 'block' : 'none';
+  const isSolo = m === 'solo';
+  document.getElementById('diff-row').style.display       = isSolo ? 'flex' : 'none';
+  document.getElementById('ai-count-row').style.display   = isSolo ? 'flex' : 'none';
+  document.getElementById('btn-play-solo').style.display  = isSolo ? 'block' : 'none';
   document.querySelectorAll('.mode-btn').forEach(b => b.style.borderColor = '');
   const btn = document.getElementById('btn-mode-' + m);
   if (btn) btn.style.borderColor = m === 'solo' ? 'rgba(0,240,255,0.4)' : 'rgba(0,255,136,0.4)';
+}
+
+function selectAICount(n) {
+  _aiCount = n;
+  [1,2,3].forEach(i => {
+    const b = document.getElementById('ai-cnt-' + i);
+    if (b) b.classList.toggle('sel', i === n);
+  });
 }
 
 function selectDiff(d) {
@@ -2074,7 +2213,7 @@ function initGame(players, boardTheme) {
     // myIdx calculé dynamiquement par myPlayerIdx()
     pendingTiles:[], selectedTile:null,
     discardMode:false, toDiscard:new Set(),
-    lastPlayedTiles:[], highlightUntil:0,
+    lastPlayedTiles:[], highlightUntil:0, _prevPlayedTiles:[],
     turnStartTime:Date.now(),
     boardTheme: boardTheme || 0,
     gameOver:false,
@@ -2087,16 +2226,24 @@ function initGame(players, boardTheme) {
 // START SOLO
 // ════════════════════════════════════════════════════════════════
 function startSolo() {
-  const aiNames = ['🤖 IA Facile','🧠 IA Moyen','💀 IA Difficile'];
-  const aiColors = ['#00ff88','#ff9f00','#bd00ff'];
-  const aiEmojis = ['🤖','🧠','💀'];
-  const diffIdx = {easy:0,medium:1,hard:2}[_diff];
+  const aiNames  = ['🤖 IA Facile','🧠 IA Moyen','💀 IA Difficile'];
+  const aiColors = ['#00ff88','#ff9f00','#bd00ff','#ff4757'];
+  const aiEmojis = ['🤖','🧠','💀','👾'];
+  const diffIdx  = {easy:0,medium:1,hard:2}[_diff];
+  const aiCount  = Math.min(3, Math.max(1, _aiCount || 1));
+
   const players = [
     { pseudo: PROFILE.pseudo, color: PROFILE.color, emoji: PROFILE.emoji,
       isHuman: true, device_id: DEVICE_ID },
-    { pseudo: aiNames[diffIdx], color: aiColors[diffIdx], emoji: aiEmojis[diffIdx],
-      isHuman: false, isAI: true, diff: _diff },
   ];
+  for (let i = 0; i < aiCount; i++) {
+    players.push({
+      pseudo: aiCount === 1 ? aiNames[diffIdx] : `${aiEmojis[diffIdx]} IA ${i+1}`,
+      color: aiColors[(diffIdx + i) % aiColors.length],
+      emoji: aiEmojis[diffIdx],
+      isHuman: false, isAI: true, diff: _diff,
+    });
+  }
   initGame(players, 0);
   launchGame();
 }
@@ -2128,7 +2275,7 @@ async function startOnlineGame() {
       // myIdx dynamique
       pendingTiles:[], selectedTile:null,
       discardMode:false, toDiscard:new Set(),
-      lastPlayedTiles:[], highlightUntil:0,
+      lastPlayedTiles:[], highlightUntil:0, _prevPlayedTiles:[], _prevPlayedTiles:[],
       turnStartTime:Date.now(),
       boardTheme: _currentRoom.board_theme || 0,
       gameOver:false,
@@ -2511,6 +2658,36 @@ function drawBoard() {
   }
 
   drawSkyAnimations();
+
+  // ── Halo "tuiles adversaire" : persiste tout le tour du joueur ──
+  if (G._prevPlayedTiles && G._prevPlayedTiles.length > 0) {
+    for (const t of G._prevPlayedTiles) {
+      if (!isVisible(t.wx, t.wy)) continue;
+      const tx = t.wx * CELL, ty = t.wy * CELL;
+      const tz = TILE_SIZE;
+      const tc = COLORS[t.color] || '#fff';
+      const r  = Math.max(2/G.zoom, tz * 0.10);
+      ctx2d.save();
+      // Halo blanc-or discret : indique les tuiles posées au coup précédent
+      ctx2d.shadowColor = '#fff';
+      ctx2d.shadowBlur  = 12 / G.zoom;
+      ctx2d.strokeStyle = `rgba(255,255,255,0.65)`;
+      ctx2d.lineWidth   = 2 / G.zoom;
+      ctx2d.beginPath();
+      ctx2d.roundRect(tx - tz/2 - 4/G.zoom, ty - tz/2 - 4/G.zoom,
+                      tz + 8/G.zoom, tz + 8/G.zoom, r * 1.4);
+      ctx2d.stroke();
+      // Petit indicateur coloré en coin haut-gauche
+      ctx2d.shadowColor = tc;
+      ctx2d.shadowBlur  = 6 / G.zoom;
+      ctx2d.fillStyle   = tc;
+      ctx2d.beginPath();
+      ctx2d.arc(tx - tz/2 + 1/G.zoom, ty - tz/2 + 1/G.zoom, 4/G.zoom, 0, Math.PI*2);
+      ctx2d.fill();
+      ctx2d.shadowColor = 'transparent'; ctx2d.shadowBlur = 0;
+      ctx2d.restore();
+    }
+  }
 
   // ── Surbrillance des tuiles du tour précédent (halo simple, statique) ──
   if (G.lastPlayedTiles.length > 0 && Date.now() < G.highlightUntil) {
@@ -3348,16 +3525,19 @@ function selectTile(idx){
 // ════════════════════════════════════════════════════════════════
 // Met à jour le bouton Valider avec les points en temps réel
 function updateConfirmBtn() {
-  const btn = document.getElementById('btn-confirm');
-  const ptsEl = document.getElementById('confirm-pts');
+  const btn    = document.getElementById('btn-confirm');
+  const ptsEl  = document.getElementById('confirm-pts');
+  const undoEl = document.getElementById('btn-undo');
   if (!btn || !ptsEl) return;
   if (G.pendingTiles.length === 0) {
-    btn.disabled = true;
+    btn.disabled  = true;
     ptsEl.textContent = '0';
+    if (undoEl) undoEl.disabled = true;
   } else {
-    btn.disabled = false;
+    btn.disabled  = false;
     const pts = calcPoints(G.board, G.pendingTiles);
     ptsEl.textContent = pts;
+    if (undoEl) undoEl.disabled = false;
   }
 }
 
@@ -3449,10 +3629,23 @@ function confirmDiscard(){
 }
 function exitDiscardMode(){G.discardMode=false;G.toDiscard=new Set();G.selectedTile=null;updateDiscardBtn();renderHand();drawBoard();}
 function updateDiscardBtn(){
-  const btn=document.getElementById('btn-discard'),lbl=document.getElementById('hand-label');
-  if(!btn)return;
-  if(G.discardMode){const n=G.toDiscard.size;btn.textContent=n>0?`🗑 Jeter (${n}) ✓`:'✕ Annuler';btn.style.color=n>0?'var(--orange)':'var(--red)';if(lbl)lbl.textContent='Sélectionne les tuiles à jeter';}
-  else{btn.textContent='🗑 Jeter';btn.style.color='';if(lbl)lbl.textContent='Votre main';}
+  const btn = document.getElementById('btn-discard');
+  const iconEl = document.getElementById('discard-icon');
+  const lblEl  = document.getElementById('discard-lbl');
+  const lbl    = document.getElementById('hand-label');
+  if (!btn) return;
+  if (G.discardMode) {
+    const n = G.toDiscard.size;
+    btn.classList.add('active-discard');
+    if (iconEl) iconEl.textContent = n > 0 ? '✓' : '✕';
+    if (lblEl)  lblEl.textContent  = n > 0 ? `Jeter (${n})` : 'Annuler';
+    if (lbl)    lbl.textContent    = 'Tuiles à jeter';
+  } else {
+    btn.classList.remove('active-discard');
+    if (iconEl) iconEl.textContent = '🗑';
+    if (lblEl)  lblEl.textContent  = 'Jeter';
+    if (lbl)    lbl.textContent    = G.players[myPlayerIdx()]?.pseudo || 'Vous';
+  }
 }
 function doUndo(){if(!G.pendingTiles.length)return;cancelPending();}
 function cancelPending(){
@@ -3471,7 +3664,10 @@ function cancelPending(){
 function nextTurn(){
   stopMyTurnCumul(); // stopper cumul si c'était mon tour
   Cache.invalidate(); // invalider le cache index joueur
-  G.lastPlayedTiles = []; G.highlightUntil = 0; // effacer surbrillance tour précédent
+  // Conserver les tuiles jouées comme "previous" pour le prochain joueur
+  G._prevPlayedTiles = (G.lastPlayedTiles && G.lastPlayedTiles.length)
+    ? [...G.lastPlayedTiles] : [];
+  G.lastPlayedTiles = []; G.highlightUntil = 0;
   G.current=(G.current+1)%G.players.length;
   G.selectedTile=null;G.discardMode=false;G.toDiscard=new Set();
   updateDiscardBtn();startTurnTimer();
@@ -3563,8 +3759,10 @@ function aiPlay(){
       const player=G.players[G.current];
       const best=findBestMove(player.hand,player.diff||'medium');
       if(!best||!best.tiles.length){
-        if(G.deck.length>0){player.hand=draw(G.deck,player.hand.filter(Boolean).length);showToast(`${player.pseudo} pioche`,'ok',1200);}
-        else showToast(`${player.pseudo} passe`,'ok',1200);
+        if(G.deck.length>0){
+          player.hand=draw(G.deck,player.hand.filter(Boolean).length);
+          showOppAnnounce(0, false, player.pseudo, player.color, true);
+        } else showToast(`${player.pseudo} passe`,'ok',1200);
         done();return;
       }
       G.pendingTiles=[];
@@ -3587,7 +3785,7 @@ function aiPlay(){
             G.lastPlayedTiles=[...staged];
             G.highlightUntil=Date.now()+999999;
             animateTilesFromSky(staged);
-            showAnnounce(best.pts,best.pts>=12,player.pseudo,player.score);
+            showOppAnnounce(best.pts,best.pts>=12,player.pseudo,player.color,false);
             playSound(best.pts>=12?'qwirkle':'score');
             focusOnTiles(staged);
             done();return;
@@ -3867,6 +4065,8 @@ function onBoardTap(sx,sy){
     G.pendingTiles.push({...tile,wx,wy});
     G.players[myPlayerIdx()].hand[G.selectedTile]=null;
     G.selectedTile=null;
+    // Effacer halo adversaire dès que le joueur commence à jouer
+    if (G._prevPlayedTiles && G._prevPlayedTiles.length) G._prevPlayedTiles = [];
     playSound('place');
     Cache.invalidate();
     updateConfirmBtn();
@@ -4019,6 +4219,50 @@ function dismissAnnounce() {
   clearTimeout(_announceTimer);
   card.classList.add('hide');
   setTimeout(()=>overlay.classList.add('hidden'), 300);
+}
+
+// ── Mini modale adversaire (sans fond noir) ──
+let _oppAnnounceTimer = null;
+function showOppAnnounce(pts, isQwirkle, playerName, color, isDiscard) {
+  const container = document.getElementById('opp-announce-container');
+  if (!container) return;
+
+  // Effacer l'ancienne
+  clearTimeout(_oppAnnounceTimer);
+  container.innerHTML = '';
+
+  const isMegaQ  = isQwirkle && pts > 12;
+  const isQ      = isQwirkle && pts <= 12;
+  const isExploit= !isQwirkle && pts >= 12;
+
+  // Événements spéciaux → grande modale normale
+  if (isMegaQ || isQ || isExploit) {
+    showAnnounce(pts, isQwirkle, playerName, undefined, null);
+    return;
+  }
+
+  const div = document.createElement('div');
+  div.className = 'opp-announce';
+
+  if (isDiscard) {
+    div.innerHTML = `
+      <div class="opp-announce-pts" style="font-size:2rem;">🗑</div>
+      <div class="opp-announce-label" style="color:rgba(255,159,0,0.7)">Jette ses tuiles</div>
+      <div class="opp-announce-name" style="color:${color||'rgba(255,255,255,0.5)'}">${playerName}</div>`;
+  } else {
+    const ptsColor = pts >= 6 ? 'var(--accent)' : pts >= 3 ? 'var(--gold)' : '#fff';
+    div.innerHTML = `
+      <div class="opp-announce-pts" style="color:${ptsColor}">+${pts}</div>
+      <div class="opp-announce-label">point${pts>1?'s':''}</div>
+      <div class="opp-announce-name" style="color:${color||'rgba(255,255,255,0.5)'}">${playerName}</div>`;
+  }
+  container.appendChild(div);
+
+  const dur = isDiscard ? 1400 : pts >= 6 ? 1500 : 1200;
+  _oppAnnounceTimer = setTimeout(() => {
+    div.classList.add('hide');
+    setTimeout(() => { if (container.contains(div)) container.removeChild(div); }, 220);
+  }, dur);
 }
 
 function showAnnounce(pts, isQwirkle, playerName, newTotal, subtitle) {
