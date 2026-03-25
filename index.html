@@ -272,14 +272,254 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 
 /* ══ SCREEN GAME ══ */
 #s-game{padding:0;justify-content:flex-start;}
-.game-header{width:100%;background:rgba(10,13,20,0.97);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);padding:10px 16px;
-  display:flex;align-items:center;gap:10px;z-index:100;flex-shrink:0;}
-.gh-quit-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);
-  background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.5);font-size:16px;
-  cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;}
-.gh-quit-btn:hover{background:rgba(255,71,87,0.15);border-color:rgba(255,71,87,0.4);color:var(--red);}
+.game-header{
+  width:100%;background:rgba(8,10,16,0.98);backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  padding:8px 12px;
+  display:flex;align-items:center;gap:10px;z-index:100;flex-shrink:0;
+}
+/* Exit bouton — visible, rouge mat */
+.gh-quit-btn{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  border:1px solid rgba(255,71,87,0.35);
+  background:rgba(255,71,87,0.12);
+  color:rgba(255,71,87,0.85);
+  cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;
+}
+.gh-quit-btn:hover{background:rgba(255,71,87,0.28);border-color:rgba(255,71,87,0.65);color:#ff4757;
+  box-shadow:0 0 14px rgba(255,71,87,0.3);}
+/* Scores — piste défilante */
+.gh-scores-track{
+  flex:1;overflow:hidden;position:relative;
+}
+.gh-scores-track::before,.gh-scores-track::after{
+  content:'';position:absolute;top:0;bottom:0;width:28px;z-index:2;pointer-events:none;
+}
+.gh-scores-track::before{left:0;background:linear-gradient(90deg,rgba(8,10,16,0.95),transparent);}
+.gh-scores-track::after{right:0;background:linear-gradient(-90deg,rgba(8,10,16,0.95),transparent);}
+.gh-scores{
+  display:flex;gap:8px;align-items:center;
+  white-space:nowrap;
+  /* défilement auto — pausé si .paused */
+  animation:scoreScroll 20s linear infinite;
+  will-change:transform;
+}
+.gh-scores.paused,.gh-scores:hover{animation-play-state:paused;}
+@keyframes scoreScroll{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(var(--scroll-dist,-400px));}
+}
+.player-score-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 11px 5px 7px;
+  border-radius:50px;
+  border:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.04);
+  flex-shrink:0;transition:all 0.3s;
+  cursor:default;
+}
+.player-score-chip.active{
+  border-color:var(--col);
+  background:rgba(255,255,255,0.07);
+  box-shadow:0 0 14px color-mix(in srgb,var(--col) 30%,transparent);
+}
+.psc-avatar{width:22px;height:22px;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;}
+.psc-name{font-size:10px;font-weight:800;letter-spacing:0.4px;max-width:70px;overflow:hidden;text-overflow:ellipsis;}
+.psc-score{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums;}
+/* Flèche de tendance */
+.psc-trend{font-size:11px;line-height:1;flex-shrink:0;}
+.psc-trend.up{color:#00ff88;}
+.psc-trend.down{color:#ff4757;}
+.psc-trend.same{color:rgba(255,255,255,0.3);}
+
+/* ── Hand tiles zone séparée ── */
+.hand-zone{
+  width:100%;background:rgba(6,8,14,0.95);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  padding:8px 10px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;z-index:12;position:relative;
+}
+
+/* ── Footer zone boutons + nom ── */
+.game-footer{
+  width:100%;
+  background:rgba(8,10,16,0.98);
+  border-top:1px solid rgba(255,255,255,0.06);
+  padding:8px 10px 10px;
+  flex-shrink:0;z-index:10;position:relative;
+  display:flex;flex-direction:column;gap:7px;
+}
+
+/* ── Boutons footer 2026 — glassmorphisme premium ── */
+.action-row{display:grid;gap:6px;align-items:stretch;}
+.game-btn{
+  position:relative;height:48px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.09);
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  background:linear-gradient(160deg,rgba(255,255,255,0.07) 0%,rgba(255,255,255,0.02) 100%);
+  backdrop-filter:blur(8px);
+  transition:background .15s,border-color .15s,box-shadow .15s,transform .08s;
+  color:rgba(255,255,255,0.6);
+  overflow:hidden;
+}
+/* Ligne lumineuse en haut de chaque bouton */
+.game-btn::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+  border-radius:50%;
+}
+.game-btn:not(:disabled):hover{
+  background:linear-gradient(160deg,rgba(255,255,255,0.12) 0%,rgba(255,255,255,0.04) 100%);
+  border-color:rgba(255,255,255,0.2);transform:translateY(-1px);
+  box-shadow:0 4px 16px rgba(0,0,0,0.3);
+}
+.game-btn:not(:disabled):active{transform:translateY(1px);box-shadow:none;}
+.game-btn:disabled{opacity:0.22;cursor:not-allowed;}
+.game-btn .btn-icon{font-size:18px;line-height:1.1;}
+.game-btn .btn-lbl{font-size:8px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:inherit;line-height:1;}
+
+/* Variantes colorées */
+.game-btn-stop{border-color:rgba(0,255,136,0.22);color:rgba(0,255,136,0.85);}
+.game-btn-stop::before{background:linear-gradient(90deg,transparent,rgba(0,255,136,0.25),transparent);}
+.game-btn-stop:not(:disabled):hover{background:linear-gradient(160deg,rgba(0,255,136,0.1),rgba(0,255,136,0.03));border-color:rgba(0,255,136,0.5);}
+
+.game-btn-cfg{border-color:rgba(189,0,255,0.22);color:rgba(189,0,255,0.9);}
+.game-btn-cfg::before{background:linear-gradient(90deg,transparent,rgba(189,0,255,0.25),transparent);}
+.game-btn-cfg:not(:disabled):hover{background:linear-gradient(160deg,rgba(189,0,255,0.1),rgba(189,0,255,0.03));border-color:rgba(189,0,255,0.5);}
+
+.game-btn-trash{border-color:rgba(255,159,0,0.22);color:rgba(255,159,0,0.9);}
+.game-btn-trash::before{background:linear-gradient(90deg,transparent,rgba(255,159,0,0.25),transparent);}
+.game-btn-trash:not(:disabled):hover{background:linear-gradient(160deg,rgba(255,159,0,0.1),rgba(255,159,0,0.03));border-color:rgba(255,159,0,0.5);}
+.game-btn-trash.active-discard{
+  background:linear-gradient(160deg,rgba(255,159,0,0.18),rgba(255,159,0,0.06));
+  border-color:rgba(255,159,0,0.55);
+  box-shadow:0 0 18px rgba(255,159,0,0.2);
+}
+
+.game-btn-undo{border-color:rgba(255,255,255,0.1);color:rgba(255,255,255,0.55);}
+
+/* Bouton valider — cyan premium */
+.confirm-tile-btn{
+  position:relative;height:48px;
+  border-radius:14px;
+  border:1px solid rgba(0,240,255,0.35);
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  background:linear-gradient(160deg,rgba(0,240,255,0.14),rgba(0,240,255,0.04));
+  backdrop-filter:blur(8px);
+  transition:all .15s;
+  overflow:hidden;
+}
+.confirm-tile-btn::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,240,255,0.45),transparent);
+}
+.confirm-tile-btn:not(:disabled):hover{
+  background:linear-gradient(160deg,rgba(0,240,255,0.22),rgba(0,240,255,0.07));
+  border-color:rgba(0,240,255,0.6);
+  box-shadow:0 0 22px rgba(0,240,255,0.22);
+  transform:translateY(-1px);
+}
+.confirm-tile-btn:not(:disabled):active{transform:translateY(1px);box-shadow:none;}
+.confirm-tile-btn:disabled{opacity:0.22;cursor:not-allowed;}
+.confirm-tile-pts{
+  font-size:20px;font-weight:900;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;color:var(--accent);line-height:1;
+}
+.confirm-tile-btn:disabled .confirm-tile-pts{color:rgba(255,255,255,0.25);}
+.confirm-tile-lbl{font-size:7px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(0,240,255,0.5);}
+
+/* Sac de tuiles — même hauteur que boutons */
+.bag-btn{
+  height:48px;border-radius:14px;
+  border:1px solid rgba(255,255,255,0.09);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));
+  backdrop-filter:blur(8px);
+  transition:all .15s;position:relative;overflow:hidden;
+}
+.bag-btn::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);
+}
+.bag-btn:hover{background:linear-gradient(160deg,rgba(255,255,255,0.10),rgba(255,255,255,0.04));border-color:rgba(255,255,255,0.18);}
+.bag-btn:active{transform:scale(0.96);}
+
+/* Footer player name */
+.footer-player-name{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:2px 0 0;font-size:13px;font-weight:900;
+}
+
+/* Tablette topbar (legacy) */
+.tablette-topbar{display:none;}
+.hand-label{font-size:14px;font-weight:900;letter-spacing:0.3px;color:#fff;flex-shrink:0;}
+.diode{width:8px;height:8px;border-radius:50%;flex-shrink:0;box-shadow:0 0 5px currentColor;transition:all .3s;}
+.diode.green{background:#00ff88;color:#00ff88;animation:diodePulse 1.2s ease-in-out infinite;}
+.diode.red{background:#ff4757;color:#ff4757;}
+@keyframes diodePulse{0%,100%{opacity:1;box-shadow:0 0 8px #00ff88}50%{opacity:.3;box-shadow:0 0 2px #00ff88}}
+.topbar-sep{width:1px;height:14px;background:rgba(255,255,255,0.1);flex-shrink:0;}
+.topbar-infos{display:flex;align-items:center;gap:12px;flex:1;}
+.chat-inline-btn{background:none;border:none;cursor:pointer;font-size:13px;padding:2px 3px;border-radius:8px;transition:.2s;color:rgba(255,255,255,0.4);display:flex;align-items:center;flex-shrink:0;}
+.chat-inline-btn:hover{color:var(--accent);}
+.chat-inline-btn .chat-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--red);margin-left:2px;display:none;}
+.chat-inline-btn .chat-badge-dot.show{display:block;}
+.tab-info{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);}
+.tab-info-val{font-size:13px;font-weight:900;color:rgba(255,255,255,.85);font-variant-numeric:tabular-nums;}
+
+/* Hand tiles zone */
+.hand-tiles{
+  display:flex;gap:6px;justify-content:center;
+  min-height:52px;align-items:center;padding:0 4px;
+  overflow-x:auto;scrollbar-width:none;
+  position:relative;z-index:10;
+}
+.hand-tiles::-webkit-scrollbar{display:none;}
+.tile{
+  width:var(--tile-sz,50px);height:var(--tile-sz,50px);border-radius:10px;
+  position:relative;user-select:none;flex-shrink:0;cursor:grab;
+  -webkit-user-drag:none;touch-action:none;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;background:transparent;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),filter .18s,box-shadow .18s;
+}
+.tile canvas{pointer-events:none;position:relative;z-index:2;border-radius:inherit;}
+.tile svg{pointer-events:none;position:relative;z-index:2;}
+@keyframes shimmerSweep{0%,100%{opacity:0}}
+.tile-shimmer{display:none!important;}
+.tile:active{cursor:grabbing;}
+.tile.selected{transform:translateY(-10px) scale(1.12);
+  filter:drop-shadow(0 0 10px rgba(0,240,255,.8)) drop-shadow(0 8px 16px rgba(0,0,0,.9));
+  outline:2px solid var(--accent);outline-offset:-1px;}
+.tile.ghost{opacity:0.20;pointer-events:none;}
+.tile.to-discard{
+  transform:translateY(-5px) scale(1.07)!important;
+  filter:drop-shadow(0 0 8px rgba(255,159,0,.8))!important;
+  outline:2px solid var(--orange)!important;outline-offset:-1px;}
+.tile.dragging-src{opacity:.25;transform:scale(.88)!important;}
+.tile.drag-target{transform:scale(1.10)!important;filter:drop-shadow(0 0 8px rgba(0,240,255,.7))!important;}
+
+/* Tablette (≥768px) */
+@media(min-width:768px){
+  .hand-label,.footer-player-name{font-size:16px!important;}
+  .tab-info-val{font-size:14px!important;}
+  .tab-info{font-size:12px!important;}
+  .psc-name{font-size:12px!important;}
+  .psc-score{font-size:18px!important;}
+  .psc-avatar{width:28px!important;height:28px!important;}
+  .game-btn .btn-lbl{font-size:10px!important;}
+  .confirm-tile-pts{font-size:24px!important;}
+  .game-btn,.confirm-tile-btn,.bag-btn{height:54px!important;}
+  .hand-tiles{min-height:68px!important;}
+  .ap-row-name{font-size:14px!important;}
+  .ap-board-name{font-size:11px!important;}
+  .ap-section-label{font-size:12px!important;}
+}
 
 /* Modal confirm */
 .modal-overlay{position:fixed;inset:0;background:rgba(5,7,9,0.88);z-index:500;
@@ -336,29 +576,62 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
   background:#050709;display:none;}
 .ap-row.sel .ap-radio::after{display:block;}
 
-.gh-scores{display:flex;gap:8px;flex:1;overflow-x:auto;scrollbar-width:none;}
-.gh-scores::-webkit-scrollbar{display:none;}
-.player-score-chip{display:flex;align-items:center;gap:7px;padding:6px 12px;
-  border-radius:50px;border:1px solid var(--border);
-  background:rgba(255,255,255,0.03);flex-shrink:0;transition:all 0.3s;}
-.player-score-chip.active{border-color:var(--col);background:rgba(255,255,255,0.06);
-  box-shadow:0 0 12px color-mix(in srgb,var(--col) 25%,transparent);}
-.psc-avatar{width:20px;height:20px;border-radius:50%;display:flex;
-  align-items:center;justify-content:center;font-size:0.65rem;flex-shrink:0;}
-.psc-name{font-size:10px;font-weight:800;letter-spacing:0.5px;}
-.psc-score{font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;}
-.gh-info{display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.gh-bag{display:flex;align-items:center;gap:4px;font-size:10px;
-  font-weight:700;color:rgba(255,255,255,0.4);}
-.gh-bag-num{font-size:14px;font-weight:900;color:#fff;}
-.gh-timer{display:flex;align-items:center;gap:4px;font-size:10px;
-  font-weight:700;color:rgba(255,255,255,0.4);
-  padding-left:10px;border-left:1px solid rgba(255,255,255,0.08);}
-.gh-timer-val{font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;
-  color:#fff;transition:color 0.3s;}
-.gh-timer-val.warn{color:var(--orange);}
-.gh-timer-val.danger{color:var(--red);animation:tpulse 0.5s ease-in-out infinite alternate;}
-@keyframes tpulse{from{opacity:1}to{opacity:0.5}}
+/* ── Header scores défilants ── */
+.gh-scores-track{
+  display:flex;gap:8px;align-items:center;
+  animation:scoreScroll 18s linear infinite;
+  white-space:nowrap;
+  cursor:pointer;
+  user-select:none;
+}
+.gh-scores-track:hover,.gh-scores-track.paused{animation-play-state:paused;}
+@keyframes scoreScroll{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+.gh-scores-wrap{
+  flex:1;overflow:hidden;position:relative;
+  mask:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%);
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 6%,#000 94%,transparent 100%);
+}
+.player-score-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 11px 5px 7px;
+  border-radius:50px;border:1px solid rgba(255,255,255,0.07);
+  background:rgba(255,255,255,0.03);
+  flex-shrink:0;transition:background .3s,border-color .3s;
+  white-space:nowrap;
+}
+.player-score-chip.active{
+  border-color:var(--col);
+  background:rgba(255,255,255,0.07);
+  box-shadow:0 0 14px color-mix(in srgb,var(--col) 30%,transparent);
+}
+.psc-avatar{width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;flex-shrink:0;}
+.psc-name{font-size:10px;font-weight:800;letter-spacing:0.3px;max-width:72px;
+  overflow:hidden;text-overflow:ellipsis;}
+.psc-score{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums;}
+.psc-trend{font-size:11px;line-height:1;margin-left:1px;flex-shrink:0;}
+
+/* ── Bouton Exit redesigné ── */
+.gh-quit-btn{
+  width:36px;height:36px;border-radius:10px;
+  border:1px solid rgba(255,71,87,0.35);
+  background:rgba(255,71,87,0.12);
+  color:rgba(255,80,95,0.90);
+  font-size:14px;font-weight:900;
+  cursor:pointer;transition:all .2s;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;letter-spacing:-1px;
+}
+.gh-quit-btn:hover{
+  background:rgba(255,71,87,0.28);
+  border-color:rgba(255,71,87,0.7);
+  color:#fff;
+  box-shadow:0 0 16px rgba(255,71,87,0.35);
+}
 
 .board-wrap{flex:1;overflow:hidden;position:relative;width:100%;touch-action:none;}
 .nav-controls{position:absolute;right:12px;bottom:16px;
@@ -1081,16 +1354,19 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 
   <div class="ai-count-row" id="ai-count-row" style="display:none">
     <button class="ai-count-btn sel" id="ai-cnt-1" onclick="selectAICount(1)">
-      <span class="ai-count-num">1</span>
-      <span class="ai-count-lbl">🤖 IA</span>
+      <span class="ai-count-num">1</span><span class="ai-count-lbl">🤖</span>
     </button>
     <button class="ai-count-btn" id="ai-cnt-2" onclick="selectAICount(2)">
-      <span class="ai-count-num">2</span>
-      <span class="ai-count-lbl">🤖🤖 IA</span>
+      <span class="ai-count-num">2</span><span class="ai-count-lbl">🤖🤖</span>
     </button>
     <button class="ai-count-btn" id="ai-cnt-3" onclick="selectAICount(3)">
-      <span class="ai-count-num">3</span>
-      <span class="ai-count-lbl">🤖🤖🤖 IA</span>
+      <span class="ai-count-num">3</span><span class="ai-count-lbl">🤖×3</span>
+    </button>
+    <button class="ai-count-btn" id="ai-cnt-4" onclick="selectAICount(4)">
+      <span class="ai-count-num">4</span><span class="ai-count-lbl">🤖×4</span>
+    </button>
+    <button class="ai-count-btn" id="ai-cnt-5" onclick="selectAICount(5)">
+      <span class="ai-count-num">5</span><span class="ai-count-lbl">🤖×5</span>
     </button>
   </div>
 
@@ -1157,8 +1433,18 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
 <!-- ══════════ SCREEN GAME ══════════ -->
 <div id="s-game" class="screen hidden">
   <div class="game-header">
-    <button class="gh-quit-btn" onclick="confirmQuit()" title="Quitter">←</button>
-    <div class="gh-scores" id="gh-scores" style="flex:1;display:flex;gap:8px;align-items:center;overflow-x:auto;"></div>
+    <!-- Exit : bouton visible rouge clair -->
+    <button class="gh-quit-btn" onclick="confirmQuit()" title="Quitter">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M10 3L6 8L10 13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="6" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M4 1H2a1 1 0 00-1 1v12a1 1 0 001 1h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <!-- Scores défilants, stoppés au toucher -->
+    <div class="gh-scores-track" id="gh-scores-track">
+      <div class="gh-scores" id="gh-scores"></div>
+    </div>
   </div>
 
   <div class="board-wrap" id="board-wrap">
@@ -1172,47 +1458,38 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
     </div>
   </div>
 
-  <div class="game-bottom">
-    <!-- 1. Tuiles en main — toujours au premier plan -->
+  <!-- Zone tuiles — séparée visuellement du footer boutons -->
+  <div class="hand-zone">
     <div class="hand-tiles" id="hand-tiles"></div>
+  </div>
 
-    <!-- 2. Boutons : sac - stop - réglages - jeter - annuler - points -->
+  <!-- Footer : boutons + nom joueur -->
+  <div class="game-footer" id="game-footer">
+    <!-- Boutons : sac - stop - réglages - jeter - annuler - points -->
     <div class="action-row" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr 1fr;gap:6px;align-items:stretch;">
-      <!-- Sac de tuiles -->
       <div class="bag-btn" id="bag-container" onclick="animateBox()" title="Tuiles restantes"></div>
-
-      <!-- Stop / Pause -->
       <button class="game-btn game-btn-stop" onclick="togglePause()">
         <span class="btn-icon" id="pause-icon">⏸</span>
         <span class="btn-lbl">Stop</span>
       </button>
-
-      <!-- Réglages -->
       <button class="game-btn game-btn-cfg" onclick="openAppearance()">
         <span class="btn-icon">⚙️</span>
         <span class="btn-lbl">Style</span>
       </button>
-
-      <!-- Jeter -->
       <button class="game-btn game-btn-trash" id="btn-discard" onclick="toggleDiscardMode()">
         <span class="btn-icon" id="discard-icon">🗑</span>
         <span class="btn-lbl" id="discard-lbl">Jeter</span>
       </button>
-
-      <!-- Annuler -->
       <button class="game-btn game-btn-undo" id="btn-undo" onclick="doUndo()" disabled>
         <span class="btn-icon">↩</span>
         <span class="btn-lbl">Annuler</span>
       </button>
-
-      <!-- Valider / Points -->
       <button class="confirm-tile-btn" id="btn-confirm" onclick="doConfirm()" disabled>
         <span class="confirm-tile-pts" id="confirm-pts">0</span>
         <span class="confirm-tile-lbl">pts</span>
       </button>
     </div>
-
-    <!-- 3. Nom du joueur centré -->
+    <!-- Nom du joueur centré -->
     <div class="footer-player-name">
       <div class="diode green" id="turn-diode"></div>
       <span class="hand-label" id="hand-label">Vous</span>
@@ -1220,7 +1497,7 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
       <div class="topbar-infos">
         <div class="tab-info" title="Score"><span>🏆</span><span class="tab-info-val" id="tab-score">0 pts</span></div>
         <div class="tab-info" title="Timer du tour"><span>⚡</span><span class="tab-info-val" id="tab-timer">0:00</span></div>
-        <div class="tab-info" title="Temps total mes tours"><span>⏱</span><span class="tab-info-val" id="tab-cumul">0:00</span></div>
+        <div class="tab-info" title="Temps cumulé"><span>⏱</span><span class="tab-info-val" id="tab-cumul">0:00</span></div>
       </div>
       <button class="chat-inline-btn" id="chat-inline-btn" onclick="toggleChatInline()" style="display:none">
         💬<span class="chat-badge-dot" id="chat-badge-dot"></span>
@@ -1255,9 +1532,16 @@ body{background:var(--bg-dark);color:#fff;min-height:100vh;overflow:hidden;}
       <div class="ap-section">
         <div class="ap-section-label">Matériau — Tablette &amp; Header</div>
         <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;line-height:1.6;">
-          Simule un plateau de 2 cm avec une tranche éclairée par LED. Le header diffuse la lumière <b style="color:rgba(255,255,255,0.7)">vers le bas</b> dans le plateau, le footer diffuse <b style="color:rgba(255,255,255,0.7)">vers le haut</b>. Pour les tuiles, l'éclairage rayonne <b style="color:rgba(255,255,255,0.7)">vers l'extérieur</b>.
+          Plateau de 2 cm. Le header diffuse la lumière <b style="color:rgba(255,255,255,0.7)">vers le bas</b>, le footer <b style="color:rgba(255,255,255,0.7)">vers le haut</b>. Par défaut : sombre. Les tuiles diffusent <b style="color:rgba(255,255,255,0.7)">vers l'extérieur</b> depuis tous les bords (10mm).
         </div>
         <div id="ap-footer" class="ap-grid4"></div>
+      </div>
+
+      <!-- Zone tuiles (hand-zone) -->
+      <div class="ap-section">
+        <div class="ap-section-label">Zone tuiles</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;">Fond de la zone de tuiles en main — indépendant du footer.</div>
+        <div id="ap-hand-zone" class="ap-grid4"></div>
       </div>
 
     </div>
@@ -1929,7 +2213,7 @@ function selectMode(m) {
 
 function selectAICount(n) {
   _aiCount = n;
-  [1,2,3].forEach(i => {
+  [1,2,3,4,5].forEach(i => {
     const b = document.getElementById('ai-cnt-' + i);
     if (b) b.classList.toggle('sel', i === n);
   });
@@ -2235,90 +2519,97 @@ const BOARD_THEMES = [
 // ════════════════════════════════════════════════════════════════
 const TILE_TEXTURES = [
   // ── Bois ──
-  { id:'oak',    name:'Chêne',    group:'Bois',
-    base:['#2e1e0c','#1e1208','#2a1a0a'], grain:'rgba(200,140,50,{a})',  grainA:[.06,.10], light:false },
-  { id:'birch',  name:'Bouleau',  group:'Bois',
-    base:['#c8a060','#b08040','#a07030'], grain:'rgba(80,50,15,{a})',    grainA:[.05,.09], light:true  },
-  { id:'spruce', name:'Épicéa',   group:'Bois',
-    base:['#4a3018','#362210','#3e2814'], grain:'rgba(160,100,30,{a})',  grainA:[.07,.12], light:false },
-  { id:'bamboo', name:'Bambou',   group:'Bois',
-    base:['#8a7a30','#706020','#6a5c1e'], grain:'rgba(30,20,5,{a})',     grainA:[.06,.10], light:false },
+  { id:'oak',    name:'Chêne',     group:'Bois',
+    base:['#3a2410','#271808','#321e0c'], grain:'rgba(210,150,55,{a})',  grainA:[.05,.12], light:false,
+    _woodRings:true },
+  { id:'birch',  name:'Bouleau',   group:'Bois',
+    base:['#d4ae72','#bc9455','#c8a060'], grain:'rgba(90,55,18,{a})',    grainA:[.04,.10], light:true,
+    _woodRings:true },
+  { id:'ebony',  name:'Ébène',     group:'Bois',
+    base:['#140a04','#0c0602','#100804'], grain:'rgba(70,35,8,{a})',     grainA:[.02,.05], light:false,
+    _woodRings:true, metal:true },
+  { id:'walnut', name:'Noyer',     group:'Bois',
+    base:['#3e1c0c','#2c1208','#361608'], grain:'rgba(180,95,38,{a})',   grainA:[.06,.13], light:false,
+    _woodRings:true },
+  { id:'mahogany',name:'Acajou',   group:'Bois',
+    base:['#60180e','#481008','#561408'], grain:'rgba(210,80,40,{a})',   grainA:[.04,.09], light:false,
+    _woodRings:true },
+  { id:'bamboo', name:'Bambou',    group:'Bois',
+    base:['#9a8e38','#786c28','#887a30'], grain:'rgba(28,18,4,{a})',     grainA:[.06,.12], light:false },
   // ── Pierre ──
-  { id:'marble', name:'Marbre',   group:'Pierre',
-    base:['#e8e4de','#dedad4','#e4e0da'], grain:'rgba(120,110,100,{a})', grainA:[.10,.18], light:true  },
-  { id:'granite',name:'Granit',   group:'Pierre',
-    base:['#3a3836','#2e2c2a','#343230'], grain:null, grainA:[], light:false, speckle:true },
-  { id:'concrete',name:'Béton',   group:'Pierre',
-    base:['#4a4a4a','#404040','#444444'], grain:'rgba(255,255,255,{a})', grainA:[.02,.05], light:false, scratch:true },
-  { id:'slate',  name:'Ardoise',  group:'Pierre',
-    base:['#2a2e34','#222630','#262a30'], grain:'rgba(200,210,220,{a})', grainA:[.03,.07], light:false },
+  { id:'marble', name:'Marbre Blanc', group:'Pierre',
+    base:['#f4f0ea','#ece8e0','#f0ece4'], grain:'rgba(110,100,88,{a})',  grainA:[.08,.18], light:true  },
+  { id:'marble_noir',name:'Marbre Noir',group:'Pierre',
+    base:['#141214','#0c0a0c','#100e10'], grain:'rgba(180,170,200,{a})', grainA:[.04,.10], light:false },
+  { id:'granite',name:'Granit',    group:'Pierre',
+    base:['#3c3a38','#2e2c2a','#363432'], grain:null, grainA:[], light:false, speckle:true },
+  { id:'slate',  name:'Ardoise',   group:'Pierre',
+    base:['#2c3038','#22262e','#26292e'], grain:'rgba(200,215,225,{a})', grainA:[.03,.07], light:false },
+  { id:'concrete',name:'Béton',    group:'Pierre',
+    base:['#505050','#424242','#484848'], grain:'rgba(255,255,255,{a})', grainA:[.02,.05], light:false, scratch:true },
+  // ── Précieux ──
+  { id:'ivory',  name:'Ivoire',    group:'Précieux',
+    base:['#ffffee','#f8f8e0','#fffde8'], grain:'rgba(210,190,90,{a})',  grainA:[.01,.04], light:true },
+  { id:'nacre',  name:'Nacre',     group:'Précieux',
+    base:['#faf6f2','#f0e8f6','#f6f2fe'], grain:'rgba(200,170,240,{a})', grainA:[.04,.10], light:true, metal:true },
+  { id:'onyx',   name:'Onyx',      group:'Précieux',
+    base:['#0e0c10','#08060a','#0c0a0e'], grain:'rgba(140,110,180,{a})', grainA:[.01,.04], light:false, metal:true },
+  { id:'jade',   name:'Jade',      group:'Précieux',
+    base:['#2e6a50','#1e4d38','#286048'], grain:'rgba(110,210,160,{a})', grainA:[.03,.07], light:false },
+  { id:'lapis',  name:'Lapis',     group:'Précieux',
+    base:['#1c3c92','#122a7a','#183686'], grain:'rgba(230,210,110,{a})', grainA:[.04,.10], light:false },
   // ── Métal ──
-  { id:'inox',   name:'Inox',     group:'Métal',
-    base:['#9a9ea2','#8a8e92','#92969a'], grain:'rgba(255,255,255,{a})', grainA:[.08,.14], light:true, metal:true },
-  { id:'copper', name:'Cuivre',   group:'Métal',
-    base:['#7a4020','#6a3418','#703818'], grain:'rgba(200,120,60,{a})',  grainA:[.06,.12], light:false, metal:true },
-  { id:'carbon', name:'Carbone',  group:'Métal',
-    base:['#0e1014','#0a0c10','#10121a'], grain:null, grainA:[], light:false, carbon:true },
-  // ── Synthétique ──
-  { id:'glass',  name:'Verre',    group:'Synth.',
-    base:['#c8d8e8','#b8c8d8','#c0d0e0'], grain:null, grainA:[], light:true, glass:true },
-  { id:'plexi',  name:'Plexi',    group:'Synth.',
-    base:['#1a2840','#141e32','#182038'], grain:null, grainA:[], light:false, glass:true, tint:'rgba(0,100,255,0.08)' },
-  { id:'obsidian',name:'Obsidienne',group:'Synth.',
-    base:['#0a080c','#060408','#080608'], grain:'rgba(180,100,255,{a})', grainA:[.02,.05], light:false, metal:true },
-  // ── Transparents ──
-  { id:'crystal',   name:'Cristal',    group:'Transparent',
-    base:['#d8ecf8','#c8e0f0','#d0e8f8'], grain:null, grainA:[], light:true,  glass:true, crystal:true },
-  { id:'plexi_blue',name:'Plexi Bleu', group:'Transparent',
-    base:['#0a1428','#08101e','#0c1830'], grain:null, grainA:[], light:false, glass:true, tint:'rgba(0,120,255,0.12)', crystal:true },
-  { id:'plexi_rose',name:'Plexi Rosé', group:'Transparent',
-    base:['#280a18','#1e0810','#240c16'], grain:null, grainA:[], light:false, glass:true, tint:'rgba(255,60,120,0.12)', crystal:true },
-  { id:'plexi_green',name:'Plexi Vert',group:'Transparent',
-    base:['#081c10','#04140a','#061810'], grain:null, grainA:[], light:false, glass:true, tint:'rgba(0,200,80,0.12)', crystal:true },
-  { id:'frosted',   name:'Givré',      group:'Transparent',
-    base:['#d0dce8','#c4d4e4','#ccd8e8'], grain:'rgba(255,255,255,{a})', grainA:[.05,.12], light:true, glass:true, frosted:true },
-  { id:'amber_glass',name:'Ambre',     group:'Transparent',
-    base:['#201000','#180c00','#1c0e00'], grain:null, grainA:[], light:false, glass:true, tint:'rgba(255,140,0,0.18)', crystal:true },
-  // ── Émail / Résine ──
+  { id:'inox',   name:'Inox',      group:'Métal',
+    base:['#a0a4a8','#909498','#989ca0'], grain:'rgba(255,255,255,{a})', grainA:[.06,.14], light:true, metal:true },
+  { id:'titanium',name:'Titane',   group:'Métal',
+    base:['#7c8490','#6e7682','#74808c'], grain:'rgba(200,215,228,{a})', grainA:[.04,.08], light:false, metal:true },
+  { id:'gold',   name:'Or',        group:'Métal',
+    base:['#b89028','#946e10','#a07c1c'], grain:'rgba(255,235,110,{a})', grainA:[.08,.16], light:false, metal:true },
+  { id:'rose_gold',name:'Or Rose', group:'Métal',
+    base:['#bc7868','#9c5c50','#b0706a'], grain:'rgba(255,192,160,{a})', grainA:[.06,.12], light:false, metal:true },
+  { id:'copper', name:'Cuivre',    group:'Métal',
+    base:['#804224','#6c3018','#76381e'], grain:'rgba(210,130,70,{a})',  grainA:[.06,.12], light:false, metal:true },
+  { id:'carbon', name:'Carbone',   group:'Métal',
+    base:['#10141a','#0c0e14','#0e1018'], grain:null, grainA:[], light:false, carbon:true },
+  // ── Verre / Transparent ──
+  { id:'glass',  name:'Verre',     group:'Verre',
+    base:['#ccdce8','#bccce0','#c4d4e8'], grain:null, grainA:[], light:true, glass:true },
+  { id:'crystal',name:'Cristal',   group:'Verre',
+    base:['#daeef8','#c8e4f4','#d4eaf8'], grain:null, grainA:[], light:true, glass:true, crystal:true },
+  { id:'frosted',name:'Givré',     group:'Verre',
+    base:['#d4dce8','#c8d4e4','#ccd8e8'], grain:'rgba(255,255,255,{a})', grainA:[.05,.12], light:true, glass:true, frosted:true },
+  { id:'obsidian',name:'Obsidienne',group:'Verre',
+    base:['#08060c','#040208','#06040a'], grain:'rgba(190,110,255,{a})', grainA:[.02,.06], light:false, metal:true },
+  { id:'amber_glass',name:'Ambre', group:'Verre',
+    base:['#1e0e00','#160800','#1a0c00'], grain:null, grainA:[], light:false, glass:true, tint:'rgba(255,145,0,0.22)', crystal:true },
+  // ── Résine / Émail ──
   { id:'enamel_white',name:'Émail Blanc',group:'Émail',
-    base:['#f8f8f8','#f0f0f0','#f4f4f4'], grain:'rgba(200,200,200,{a})', grainA:[.02,.05], light:true },
+    base:['#f8f8f8','#f0f0f0','#f4f4f4'], grain:'rgba(200,200,200,{a})', grainA:[.015,.04], light:true },
   { id:'enamel_black',name:'Émail Noir',group:'Émail',
     base:['#141414','#0c0c0c','#101010'], grain:'rgba(255,255,255,{a})', grainA:[.01,.03], light:false, metal:true },
-  { id:'resin_blue',  name:'Résine Bleue',group:'Émail',
-    base:['#081230','#060e24','#0a1430'], grain:'rgba(0,100,255,{a})', grainA:[.04,.08], light:false, glass:true },
-  { id:'resin_gold',  name:'Résine Or',   group:'Émail',
-    base:['#281800','#1e1000','#241600'], grain:'rgba(255,200,50,{a})', grainA:[.05,.12], light:false, metal:true },
-  // ── Métal premium ──
-  { id:'titanium',  name:'Titane',     group:'Métal',
-    base:['#7a8088','#6c7480','#747c84'], grain:'rgba(200,210,220,{a})', grainA:[.04,.08], light:false, metal:true },
-  { id:'gold',      name:'Or',         group:'Métal',
-    base:['#b08820','#906810','#a07818'], grain:'rgba(255,230,100,{a})', grainA:[.08,.16], light:false, metal:true },
-  { id:'rose_gold', name:'Or Rose',    group:'Métal',
-    base:['#b07060','#906050','#a06858'], grain:'rgba(255,180,140,{a})', grainA:[.06,.12], light:false, metal:true },
-  // ── LED ──
-  { id:'led_cyan',  name:'LED Cyan',   group:'LED',
-    base:['#041420','#02101a','#031218'], grain:null, grainA:[], light:false, glass:true,
-    ledGlow:'rgba(0,240,255,0.35)', crystal:true },
-  { id:'led_magenta',name:'LED Magenta',group:'LED',
-    base:['#200414','#180210','#1c0312'], grain:null, grainA:[], light:false, glass:true,
-    ledGlow:'rgba(255,0,200,0.35)', crystal:true },
-  // ── Précieux ──
-  { id:'ivory',    name:'Ivoire',     group:'Précieux',
-    base:['#fffff0','#f8f8e0','#fffde7'], grain:'rgba(200,180,80,{a})',  grainA:[.01,.04], light:true },
-  { id:'ebony',    name:'Ébène',      group:'Précieux',
-    base:['#1a0e08','#100804','#160c06'], grain:'rgba(80,40,10,{a})',    grainA:[.03,.06], light:false },
-  { id:'walnut',   name:'Noyer',      group:'Bois',
-    base:['#3d1c0c','#2e1408','#351808'], grain:'rgba(180,100,40,{a})',  grainA:[.05,.10], light:false },
-  { id:'mahogany', name:'Acajou',     group:'Bois',
-    base:['#5c1a10','#4a1208','#54160e'], grain:'rgba(200,80,40,{a})',   grainA:[.04,.08], light:false },
-  { id:'nacre',    name:'Nacre',      group:'Précieux',
-    base:['#f8f4f0','#ece8f4','#f4f0fc'], grain:'rgba(180,160,220,{a})', grainA:[.03,.08], light:true, metal:true },
-  { id:'onyx',     name:'Onyx',       group:'Précieux',
-    base:['#0c0c0e','#06060a','#0a0a0c'], grain:'rgba(120,100,160,{a})', grainA:[.01,.04], light:false, metal:true },
-  { id:'jade',     name:'Jade',       group:'Précieux',
-    base:['#2d6a4f','#1e4d35','#256045'], grain:'rgba(100,200,150,{a})', grainA:[.03,.07], light:false },
-  { id:'lapis',    name:'Lapis',      group:'Précieux',
-    base:['#1a3a8f','#122878','#183484'], grain:'rgba(220,200,100,{a})', grainA:[.04,.09], light:false },
+  { id:'resin_blue',name:'Résine Bleue',group:'Émail',
+    base:['#081232','#060e26','#0a1434'], grain:'rgba(0,110,255,{a})',   grainA:[.04,.08], light:false, glass:true },
+  { id:'resin_gold',name:'Résine Or', group:'Émail',
+    base:['#2c1a00','#201200','#281600'], grain:'rgba(255,205,55,{a})',  grainA:[.05,.12], light:false, metal:true },
+  // ── LED (rétroéclairage tous bords) ──
+  { id:'led_cyan',  name:'LED Cyan',  group:'LED',
+    base:['#041820','#021218','#031618'], grain:null, grainA:[], light:false, glass:true,
+    ledGlow:'rgba(0,240,255,0.55)', crystal:true, _ledEdge:'#00f0ff' },
+  { id:'led_amber', name:'LED Ambre', group:'LED',
+    base:['#200e00','#180800','#1c0c00'], grain:null, grainA:[], light:false, glass:true,
+    ledGlow:'rgba(255,159,0,0.55)', crystal:true, _ledEdge:'#ff9f00' },
+  { id:'led_violet',name:'LED Violet',group:'LED',
+    base:['#18041e','#100218','#14031c'], grain:null, grainA:[], light:false, glass:true,
+    ledGlow:'rgba(189,0,255,0.55)', crystal:true, _ledEdge:'#bd00ff' },
+  { id:'led_green', name:'LED Vert',  group:'LED',
+    base:['#021208','#010e04','#011006'], grain:null, grainA:[], light:false, glass:true,
+    ledGlow:'rgba(0,255,136,0.55)', crystal:true, _ledEdge:'#00ff88' },
+  { id:'led_rose',  name:'LED Rose',  group:'LED',
+    base:['#200410','#18020c','#1c030e'], grain:null, grainA:[], light:false, glass:true,
+    ledGlow:'rgba(255,60,160,0.55)', crystal:true, _ledEdge:'#ff3ca0' },
+  { id:'led_gold',  name:'LED Or',    group:'LED',
+    base:['#1e1400','#160e00','#1a1200'], grain:null, grainA:[], light:false, glass:true,
+    ledGlow:'rgba(255,215,0,0.55)', crystal:true, _ledEdge:'#ffd700' },
 ];
 let _tileTextureIdx  = 0; // texture des tuiles
 let _footerTextureIdx = 0; // texture du footer (tablette)
@@ -2486,21 +2777,19 @@ function initGame(players, boardTheme) {
 // START SOLO
 // ════════════════════════════════════════════════════════════════
 function startSolo() {
-  const aiNames  = ['🤖 IA Facile','🧠 IA Moyen','💀 IA Difficile'];
-  const aiColors = ['#00ff88','#ff9f00','#bd00ff','#ff4757'];
-  const aiEmojis = ['🤖','🧠','💀','👾'];
+  const aiColors = ['#00ff88','#ff9f00','#bd00ff','#ff4757','#29b6f6','#ce93d8'];
+  const aiEmojis = ['🤖','🧠','💀','👾','🎯','⚡'];
   const diffIdx  = {easy:0,medium:1,hard:2}[_diff];
-  const aiCount  = Math.min(3, Math.max(1, _aiCount || 1));
-
+  const aiCount  = Math.min(5, Math.max(1, _aiCount || 1));
   const players = [
     { pseudo: PROFILE.pseudo, color: PROFILE.color, emoji: PROFILE.emoji,
       isHuman: true, device_id: DEVICE_ID },
   ];
   for (let i = 0; i < aiCount; i++) {
     players.push({
-      pseudo: aiCount === 1 ? aiNames[diffIdx] : `${aiEmojis[diffIdx]} IA ${i+1}`,
-      color: aiColors[(diffIdx + i) % aiColors.length],
-      emoji: aiEmojis[diffIdx],
+      pseudo: aiCount === 1 ? ['IA Facile','IA Moyen','IA Difficile'][diffIdx] : `${aiEmojis[i % 6]} IA ${i+1}`,
+      color: aiColors[i % aiColors.length],
+      emoji: aiEmojis[i % 6],
       isHuman: false, isAI: true, diff: _diff,
     });
   }
@@ -3277,75 +3566,120 @@ function drawTileFace(ctx, x, y, s, r, z, tex) {
   }
   // ── Texture spécifique ──
   if (tex.carbon) {
-    // Fibre carbone : motif tressé fin
-    const cs = Math.max(4, s/12);
-    for (let cx=x-s/2; cx<x+s/2; cx+=cs)
-      for (let cy=y-s/2; cy<y+s/2; cy+=cs) {
-        const ph = (Math.floor((cx-(x-s/2))/cs)+Math.floor((cy-(y-s/2))/cs))%2;
-        ctx.fillStyle = ph ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.18)';
-        ctx.fillRect(cx, cy, cs/2, cs/2);
-        ctx.fillRect(cx+cs/2, cy+cs/2, cs/2, cs/2);
+    const cs = Math.max(3, s/14);
+    for (let cx2=x-s/2; cx2<x+s/2; cx2+=cs)
+      for (let cy2=y-s/2; cy2<y+s/2; cy2+=cs) {
+        const ph = (Math.floor((cx2-(x-s/2))/cs)+Math.floor((cy2-(y-s/2))/cs))%2;
+        ctx.fillStyle = ph ? 'rgba(255,255,255,0.055)' : 'rgba(0,0,0,0.20)';
+        ctx.fillRect(cx2, cy2, cs*.5, cs*.5);
+        ctx.fillRect(cx2+cs*.5, cy2+cs*.5, cs*.5, cs*.5);
       }
-  } else if (tex.glass) {
-    // Verre/plexi : gradient translucide avec reflet oblique
-    if (tex.tint) { ctx.fillStyle = tex.tint; ctx.fillRect(x-s/2,y-s/2,s,s); }
-    const gi = ctx.createLinearGradient(x-s/2,y-s/2,x+s/2,y+s/2);
-    gi.addColorStop(0,'rgba(255,255,255,0.18)');
-    gi.addColorStop(0.3,'rgba(255,255,255,0.05)');
-    gi.addColorStop(0.7,'rgba(255,255,255,0.02)');
-    gi.addColorStop(1,'rgba(255,255,255,0.12)');
-    ctx.fillStyle=gi; ctx.fillRect(x-s/2,y-s/2,s,s);
-  } else if (tex.metal) {
-    // Métal : stries brossées horizontales
-    for (let i=0; i<8; i++) {
-      const yy = y-s/2 + (i/8)*s;
-      const a = 0.04 + Math.sin(i*1.2)*0.04;
-      ctx.fillStyle = `rgba(255,255,255,${a})`;
-      ctx.fillRect(x-s/2, yy, s, s/16);
+  } else if (tex._woodRings) {
+    // Veines concentrées façon bois tourné
+    const rings = 6 + Math.floor(Math.random()*3);
+    const [aMin, aMax] = tex.grainA;
+    for (let v = 0; v < rings; v++) {
+      const t = v / rings;
+      const rx = s * (0.18 + t * 0.45);
+      const ry = s * (0.14 + t * 0.42);
+      const a = aMin + (aMax - aMin) * (1 - t);
+      const col = tex.grain.replace('{a}', a.toFixed(3));
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 0.6 + Math.random() * 0.9;
+      ctx.beginPath();
+      ctx.ellipse(
+        x - s * 0.08 + Math.random() * s * 0.15,
+        y - s * 0.06 + Math.random() * s * 0.12,
+        rx, ry, Math.random() * 0.5, 0, Math.PI * 2
+      );
+      ctx.stroke();
     }
+    // Quelques rayons de médullaires
+    for (let m = 0; m < 3; m++) {
+      const ang = Math.random() * Math.PI * 2;
+      ctx.strokeStyle = tex.grain.replace('{a}', (aMin * 0.8).toFixed(3));
+      ctx.lineWidth = 0.4;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + Math.cos(ang) * s * 0.55, y + Math.sin(ang) * s * 0.55);
+      ctx.stroke();
+    }
+  } else if (tex.glass) {
+    if (tex.tint) { ctx.fillStyle = tex.tint; ctx.fillRect(x-s/2,y-s/2,s,s); }
+    // Reflet oblique verre haute qualité
+    const gi = ctx.createLinearGradient(x-s/2, y-s/2, x+s*0.7, y+s*0.3);
+    gi.addColorStop(0,   'rgba(255,255,255,0.22)');
+    gi.addColorStop(0.25,'rgba(255,255,255,0.08)');
+    gi.addColorStop(0.6, 'rgba(255,255,255,0.02)');
+    gi.addColorStop(1,   'rgba(255,255,255,0.14)');
+    ctx.fillStyle=gi; ctx.fillRect(x-s/2,y-s/2,s,s);
+    // Arête lumineuse diagonale
+    const ge = ctx.createLinearGradient(x-s/2, y-s/2, x-s/2+s*0.4, y-s/2+s*0.4);
+    ge.addColorStop(0,   'rgba(255,255,255,0.18)');
+    ge.addColorStop(1,   'rgba(255,255,255,0)');
+    ctx.fillStyle=ge; ctx.fillRect(x-s/2,y-s/2,s*0.4,s*0.4);
+  } else if (tex.metal) {
+    // Brossage métallique précis — 16 bandes alternées
+    for (let i = 0; i < 16; i++) {
+      const yy = y-s/2 + (i/16)*s;
+      const a = 0.02 + Math.abs(Math.sin(i*0.55)) * 0.06;
+      ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
+      ctx.fillRect(x-s/2, yy, s, s/20);
+    }
+    // Reflet central brillant
+    const gm = ctx.createLinearGradient(x-s/2, y-s*0.2, x-s/2, y+s*0.2);
+    gm.addColorStop(0,   'rgba(255,255,255,0)');
+    gm.addColorStop(0.5, 'rgba(255,255,255,0.08)');
+    gm.addColorStop(1,   'rgba(255,255,255,0)');
+    ctx.fillStyle=gm; ctx.fillRect(x-s/2, y-s*0.2, s, s*0.4);
   } else if (tex.speckle) {
-    // Granit : points aléatoires multicolores
     const speckles = [
-      'rgba(255,255,255,0.12)','rgba(200,190,180,0.10)',
-      'rgba(80,70,60,0.14)','rgba(180,160,140,0.08)'
+      'rgba(255,255,255,0.14)','rgba(200,195,185,0.12)',
+      'rgba(75,65,55,0.16)','rgba(185,165,145,0.10)',
+      'rgba(140,130,120,0.09)'
     ];
-    for (let i=0; i<60; i++) {
+    for (let i=0; i<80; i++) {
       ctx.fillStyle = speckles[Math.floor(Math.random()*speckles.length)];
       ctx.beginPath();
-      ctx.arc(x-s/2+Math.random()*s, y-s/2+Math.random()*s,
-              0.5+Math.random()*1.8, 0, Math.PI*2);
+      ctx.arc(x-s/2+Math.random()*s, y-s/2+Math.random()*s, 0.4+Math.random()*1.6, 0, Math.PI*2);
       ctx.fill();
     }
   } else if (tex.scratch) {
-    // Béton : griffures et agrégats
-    for (let i=0; i<8; i++) {
-      ctx.strokeStyle = `rgba(255,255,255,${0.02+Math.random()*0.04})`;
-      ctx.lineWidth = 0.5;
+    for (let i=0; i<12; i++) {
+      ctx.strokeStyle = `rgba(255,255,255,${0.015+Math.random()*0.035})`;
+      ctx.lineWidth = Math.random() < 0.3 ? 0.8 : 0.4;
       ctx.beginPath();
-      const sx=x-s/2+Math.random()*s, sy=y-s/2+Math.random()*s;
-      ctx.moveTo(sx,sy); ctx.lineTo(sx+(Math.random()-.5)*s*.6, sy+(Math.random()-.5)*s*.3);
+      const sx2=x-s/2+Math.random()*s, sy2=y-s/2+Math.random()*s;
+      ctx.moveTo(sx2,sy2); ctx.lineTo(sx2+(Math.random()-.5)*s*.7, sy2+(Math.random()-.5)*s*.35);
       ctx.stroke();
     }
+  } else if (tex.frosted) {
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(x-s/2, y-s/2, s, s);
+    for(let fi=0; fi<50; fi++){
+      ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.05})`;
+      ctx.fillRect(x-s/2+Math.random()*s, y-s/2+Math.random()*s, Math.random()*5+0.5, Math.random()*2+0.3);
+    }
   } else if (tex.grain) {
-    // Bois/pierre : veines ou grain
-    const nb = tex.id==='marble' ? 5 : tex.id==='bamboo' ? 8 : 7;
+    // Veines de bois/pierre naturelles avec courbure organique
+    const nb = tex.id==='bamboo' ? 9 : 8;
     for (let v=0; v<nb; v++) {
-      const yv = y-s/2 + (v/nb)*s;
+      const yv = y-s/2 + (v/nb)*s + (Math.random()-.5)*s*0.06;
       const [aMin, aMax] = tex.grainA;
       const a = aMin + Math.random()*(aMax-aMin);
-      const col = tex.grain.replace('{a}', a);
+      const col = tex.grain.replace('{a}', a.toFixed(3));
       ctx.strokeStyle = col;
-      ctx.lineWidth = (tex.id==='marble') ? 0.8+Math.random()*1.2 : 0.5+Math.random()*.8;
+      ctx.lineWidth = tex.id==='marble'||tex.id==='marble_noir'
+        ? 0.7+Math.random()*1.4 : 0.4+Math.random()*.7;
       ctx.beginPath();
       if (tex.id==='bamboo') {
-        // Bambou : lignes horizontales droites avec nœuds
         ctx.moveTo(x-s/2, yv); ctx.lineTo(x+s/2, yv);
       } else {
-        ctx.moveTo(x-s/2, yv+Math.sin(v)*2);
+        const tension = s * 0.04;
+        ctx.moveTo(x-s/2, yv + Math.sin(v*0.8)*tension);
         ctx.bezierCurveTo(
-          x-s/6, yv+Math.sin(v*2.1)*3,
-          x+s/6, yv-Math.sin(v*1.4)*2,
-          x+s/2, yv+Math.sin(v*3)*2
+          x-s/5, yv + Math.sin(v*1.9)*tension*1.5,
+          x+s/5, yv - Math.sin(v*1.3)*tension*1.2,
+          x+s/2, yv + Math.sin(v*2.6)*tension
         );
       }
       ctx.stroke();
@@ -3383,10 +3717,17 @@ function drawTileWorld(wx,wy,tile,pending){
   ctx2d.shadowColor='transparent'; ctx2d.shadowBlur=0;
   ctx2d.shadowOffsetX=0; ctx2d.shadowOffsetY=0;
 
-  // ── Lueur LED extérieure (si matériau LED) ──
-  if (tex.ledGlow) {
+  // ── Lueur LED extérieure tous bords (physique 10mm d'épaisseur) ──
+  if (tex._ledEdge) {
+    // Chaque bord de la tuile de 10mm diffuse vers l'extérieur
+    // On simule avec shadow sur 4 côtés via des rects minuscules
+    const lc = tex._ledEdge;
+    const glowR = s * 0.35 * Math.max(0.5, z);
+    ctx2d.shadowColor = lc;
+    ctx2d.shadowBlur  = glowR;
+  } else if (tex.ledGlow) {
     ctx2d.shadowColor = tex.ledGlow;
-    ctx2d.shadowBlur  = s * 0.55 * Math.max(0.5, z);
+    ctx2d.shadowBlur  = s * 0.45 * Math.max(0.5, z);
   }
 
   // ── Face avec texture matériau ──
@@ -3435,27 +3776,26 @@ function shapePath(ctx, shape, cx, cy, h) {
     case 'circle':
       ctx.arc(cx,cy,h*0.80,0,Math.PI*2); break;
     case 'clover':{
-      // Contour extérieur pur — 4 arcs de cercle sans lignes internes visibles
-      const lr=h*0.38, off=h*0.27;
-      const discr=2*lr*lr - off*off;
-      if(discr<0){
-        // fallback sécurisé
-        [[0,-off],[0,off],[-off,0],[off,0]].forEach(([dx,dy])=>{
-          ctx.moveTo(cx+dx+lr,cy+dy); ctx.arc(cx+dx,cy+dy,lr,0,Math.PI*2);
-        });
-        break;
-      }
-      const ix=(off+Math.sqrt(discr))/2;
-      // Angles depuis chaque centre de pétale vers les points d'intersection
-      const aN_WN=Math.atan2(off-ix,-ix), aN_NE=Math.atan2(off-ix, ix);
-      const aE_NE=Math.atan2(-ix,ix-off), aE_SE=Math.atan2( ix,ix-off);
-      const aS_SE=Math.atan2(ix-off, ix), aS_SW=Math.atan2(ix-off,-ix);
-      const aW_SW=Math.atan2( ix,off-ix), aW_WN=Math.atan2(-ix,off-ix);
-      ctx.moveTo(cx-ix,cy-ix);
-      ctx.arc(cx,      cy-off, lr, aN_WN, aN_NE, false); // pétale N
-      ctx.arc(cx+off,  cy,     lr, aE_NE, aE_SE, false); // pétale E
-      ctx.arc(cx,      cy+off, lr, aS_SE, aS_SW, false); // pétale S
-      ctx.arc(cx-off,  cy,     lr, aW_SW, aW_WN, false); // pétale W
+      // 4 pétales — contour extérieur continu, aucune ligne intérieure
+      const lr = h * 0.42, off = h * 0.30;
+      // Intersection entre deux cercles adjacents de rayon lr, centres écartés de off
+      const d2 = off * off, r2 = lr * lr;
+      const xi = d2 < 4 * r2 ? Math.sqrt(r2 - d2/4) : lr * 0.7;
+      const yi = off / 2;
+      // Angles depuis centre haut [0,-off] vers les deux points d'intersection
+      const aN_L = Math.atan2(xi, -yi);   // vers gauche
+      const aN_R = Math.atan2(-xi, -yi);  // vers droite (sens anti-horaire = false → horaire)
+      const aR_T = Math.atan2(-yi, xi);
+      const aR_B = Math.atan2(yi, xi);
+      const aS_R = Math.atan2(-xi, yi);
+      const aS_L = Math.atan2(xi, yi);
+      const aL_B = Math.atan2(yi, -xi);
+      const aL_T = Math.atan2(-yi, -xi);
+      ctx.moveTo(cx - xi, cy - yi);
+      ctx.arc(cx,      cy - off, lr, aN_L, aN_R,  true);
+      ctx.arc(cx + off,cy,       lr, aR_T, aR_B,  true);
+      ctx.arc(cx,      cy + off, lr, aS_R, aS_L,  true);
+      ctx.arc(cx - off,cy,       lr, aL_B, aL_T,  true);
       ctx.closePath();
       break;}
     case 'diamond':
@@ -3479,98 +3819,123 @@ function shapePath(ctx, shape, cx, cy, h) {
   }
 }
 
-// Extrusion 3D + animation de luisance — gravé en profondeur dans le matériau
+// ── Shimmer phase ──
 let _shimmerPhase = 0;
-function updateShimmerPhase() { _shimmerPhase = (Date.now() % 6000) / 6000; }
+function updateShimmerPhase() { _shimmerPhase = (Date.now() % 8000) / 8000; }
 
+/**
+ * drawShapeEngraved — physique gravure réelle
+ * La figure est creusée dans la tuile (5mm sur 10mm d'épaisseur).
+ * Au fond de ce creux on dépose une couleur comme un vernis brillant.
+ * Pas de trait visible à l'intérieur de la forme — tout est continu.
+ */
 function drawShapeEngraved(ctx, shape, color, cx, cy, size, tex) {
-  const h = size/2;
+  const h  = size / 2;
   const isLight = tex?.light || false;
   const isMetal = tex?.metal || false;
   const isGlass = tex?.glass || false;
-  // Profondeur augmentée — simule un creux de ~2mm dans 8mm de tuile ≈ 25% du rayon
-  const depth = size * 0.11;
+  // cavité profonde : 5mm dans 10mm ≈ 50% de la surface visible
+  const bevel = size * 0.055; // largeur du chanfrein (bord de la coupe)
 
-  // ══ 1 : Ombre de fond (creux plus profond) ══
+  // ─── 1. Ombre portée de la coupe sur les parois ───────────────
+  // Le bord supérieur de la fraise projette une ombre dans la cavité
   ctx.save();
   ctx.beginPath();
-  shapePath(ctx, shape, cx + depth*0.9, cy + depth*1.2, h * 0.97);
-  ctx.fillStyle = isLight ? 'rgba(0,0,0,0.60)' : 'rgba(0,0,0,0.92)';
-  ctx.shadowColor = 'rgba(0,0,0,0.95)'; ctx.shadowBlur = depth*5;
+  shapePath(ctx, shape, cx + bevel*0.7, cy + bevel*0.9, h * 0.96);
+  ctx.fillStyle = isLight ? 'rgba(0,0,0,0.48)' : 'rgba(0,0,0,0.82)';
+  ctx.shadowColor = isLight ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.70)';
+  ctx.shadowBlur = bevel * 3.5;
   ctx.fill();
-  ctx.shadowColor='transparent'; ctx.shadowBlur=0;
+  ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
   ctx.restore();
 
-  // ══ 2 : Cavité — fond gradient radial plus sombre ══
+  // ─── 2. Parois de la cavité (gradient radial, sombre aux bords) ─
   ctx.save();
-  ctx.beginPath(); shapePath(ctx, shape, cx, cy, h * 0.97);
-  const dg = ctx.createRadialGradient(cx-h*0.25, cy-h*0.25, 0, cx, cy, h*1.1);
-  dg.addColorStop(0, isLight ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.55)');
-  dg.addColorStop(0.5, isLight ? 'rgba(0,0,0,0.38)' : 'rgba(0,0,0,0.70)');
-  dg.addColorStop(1, isLight ? 'rgba(0,0,0,0.52)' : 'rgba(0,0,0,0.85)');
-  ctx.fillStyle = dg; ctx.fill();
+  ctx.beginPath(); shapePath(ctx, shape, cx, cy, h * 0.96);
+  const wallG = ctx.createRadialGradient(cx - h*0.18, cy - h*0.18, 0, cx, cy, h * 1.05);
+  wallG.addColorStop(0.0, isLight ? 'rgba(0,0,0,0.08)' : 'rgba(0,0,0,0.30)');
+  wallG.addColorStop(0.55,'rgba(0,0,0,0.00)'); // fond plat — la laque s'applique ici
+  wallG.addColorStop(1.0, isLight ? 'rgba(0,0,0,0.42)' : 'rgba(0,0,0,0.72)');
+  ctx.fillStyle = wallG; ctx.fill();
   ctx.restore();
 
-  // ══ 3 : Face colorée remontée (relief — légèrement surélevée) ══
+  // ─── 3. Laque colorée au fond de la cavité ────────────────────
+  // légèrement plus petite que le creux — laisse le chanfrein visible
+  const lacH = h * 0.82;
   ctx.save();
-  ctx.beginPath(); shapePath(ctx, shape, cx - depth*0.28, cy - depth*0.38, h * 0.82);
-  const gShape = ctx.createLinearGradient(cx-h, cy-h*1.1, cx+h*0.7, cy+h*0.9);
-  gShape.addColorStop(0,   lightenColor(color, 0.40));
-  gShape.addColorStop(0.30, lightenColor(color, 0.18));
-  gShape.addColorStop(0.65, color);
-  gShape.addColorStop(1,   darkenColor(color, 0.40));
-  ctx.fillStyle = gShape;
-  ctx.shadowColor = 'rgba(0,0,0,0.70)'; ctx.shadowBlur = depth*3;
-  ctx.shadowOffsetX = depth*0.6; ctx.shadowOffsetY = depth*0.9;
-  ctx.fill();
-  ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetX=0; ctx.shadowOffsetY=0;
-  ctx.restore();
+  ctx.beginPath(); shapePath(ctx, shape, cx - bevel*0.08, cy - bevel*0.10, lacH);
+  ctx.clip();
 
-  // ══ 4 : Arête lumineuse haut-gauche (bord du creux) ══
+  // Fond de laque — dégradé directionnel (lumière venant du haut-gauche)
+  const lx0 = cx - lacH * 0.80, ly0 = cy - lacH * 0.90;
+  const lx1 = cx + lacH * 0.65, ly1 = cy + lacH * 0.75;
+  const lacG = ctx.createLinearGradient(lx0, ly0, lx1, ly1);
+  lacG.addColorStop(0.0,  lightenColor(color, 0.28));
+  lacG.addColorStop(0.40, lightenColor(color, 0.08));
+  lacG.addColorStop(0.75, color);
+  lacG.addColorStop(1.0,  darkenColor(color, 0.25));
+  ctx.fillStyle = lacG;
+  ctx.fillRect(cx - lacH - bevel, cy - lacH - bevel, (lacH + bevel) * 2, (lacH + bevel) * 2);
+
+  // Couche vernis brillant — nappe réfléchissante (Fresnel style)
+  const varnishG = ctx.createRadialGradient(
+    cx - lacH * 0.32, cy - lacH * 0.40, 0,
+    cx, cy, lacH * 1.05
+  );
+  varnishG.addColorStop(0.0,  'rgba(255,255,255,0.52)');
+  varnishG.addColorStop(0.18, 'rgba(255,255,255,0.22)');
+  varnishG.addColorStop(0.45, 'rgba(255,255,255,0.05)');
+  varnishG.addColorStop(1.0,  'rgba(0,0,0,0.06)');
+  ctx.fillStyle = varnishG;
+  ctx.fillRect(cx - lacH - bevel, cy - lacH - bevel, (lacH + bevel) * 2, (lacH + bevel) * 2);
+
+  // Micro point-chaud spéculaire (reflet de la source lumineuse)
+  const spG = ctx.createRadialGradient(
+    cx - lacH * 0.38, cy - lacH * 0.44, 0,
+    cx - lacH * 0.28, cy - lacH * 0.34, lacH * 0.22
+  );
+  spG.addColorStop(0, 'rgba(255,255,255,0.75)');
+  spG.addColorStop(0.5,'rgba(255,255,255,0.12)');
+  spG.addColorStop(1,  'rgba(255,255,255,0)');
+  ctx.fillStyle = spG;
+  ctx.fillRect(cx - lacH - bevel, cy - lacH - bevel, (lacH + bevel) * 2, (lacH + bevel) * 2);
+
+  ctx.restore(); // fin clip laque
+
+  // ─── 4. Bord de coupe (chanfrein) — éclat lumière haut-gauche ──
+  // Ce filet très fin représente l'arête vive de la fraise
   ctx.save();
-  ctx.beginPath(); shapePath(ctx, shape, cx - depth*0.50, cy - depth*0.65, h * 0.86);
-  const edgeAlpha = isMetal ? 0.72 : isGlass ? 0.62 : isLight ? 0.48 : 0.38;
-  ctx.strokeStyle = `rgba(255,255,255,${edgeAlpha})`;
-  ctx.lineWidth = Math.max(1.0, size*0.033);
+  ctx.beginPath(); shapePath(ctx, shape, cx - bevel*0.28, cy - bevel*0.36, h * 0.90);
+  const rimAlpha = isMetal ? 0.78 : isGlass ? 0.65 : isLight ? 0.55 : 0.42;
+  ctx.strokeStyle = `rgba(255,255,255,${rimAlpha})`;
+  ctx.lineWidth   = Math.max(0.7, size * 0.022);
   ctx.stroke();
   ctx.restore();
 
-  // ══ 5 : Arête sombre bas-droite ══
+  // Contre-bord (ombre du chanfrein côté bas-droite)
   ctx.save();
-  ctx.beginPath(); shapePath(ctx, shape, cx + depth*0.50, cy + depth*0.65, h * 0.86);
-  ctx.strokeStyle = `rgba(0,0,0,${isLight?0.38:0.62})`;
-  ctx.lineWidth = Math.max(0.8, size*0.025);
+  ctx.beginPath(); shapePath(ctx, shape, cx + bevel*0.28, cy + bevel*0.36, h * 0.90);
+  ctx.strokeStyle = `rgba(0,0,0,${isLight ? 0.32 : 0.58})`;
+  ctx.lineWidth   = Math.max(0.5, size * 0.016);
   ctx.stroke();
   ctx.restore();
 
-  // ══ 6 : Brillance statique sur le relief ══
-  ctx.save();
-  ctx.beginPath(); shapePath(ctx, shape, cx - depth*0.22, cy - depth*0.28, h * 0.80);
-  const gShine = ctx.createLinearGradient(cx-h*0.7, cy-h*0.9, cx+h*0.4, cy+h*0.4);
-  const shineA = isMetal ? 0.45 : isGlass ? 0.40 : 0.22;
-  gShine.addColorStop(0, `rgba(255,255,255,${shineA})`);
-  gShine.addColorStop(0.4, `rgba(255,255,255,${shineA*0.25})`);
-  gShine.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = gShine; ctx.fill();
-  ctx.restore();
-
-  // ══ 7 : Rayon animé (shimmer) ══
-  const phase = _shimmerPhase;
-  const sweep = (phase * 3.0 - 0.5);
+  // ─── 5. Rayon animé sur la laque (shimmer lent) ───────────────
+  const sweep = (_shimmerPhase * 3.2 - 0.4);
   if (sweep > -0.1 && sweep < 1.1) {
     ctx.save();
-    ctx.beginPath(); shapePath(ctx, shape, cx - depth*0.18, cy - depth*0.22, h * 0.80);
+    ctx.beginPath(); shapePath(ctx, shape, cx - bevel*0.08, cy - bevel*0.10, lacH);
     ctx.clip();
-    const lx = cx - h + sweep * h * 2.4;
-    const gRay = ctx.createLinearGradient(lx - h*0.3, cy - h, lx + h*0.3, cy + h);
-    const rayPeak = Math.sin(Math.PI * Math.max(0, Math.min(1, sweep)));
-    const rayA = (isMetal ? 0.55 : isGlass ? 0.50 : 0.30) * rayPeak;
-    gRay.addColorStop(0,    'rgba(255,255,255,0)');
-    gRay.addColorStop(0.35, `rgba(255,255,255,${rayA * 0.4})`);
-    gRay.addColorStop(0.5,  `rgba(255,255,255,${rayA})`);
-    gRay.addColorStop(0.65, `rgba(255,255,255,${rayA * 0.4})`);
-    gRay.addColorStop(1,    'rgba(255,255,255,0)');
-    ctx.fillStyle = gRay;
+    const lxR = cx - h + sweep * h * 2.5;
+    const rayG = ctx.createLinearGradient(lxR - h*0.22, cy - h, lxR + h*0.22, cy + h);
+    const rp   = Math.sin(Math.PI * Math.max(0, Math.min(1, sweep)));
+    const rA   = 0.32 * rp;
+    rayG.addColorStop(0,    'rgba(255,255,255,0)');
+    rayG.addColorStop(0.38, `rgba(255,255,255,${rA * 0.4})`);
+    rayG.addColorStop(0.5,  `rgba(255,255,255,${rA})`);
+    rayG.addColorStop(0.62, `rgba(255,255,255,${rA * 0.4})`);
+    rayG.addColorStop(1,    'rgba(255,255,255,0)');
+    ctx.fillStyle = rayG;
     ctx.fillRect(cx - h, cy - h, h * 2, h * 2);
     ctx.restore();
   }
@@ -3948,11 +4313,18 @@ function doConfirm(){
   G.discardMode  = false;
   G.toDiscard    = new Set();
 
-  // UI
+  // ── Rendu immédiat du plateau (avant l'annonce) ──
   Cache.invalidate();
   updateConfirmBtn();
+  // Passer au tour suivant AVANT l'annonce visuelle
+  nextTurn();
+  updateHeader();
+  renderHand();
+  drawBoard(); // rendu instantané
+
   // Vibration locale
   if (navigator.vibrate) navigator.vibrate(pts >= 12 ? [100,50,100] : [50]);
+  // Annonce flottante APRÈS le rendu
   showAnnounce(pts, isQwirkle, player.pseudo, player.score);
   playSound(isQwirkle ? 'qwirkle' : 'score');
   animateTilesFromSky(G._lastConfirmedMoves);
@@ -3979,12 +4351,6 @@ function doConfirm(){
     total: player.score,
     subtitle: null,
   };
-
-  // Passer au tour suivant
-  nextTurn();
-  updateHeader();
-  renderHand();
-  drawBoard();
 
   // Sauvegarder en ligne
   if (_currentRoom) saveOnlineGameState();
@@ -4087,12 +4453,28 @@ function nextTurn(){
 }
 
 function updateHeader(){
-  document.getElementById('gh-scores').innerHTML=G.players.map((p,i)=>`
-    <div class="player-score-chip${i===G.current?' active':''}" style="--col:${p.color}">
-      <div class="psc-avatar" style="background:${p.color}33">${p.emoji||'🎮'}</div>
-      <span class="psc-name">${p.pseudo}</span>
-      <span class="psc-score">${p.score}</span>
-    </div>`).join('');
+  const wrap = document.getElementById('gh-scores');
+  if (!wrap) return;
+  // Stocker les scores précédents pour la tendance
+  if (!G._prevScores) G._prevScores = {};
+  const chips = G.players.map((p,i)=>{
+    const prev = G._prevScores[i] || 0;
+    const delta = p.score - prev;
+    const trend = delta > 0 ? '▲' : delta < 0 ? '▼' : '—';
+    const trendColor = delta > 0 ? 'var(--green)' : delta < 0 ? 'var(--red)' : 'rgba(255,255,255,0.3)';
+    return `<div class="player-score-chip${i===G.current?' active':''}" style="--col:${p.color}">
+      <div class="psc-avatar" style="background:${p.color}28;border:1px solid ${p.color}44">${p.emoji||'🎮'}</div>
+      <span class="psc-name" style="color:${i===G.current?p.color:'rgba(255,255,255,0.75)'}">${p.pseudo}</span>
+      <span class="psc-score" style="color:${p.color}">${p.score}</span>
+      <span class="psc-trend" style="color:${trendColor}">${trend}</span>
+    </div>`;
+  }).join('');
+  // Double le contenu pour le défilement continu
+  wrap.innerHTML = `<div class="gh-scores-wrap" onclick="this.querySelector('.gh-scores-track').classList.toggle('paused')">
+    <div class="gh-scores-track">${chips}${chips}</div>
+  </div>`;
+  // Mettre à jour les scores précédents
+  G.players.forEach((p,i) => { G._prevScores[i] = p.score; });
   renderBag();
 }
 
@@ -4153,8 +4535,12 @@ function animateBox() {
 
 function aiPlay(){
   showAIThinking(true);
-  const delay=G.players[G.current].diff==='easy'?700:G.players[G.current].diff==='hard'?1400:1000;
-  const safety=setTimeout(()=>{showAIThinking(false);nextTurn();updateHeader();drawBoard();checkGameOver();},10000);
+  const aiCount = G.players.filter(p => p.isAI).length;
+  const baseDelay = G.players[G.current].diff==='easy' ? 900
+                  : G.players[G.current].diff==='hard' ? 1600 : 1200;
+  const delay = aiCount >= 2 ? Math.max(3000, baseDelay) : baseDelay;
+  const safetyMs = Math.max(15000, delay + 8000);
+  const safety=setTimeout(()=>{showAIThinking(false);nextTurn();updateHeader();drawBoard();checkGameOver();},safetyMs);
   const done=()=>{
     clearTimeout(safety);
     showAIThinking(false);
@@ -4705,9 +5091,10 @@ function renderAppearanceModal(){
   const boardsEl = document.getElementById('ap-boards');
   const tilesEl  = document.getElementById('ap-tiles');
   const footerEl = document.getElementById('ap-footer');
+  const handEl   = document.getElementById('ap-hand-zone');
   if (!boardsEl) return;
 
-  // ── Grille plateaux (4 colonnes) ──
+  // ── Plateaux ──
   boardsEl.innerHTML = BOARD_THEMES.map((t,i) => {
     const sel = (G.boardTheme||0) === i;
     const badge = t.animated ? '<div style="position:absolute;top:3px;right:4px;font-size:9px;color:var(--accent)">✦</div>' : '';
@@ -4717,7 +5104,7 @@ function renderAppearanceModal(){
       + '</div>';
   }).join('');
 
-  // ── Tuiles (grille 4 colonnes comme plateaux) ──
+  // ── Tuiles ──
   if (tilesEl) {
     tilesEl.innerHTML = TILE_TEXTURES.map((t,i) => {
       const sel = _tileTextureIdx === i;
@@ -4730,17 +5117,34 @@ function renderAppearanceModal(){
     }).join('');
   }
 
-  // ── Footer + Header (grille 4 colonnes) ──
+  // ── Footer / Header ──
   if (footerEl) {
     footerEl.innerHTML = FOOTER_TEXTURES.map((t,i) => {
       const sel = _footerTextureIdx === i;
-      // Extraire une couleur représentative du CSS
-      const bgMatch = t.css.match(/background[^;]+linear-gradient\([^)]+\)/)||[];
       return '<div class="ap-board-btn'+(sel?' sel':'')+'" onclick="setFooterTexture('+i+')">'
         + '<div class="ap-board-preview" style="'+t.css+'">'
         + (sel ? '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:14px;font-weight:900">✓</div>' : '')
         + '</div>'
         + '<div class="ap-board-name">'+t.name+'</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  // ── Zone tuiles ──
+  if (handEl) {
+    const HAND_SKINS = [
+      {name:'Sombre',   css:'background:#06080e;'},
+      {name:'Très sombre', css:'background:#02030a;'},
+      {name:'Noir',     css:'background:#000;'},
+      {name:'Carbone',  css:'background:repeating-linear-gradient(91deg,transparent 0,transparent 4px,rgba(255,255,255,0.02) 4px,rgba(255,255,255,0.02) 5px),linear-gradient(180deg,#10141a,#0a0c10);'},
+      {name:'Plexi',    css:'background:rgba(14,18,28,0.88);backdrop-filter:blur(10px);'},
+      {name:'Verre',    css:'background:rgba(20,26,40,0.85);backdrop-filter:blur(12px);'},
+    ];
+    handEl.innerHTML = HAND_SKINS.map((s,i) => {
+      const sel = (_handZoneIdx||0) === i;
+      return '<div class="ap-board-btn'+(sel?' sel':'')+'" onclick="setHandZone('+i+')">'
+        + '<div class="ap-board-preview" style="'+s.css+'"></div>'
+        + '<div class="ap-board-name">'+s.name+'</div>'
         + '</div>';
     }).join('');
   }
@@ -4753,25 +5157,39 @@ function setFooterTexture(i) {
     renderAppearanceModal();
 }
 
+let _handZoneIdx = 0;
+
+function setHandZone(i) {
+  _handZoneIdx = i;
+  const HAND_SKINS = [
+    'background:#06080e;',
+    'background:#02030a;',
+    'background:#000;',
+    'background:repeating-linear-gradient(91deg,transparent 0,transparent 4px,rgba(255,255,255,0.02) 4px,rgba(255,255,255,0.02) 5px),linear-gradient(180deg,#10141a,#0a0c10);',
+    'background:rgba(14,18,28,0.88);backdrop-filter:blur(10px);',
+    'background:rgba(20,26,40,0.85);backdrop-filter:blur(12px);',
+  ];
+  const hz = document.querySelector('.hand-zone');
+  if (hz) hz.style.cssText = (HAND_SKINS[i]||HAND_SKINS[0])
+    + 'width:100%;padding:8px 10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:12;position:relative;border-bottom:1px solid rgba(255,255,255,0.05);';
+  if (!document.getElementById('ov-appearance').classList.contains('hidden')) renderAppearanceModal();
+}
+
 function applyFooterHeaderTexture(i) {
   const ft = FOOTER_TEXTURES[i];
-  const footer = document.querySelector('.game-bottom');
+  const footer = document.querySelector('.game-footer');
   const header = document.querySelector('.game-header');
 
   if (footer) {
-    // Footer : LED diffuse vers le HAUT dans le plateau (box-shadow vers -y)
     footer.style.cssText = ft.css
-      + 'width:100%;padding:8px 12px 10px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;'
+      + 'width:100%;padding:8px 10px 10px;flex-shrink:0;display:flex;flex-direction:column;gap:7px;'
       + 'border-top:1px solid rgba(255,255,255,0.07);z-index:10;position:relative;';
   }
   if (header) {
-    // Header : LED diffuse vers le BAS dans le plateau (inverser box-shadow)
     let headerCss = ft.css;
     if (ft.led && ft.ledColor) {
-      // Remplacer box-shadow upward (-y) par downward (+y)
-      const lc = ft.ledColor;
-      const alpha = lc.startsWith('#') ? 0.9 : lc.match(/[\d.]+\)$/)?.[0]?.replace(')','') || 0.9;
       function ledRgba(a) {
+        const lc = ft.ledColor;
         if (lc.startsWith('rgba(')) return lc.replace(/[\d.]+\)$/, a+')');
         if (lc.startsWith('#')) {
           const r=parseInt(lc.slice(1,3),16),g=parseInt(lc.slice(3,5),16),b=parseInt(lc.slice(5,7),16);
@@ -4783,8 +5201,8 @@ function applyFooterHeaderTexture(i) {
       headerCss = ft.css.replace(/box-shadow:[^;]+;/, shadowDown);
     }
     header.style.cssText = headerCss
-      + 'display:flex;align-items:center;gap:8px;padding:10px 14px;'
-      + 'border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;z-index:50;position:relative;';
+      + 'display:flex;align-items:center;gap:10px;padding:8px 12px;'
+      + 'border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;z-index:100;position:relative;';
   }
 }
 function showAIThinking(v){document.getElementById('ai-thinking').classList.toggle('hidden',!v);}
@@ -4899,7 +5317,8 @@ function showAnnounce(pts, isQwirkle, playerName, newTotal, subtitle) {
   if (isExploit)     card.classList.add('is-exploit');
 
   clearTimeout(_announceTimer);
-  const dur = isMegaQwirkle ? 2200 : isQwirkleBase ? 2000 : isExploit ? 2000 : pts >= 6 ? 1600 : 1300;
+  // Max 5 secondes — fermeture immédiate au clic (overlay onclick déjà câblé)
+  const dur = Math.min(5000, isMegaQwirkle ? 3500 : isQwirkleBase ? 3000 : isExploit ? 3000 : pts >= 6 ? 2200 : 1800);
   _announceTimer = setTimeout(dismissAnnounce, dur);
 }
 
